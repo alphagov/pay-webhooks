@@ -21,7 +21,7 @@
         <jackson.version>2.12.5</jackson.version>
         <junit5.version>5.8.0</junit5.version>
         <testcontainers.version>1.16.0</testcontainers.version>
-        <mainClass>uk.gov.pay.webhooks.WebhooksApp</mainClass>
+        <mainClass>uk.gov.pay.webhooks.app.WebhooksApp</mainClass>
     </properties>
 
     <dependencyManagement>
@@ -57,6 +57,11 @@
                     <artifactId>liquibase-core</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>5.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.liquibase</groupId>

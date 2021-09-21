@@ -1,14 +1,15 @@
 package uk.gov.pay.webhooks.healthcheck;
 
+import com.codahale.metrics.health.HealthCheck;
 import io.dropwizard.setup.Environment;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
 
 import java.util.Map;
+import java.util.Set;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
@@ -24,8 +25,7 @@ public class HealthCheckResource {
     @GET
     @Path("healthcheck")
     @Produces(APPLICATION_JSON)
-    public Response healthCheck() {
-        var ok = Map.of("healthy", "true");
-        return Response.ok(ok).build();
+    public Set<Map.Entry<String, HealthCheck.Result>> healthCheck() {
+        return environment.healthChecks().runHealthChecks().entrySet();
     }
 }

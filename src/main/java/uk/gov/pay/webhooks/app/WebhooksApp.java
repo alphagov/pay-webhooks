@@ -1,7 +1,6 @@
-package uk.gov.pay.webhooks;
+package uk.gov.pay.webhooks.app;
 
 import io.dropwizard.Application;
-import io.dropwizard.Configuration;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.db.DataSourceFactory;
@@ -10,23 +9,26 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import uk.gov.pay.webhooks.healthcheck.HealthCheckResource;
 import uk.gov.pay.webhooks.healthcheck.Ping;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
-public class WebhooksApp extends Application<WebhooksConfiguration> {
+public class WebhooksApp extends Application<WebhooksConfig> {
     public static void main(String[] args) throws Exception {
         new WebhooksApp().run(args);
     }
 
 @Override
-public void run(WebhooksConfiguration configuration,
+public void run(WebhooksConfig configuration,
                 Environment environment) {
-    final HealthCheckResource resource = new HealthCheckResource(environment);
-    environment.jersey().register(resource);
-    environment.healthChecks().register("ping", new Ping());
-    
+        final Injector injector = Guice.createInjector(new WebhooksModule(configuration, environment));
+
+        environment.healthChecks().register("ping", new Ping());
+
+        environment.jersey().register(injector.getInstance(HealthCheckResource.class));
     }
 
     @Override
-    public void initialize(Bootstrap<WebhooksConfiguration> bootstrap){
+    public void initialize(Bootstrap<WebhooksConfig> bootstrap){
         bootstrap.setConfigurationSourceProvider(
                 new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(),
                         new EnvironmentVariableSubstitutor(false))
@@ -34,7 +36,7 @@ public void run(WebhooksConfiguration configuration,
 
         bootstrap.addBundle(new MigrationsBundle<>() {
             @Override
-            public DataSourceFactory getDataSourceFactory(WebhooksConfiguration configuration) {
+            public DataSourceFactory getDataSourceFactory(WebhooksConfig configuration) {
                 return configuration.getDataSourceFactory();
             }
         });

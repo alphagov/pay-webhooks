@@ -1,23 +1,12 @@
 package uk.gov.pay.rule;
 
-import io.dropwizard.testing.ConfigOverride;
-import io.dropwizard.testing.junit.DropwizardAppRule;
-import org.junit.rules.ExternalResource;
-import org.junit.rules.RuleChain;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
-import uk.gov.pay.webhooks.WebhooksConfiguration;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.dropwizard.testing.ConfigOverride.config;
-import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
 import static java.sql.DriverManager.getConnection;
 
 public class PostgresTestDocker {

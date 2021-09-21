@@ -9,8 +9,8 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.pay.webhooks.WebhooksApp;
-import uk.gov.pay.webhooks.WebhooksConfiguration;
+import uk.gov.pay.webhooks.app.WebhooksApp;
+import uk.gov.pay.webhooks.app.WebhooksConfig;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class AppWithPostgresExtension implements BeforeAllCallback, AfterAllCall
 
     private static String CONFIG_PATH = resourceFilePath("config/test-config.yaml");
     private final Jdbi jdbi;
-    private DropwizardAppExtension<WebhooksConfiguration> dropwizardAppExtension;
+    private DropwizardAppExtension<WebhooksConfig> dropwizardAppExtension;
 
     public AppWithPostgresExtension() {
         this(new ConfigOverride[0]);
@@ -77,7 +77,7 @@ public class AppWithPostgresExtension implements BeforeAllCallback, AfterAllCall
         return newConfigOverride.toArray(new ConfigOverride[0]);
     }
 
-    public DropwizardAppExtension<WebhooksConfiguration> getAppRule() {
+    public DropwizardAppExtension<WebhooksConfig> getAppRule() {
         return dropwizardAppExtension;
     }
 
