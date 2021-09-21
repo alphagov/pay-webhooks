@@ -21,8 +21,9 @@ public class HealthCheckResourceIT {
                 .get("healthcheck")
                 .then()
                 .statusCode(200)
-                .body("[0].deadlocks.healthy", equalTo(true))
-                .body("[1].ping.healthy", equalTo(true));
+                .body("[0].database.healthy", equalTo(true))
+                .body("[1].deadlocks.healthy", equalTo(true))
+                .body("[2].ping.healthy", equalTo(true));
     }
 
 }

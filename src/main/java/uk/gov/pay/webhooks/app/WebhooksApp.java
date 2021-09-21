@@ -11,6 +11,7 @@ import uk.gov.pay.webhooks.healthcheck.HealthCheckResource;
 import uk.gov.pay.webhooks.healthcheck.Ping;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import uk.gov.service.payments.commons.utils.healthchecks.DatabaseHealthCheck;
 
 public class WebhooksApp extends Application<WebhooksConfig> {
     public static void main(String[] args) throws Exception {
@@ -23,7 +24,7 @@ public void run(WebhooksConfig configuration,
         final Injector injector = Guice.createInjector(new WebhooksModule(configuration, environment));
 
         environment.healthChecks().register("ping", new Ping());
-
+        environment.healthChecks().register("database", new DatabaseHealthCheck(configuration.getDataSourceFactory()));
         environment.jersey().register(injector.getInstance(HealthCheckResource.class));
     }
 

@@ -31,7 +31,6 @@ public class PostgresTestDocker {
 
                 container.start();
 
-                //todo: add DB health check
                 Thread.sleep(5000);
                 createDatabase(DB_NAME);
             }
