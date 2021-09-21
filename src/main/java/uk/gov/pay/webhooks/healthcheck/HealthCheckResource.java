@@ -22,7 +22,7 @@ public class HealthCheckResource {
     }
 
     @GET
-    @Path("/")
+    @Path("healthcheck")
     @Produces(APPLICATION_JSON)
     public Response healthCheck() {
         var ok = Map.of("healthy", "true");
