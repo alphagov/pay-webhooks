@@ -2,3 +2,10 @@ logging:
   level: INFO
   loggers:
     uk.gov.pay: DEBUG
+
+jpa:
+  jpaLoggingLevel: ${JPA_LOG_LEVEL:-WARNING}
+  sqlLoggingLevel: ${JPA_SQL_LOG_LEVEL:-WARNING}
+  ddlGenerationOutputMode: database
+  queryResultsCache: false
+  cacheSharedDefault: false

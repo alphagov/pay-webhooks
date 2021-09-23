@@ -1,7 +1,7 @@
-package uk.gov.pay.webhooks.webhook.jpa.converter;
+package uk.gov.pay.webhooks.webhook.converter;
 
-import jakarta.persistence.AttributeConverter;
-import jakarta.persistence.Converter;
+import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
 
 import java.time.Instant;
 import java.time.LocalDateTime;

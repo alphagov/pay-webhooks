@@ -89,7 +89,7 @@
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.jpa</artifactId>
-            <version>3.0.2</version> <!-- Let’s see if version 3 works -->
+            <version>2.7.7</version> <!-- Let’s see if version 3 works -->
             <scope>compile</scope>
         </dependency>
         <dependency>

@@ -11,6 +11,7 @@ import uk.gov.pay.webhooks.healthcheck.HealthCheckResource;
 import uk.gov.pay.webhooks.healthcheck.Ping;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import uk.gov.pay.webhooks.webhook.WebhookResource;
 import uk.gov.service.payments.commons.utils.healthchecks.DatabaseHealthCheck;
 
 public class WebhooksApp extends Application<WebhooksConfig> {
@@ -26,6 +27,7 @@ public void run(WebhooksConfig configuration,
         environment.healthChecks().register("ping", new Ping());
         environment.healthChecks().register("database", new DatabaseHealthCheck(configuration.getDataSourceFactory()));
         environment.jersey().register(injector.getInstance(HealthCheckResource.class));
+        environment.jersey().register(injector.getInstance(WebhookResource.class));
     }
 
     @Override
