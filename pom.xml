@@ -19,6 +19,7 @@
         <dropwizard.version>2.0.25</dropwizard.version>
         <liquibase.version>4.4.3</liquibase.version>
         <jackson.version>2.12.5</jackson.version>
+        <guice.version>5.0.1</guice.version>
         <junit5.version>5.8.0</junit5.version>
         <testcontainers.version>1.16.0</testcontainers.version>
         <pay-java-commons.version>1.0.20210914101116</pay-java-commons.version>
@@ -62,7 +63,12 @@
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
-            <version>5.0.1</version>
+            <version>${guice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject.extensions</groupId>
+            <artifactId>guice-persist</artifactId>
+            <version>${guice.version}</version>
         </dependency>
         <dependency>
             <groupId>org.liquibase</groupId>
@@ -79,6 +85,17 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>42.2.23</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>org.eclipse.persistence.jpa</artifactId>
+            <version>3.0.2</version> <!-- Let’s see if version 3 works -->
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.service.payments</groupId>
+            <artifactId>model</artifactId>
+            <version>${pay-java-commons.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.service.payments</groupId>
@@ -117,6 +134,12 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit5.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit5.version}</version>
             <scope>test</scope>
         </dependency>
@@ -183,10 +206,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M5</version>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.2.0</version>
@@ -221,8 +240,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-
         </plugins>
     </build>
 </project>
