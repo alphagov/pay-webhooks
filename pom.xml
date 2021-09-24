@@ -23,6 +23,8 @@
         <testcontainers.version>1.16.0</testcontainers.version>
         <pay-java-commons.version>1.0.20210914101116</pay-java-commons.version>
         <mainClass>uk.gov.pay.webhooks.app.WebhooksApp</mainClass>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <dependencyManagement>
@@ -60,8 +62,18 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-hibernate</artifactId>
+            <version>${dropwizard.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
+            <version>5.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject.extensions</groupId>
+            <artifactId>guice-persist</artifactId>
             <version>5.0.1</version>
         </dependency>
         <dependency>
@@ -83,6 +95,11 @@
         <dependency>
             <groupId>uk.gov.service.payments</groupId>
             <artifactId>utils</artifactId>
+            <version>${pay-java-commons.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.service.payments</groupId>
+            <artifactId>model</artifactId>
             <version>${pay-java-commons.version}</version>
         </dependency>
         <!-- test dependencies -->
