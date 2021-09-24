@@ -13,7 +13,7 @@ import io.dropwizard.setup.Environment;
 import uk.gov.pay.webhooks.healthcheck.HealthCheckResource;
 import uk.gov.pay.webhooks.healthcheck.Ping;
 import uk.gov.pay.webhooks.webhook.WebhookResource;
-import uk.gov.pay.webhooks.webhook.entity.WebhookEntity;
+import uk.gov.pay.webhooks.webhook.entity.Webhook;
 import uk.gov.service.payments.commons.utils.healthchecks.DatabaseHealthCheck;
 
 public class WebhooksApp extends Application<WebhooksConfig> {
@@ -21,7 +21,7 @@ public class WebhooksApp extends Application<WebhooksConfig> {
         new WebhooksApp().run(args);
     }
     
-    private HibernateBundle<WebhooksConfig> hibernate = new HibernateBundle<>(WebhookEntity.class) {
+    private HibernateBundle<WebhooksConfig> hibernate = new HibernateBundle<>(Webhook.class) {
         @Override
         public DataSourceFactory getDataSourceFactory(WebhooksConfig configuration) {
             return configuration.getDataSourceFactory();
