@@ -1,6 +1,7 @@
-package uk.gov.pay.webhooks.webhook.entity;
+package uk.gov.pay.webhooks.webhook.dao.entity;
 
-import uk.gov.pay.webhooks.webhook.CreateWebhookRequest;
+import uk.gov.pay.webhooks.webhook.resource.CreateWebhookRequest;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -8,6 +9,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQuery;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import java.math.BigInteger;
@@ -15,44 +17,80 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Date;
 
+ 
+@NamedQuery(
+    name = WebhookEntity.GET_BY_EXTERNAL_ID,
+    query = "select p from WebhookEntity p where externalId = :externalId"
+)
 @Entity
 @SequenceGenerator(name="webhooks_id_seq", sequenceName = "webhooks_id_seq", allocationSize = 1)
 @Table(name = "webhooks")
 public class WebhookEntity {
+    public static final String GET_BY_EXTERNAL_ID = "Webhook.get_webhook_by_external_id";
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "webhooks_id_seq")
     private Long id;
-
+    
     @Column(name = "created_date")
     private Date createdDate;
-
+    
     @Column(name = "external_id")
     private String externalId;
-
+    
     @Column(name = "service_id")
     private String serviceId;
-
+    
     private boolean live;
-
+    
     @Column(name = "callback_url")
     private String callbackUrl;
-
+    
     private String description;
 
+    
     @Enumerated(EnumType.STRING)
     private WebhookStatus status;
 
     public static WebhookEntity from(CreateWebhookRequest createWebhookRequest) {
         var entity = new WebhookEntity();
-        entity.setDescription(createWebhookRequest.getDescription());
-        entity.setCallbackUrl(createWebhookRequest.getCallbackUrl());
-        entity.setServiceId(createWebhookRequest.getServiceId());
-        entity.setLive(createWebhookRequest.isLive());
+        entity.setDescription(createWebhookRequest.description());
+        entity.setCallbackUrl(createWebhookRequest.callbackUrl());
+        entity.setServiceId(createWebhookRequest.serviceId());
+        entity.setLive(createWebhookRequest.live());
         entity.setCreatedDate(Date.from(Instant.now()));
         entity.setStatus(WebhookStatus.ACTIVE);
         entity.setExternalId(new BigInteger(130, new SecureRandom()).toString(32));
         return entity;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public String getServiceId() {
+        return serviceId;
+    }
+
+    public boolean isLive() {
+        return live;
+    }
+
+    public String getCallbackUrl() {
+        return callbackUrl;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public WebhookStatus getStatus() {
+        return status;
     }
 
     private void setExternalId(String externalId) {
@@ -82,9 +120,4 @@ public class WebhookEntity {
     public void setCreatedDate(Date instant) {
         this.createdDate = instant;
     }
-
-    public Long getId() {
-        return id;
-    }
-
 }

@@ -1,4 +1,4 @@
-package uk.gov.pay.webhooks.webhook.entity;
+package uk.gov.pay.webhooks.webhook.dao.entity;
 
 public enum WebhookStatus {
 
