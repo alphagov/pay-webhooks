@@ -4,7 +4,7 @@
 
 CREATE table webhooks (
     id SERIAL PRIMARY KEY,
-    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     external_id VARCHAR(30) NOT NULL,
     service_id VARCHAR(30) NOT NULL,
     live BOOLEAN NOT NULL,

@@ -23,7 +23,8 @@ public class HealthCheckResourceIT {
                 .statusCode(200)
                 .body("[0].database.healthy", equalTo(true))
                 .body("[1].deadlocks.healthy", equalTo(true))
-                .body("[2].ping.healthy", equalTo(true));
+                .body("[2].hibernate.healthy", equalTo(true))
+                .body("[3].ping.healthy", equalTo(true));
     }
 
 }
