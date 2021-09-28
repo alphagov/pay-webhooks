@@ -3,16 +3,25 @@ package uk.gov.pay.webhooks.webhook;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-// responsible for: 
-// - jackson serialiation/ validation from query params (POST BODY)
-// - providing data for the entity to construct itself FROM (creation)
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class WebhookDTO {
+public class CreateWebhookRequest { 
+    @NotEmpty
+    @Size(max = 30)
     private String serviceId;
-    private String callbackUrl;
-    private boolean live;
-    private String description;
+
+    @NotNull
+    private Boolean live;
     
+    @NotEmpty
+    @Size(max = 2048)
+    private String callbackUrl;
+    
+    private String description;
+
     public String getServiceId() {
         return serviceId;
     }

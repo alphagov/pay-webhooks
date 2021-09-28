@@ -1,7 +1,6 @@
 package uk.gov.pay.webhooks.webhook.entity;
 
-import uk.gov.pay.webhooks.webhook.WebhookDTO;
-
+import uk.gov.pay.webhooks.webhook.CreateWebhookRequest;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -44,12 +43,12 @@ public class WebhookEntity {
     @Enumerated(EnumType.STRING)
     private WebhookStatus status;
 
-    public static WebhookEntity from(WebhookDTO webhookDTO) {
+    public static WebhookEntity from(CreateWebhookRequest createWebhookRequest) {
         var entity = new WebhookEntity();
-        entity.setDescription(webhookDTO.getDescription());
-        entity.setCallbackUrl(webhookDTO.getCallbackUrl());
-        entity.setServiceId(webhookDTO.getServiceId());
-        entity.setLive(webhookDTO.isLive());
+        entity.setDescription(createWebhookRequest.getDescription());
+        entity.setCallbackUrl(createWebhookRequest.getCallbackUrl());
+        entity.setServiceId(createWebhookRequest.getServiceId());
+        entity.setLive(createWebhookRequest.isLive());
         entity.setCreatedDate(Date.from(Instant.now()));
         entity.setStatus(WebhookStatus.ACTIVE);
         entity.setExternalId(new BigInteger(130, new SecureRandom()).toString(32));
