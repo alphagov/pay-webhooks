@@ -5,9 +5,12 @@ import uk.gov.pay.webhooks.webhook.entity.WebhookEntity;
 import uk.gov.pay.webhooks.webhook.entity.dao.WebhookDao;
 
 import javax.inject.Inject;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 @Path("/v1/webhook")
 public class WebhookResource {
@@ -21,7 +24,8 @@ public class WebhookResource {
     
     @UnitOfWork
     @POST
-    public long createWebhook(@NotNull WebhookDTO webhookRequest) {
+    @Produces(MediaType.APPLICATION_JSON)
+    public long createWebhook(@NotNull @Valid CreateWebhookRequest webhookRequest) {
         var webhook = WebhookEntity.from(webhookRequest);
         return webhookDao.create(webhook);
     }
