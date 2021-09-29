@@ -1,16 +1,16 @@
-package uk.gov.pay.webhooks.webhook;
+package uk.gov.pay.webhooks.webhook.resource;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import uk.gov.pay.extension.AppWithPostgresExtension;
 
 import javax.ws.rs.core.Response;
-
 import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 
 
 public class WebhookResourceIT {
@@ -25,7 +25,8 @@ public class WebhookResourceIT {
                   "service_id": "test_service_id",
                   "live": true,
                   "callback_url": "https://example.com",
-                  "description": "description"
+                  "description": "description",
+                  "subscriptions": ["card_payment_captured"]
                 }
                 """;
 
@@ -40,6 +41,7 @@ public class WebhookResourceIT {
                 .body("callback_url", is("https://example.com"))
                 .body("description", is("description"))
                 .body("status", is("ACTIVE"))
+                .body("subscriptions", containsInAnyOrder("card_payment_captured"))
                 .extract()
                 .as(Map.class);
         
@@ -54,6 +56,7 @@ public class WebhookResourceIT {
                 .body("live", is(true))
                 .body("callback_url", is("https://example.com"))
                 .body("description", is("description"))
-                .body("status", is("ACTIVE"));
+                .body("status", is("ACTIVE"))
+                .body("subscriptions", containsInAnyOrder("card_payment_captured"));
     }
 }

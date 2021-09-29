@@ -1,13 +1,12 @@
-package uk.gov.pay.webhooks.webhook;
+package uk.gov.pay.webhooks.webhook.resource;
 
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.dropwizard.testing.junit5.ResourceExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
+import uk.gov.pay.webhooks.webhook.WebhookService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
-import uk.gov.pay.webhooks.webhook.resource.WebhookResource;
 
 import javax.ws.rs.client.Entity;
 import java.time.Instant;
@@ -23,11 +22,11 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(DropwizardExtensionsSupport.class)
 public class WebhookResourceTest {
-   WebhookDao webhookDao = mock(WebhookDao.class);
+   WebhookService webhookService = mock(WebhookService.class);
    String existingWebhookId = "existing_webhook_id";
 
     public final ResourceExtension resources = ResourceExtension.builder()
-            .addResource(new WebhookResource(webhookDao))
+            .addResource(new WebhookResource(webhookService))
             .build();
     
     WebhookEntity webhook;
@@ -40,7 +39,7 @@ public class WebhookResourceTest {
 
     @Test
     public void createWebhookWithValidParams() {
-        when(webhookDao.create(any(WebhookEntity.class))).thenReturn(webhook);
+        when(webhookService.createWebhook(any(CreateWebhookRequest.class))).thenReturn(webhook);
         var json = """
                 {
                     "service_id": "some-service-id",
@@ -59,7 +58,7 @@ public class WebhookResourceTest {
 
     @Test
     public void createWebhookWithMissingParamsRejected() {
-        when(webhookDao.create(any(WebhookEntity.class))).thenReturn(webhook);
+        when(webhookService.createWebhook(any(CreateWebhookRequest.class))).thenReturn(webhook);
         var response = resources
                 .target("/v1/webhook")
                 .request()
@@ -70,7 +69,7 @@ public class WebhookResourceTest {
 
     @Test
     public void createWebhookWithTooLongParamsRejected() {
-        when(webhookDao.create(any(WebhookEntity.class))).thenReturn(webhook);
+        when(webhookService.createWebhook(any(CreateWebhookRequest.class))).thenReturn(webhook);
         var json = """
                 {
                     "service_id": "some-service-id-that-is-way-toooooo-loooooooong",
@@ -87,8 +86,27 @@ public class WebhookResourceTest {
     }
     
     @Test
+    public void createWebhookWithNonExistentEventTypeNameRejected() {
+        when(webhookService.createWebhook(any(CreateWebhookRequest.class))).thenReturn(webhook);
+        var json = """
+                {
+                    "service_id": "some-service-id",
+                    "callback_url": "https://some-callback-url.com",
+                    "live": true,
+                    "subscriptions": ["nonexistent_event_type_name"]
+                }
+                """;
+        var response = resources
+                .target("/v1/webhook")
+                .request()
+                .post(Entity.json(json));
+
+        assertThat(response.getStatus(), is(400));
+    }
+    
+    @Test
     public void getWebhookByIdWhenWebhookExists() {
-        when(webhookDao.findByExternalId(eq(existingWebhookId))).thenReturn(Optional.of(webhook));
+        when(webhookService.findByExternalId(eq(existingWebhookId))).thenReturn(Optional.of(webhook));
         
         var response = resources
                 .target("/v1/webhook/%s".formatted(existingWebhookId))
@@ -100,7 +118,7 @@ public class WebhookResourceTest {
     
     @Test
     public void getWebhookByIdWhenDoesNotExist404() {
-        when(webhookDao.findByExternalId(any(String.class))).thenReturn(Optional.empty());
+        when(webhookService.findByExternalId(any(String.class))).thenReturn(Optional.empty());
         
         var response = resources
                 .target("/v1/webhook/%s".formatted("aint_no_webhook"))
