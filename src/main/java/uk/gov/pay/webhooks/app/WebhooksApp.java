@@ -12,8 +12,8 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import uk.gov.pay.webhooks.healthcheck.HealthCheckResource;
 import uk.gov.pay.webhooks.healthcheck.Ping;
-import uk.gov.pay.webhooks.webhook.WebhookResource;
-import uk.gov.pay.webhooks.webhook.entity.WebhookEntity;
+import uk.gov.pay.webhooks.webhook.resource.WebhookResource;
+import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 import uk.gov.service.payments.commons.utils.healthchecks.DatabaseHealthCheck;
 
 public class WebhooksApp extends Application<WebhooksConfig> {
