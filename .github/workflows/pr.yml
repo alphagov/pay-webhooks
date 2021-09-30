@@ -1,19 +1,12 @@
-name: Github Actions Tests
+name: Test Pull Request
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
+on: pull_request
 
 permissions:
   contents: read
-
 jobs:
-  integration-tests:
-    name: Integration tests
+  test:
     runs-on: ubuntu-18.04
-
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 17
@@ -27,5 +20,11 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-      - name: Run integration tests
+      - name: Run tests
         run: mvn clean verify
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: target
+          path: target
+          retention-days: 5
