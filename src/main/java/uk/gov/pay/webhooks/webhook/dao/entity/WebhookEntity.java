@@ -1,7 +1,9 @@
 package uk.gov.pay.webhooks.webhook.dao.entity;
 
+import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.resource.CreateWebhookRequest;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -9,15 +11,21 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
- 
+
 @NamedQuery(
     name = WebhookEntity.GET_BY_EXTERNAL_ID,
     query = "select p from WebhookEntity p where externalId = :externalId"
@@ -47,6 +55,12 @@ public class WebhookEntity {
     private String callbackUrl;
     
     private String description;
+    
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinTable(name="webhook_subscriptions",
+            joinColumns=@JoinColumn(name="webhook_id", referencedColumnName="id"),
+            inverseJoinColumns=@JoinColumn(name="event_type_id", referencedColumnName="id"))
+    Set<EventTypeEntity> subscriptions = new HashSet<>();
 
     
     @Enumerated(EnumType.STRING)
@@ -93,6 +107,10 @@ public class WebhookEntity {
         return status;
     }
 
+    public Set<EventTypeEntity> getSubscriptions() {
+        return subscriptions;
+    }
+
     private void setExternalId(String externalId) {
         this.externalId = externalId;
     }
@@ -119,5 +137,13 @@ public class WebhookEntity {
 
     public void setCreatedDate(Date instant) {
         this.createdDate = instant;
+    }
+
+    public void addSubscription(EventTypeEntity eventTypeEntity) {
+        this.subscriptions.add(eventTypeEntity);
+    }
+
+    public void addSubscriptions(List<EventTypeEntity> subscriptions) {
+        subscriptions.forEach(this::addSubscription);
     }
 }
