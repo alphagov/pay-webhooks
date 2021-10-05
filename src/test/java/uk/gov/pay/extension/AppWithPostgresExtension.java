@@ -1,5 +1,6 @@
 package uk.gov.pay.extension;
 
+import com.amazonaws.services.sqs.AmazonSQS;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.junit5.DropwizardAppExtension;
 import org.jdbi.v3.core.Jdbi;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.pay.rule.SqsTestDocker;
 import uk.gov.pay.webhooks.app.WebhooksApp;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
 
@@ -25,6 +27,8 @@ public class AppWithPostgresExtension implements BeforeAllCallback, AfterAllCall
 
     private static String CONFIG_PATH = resourceFilePath("config/test-config.yaml");
     private final Jdbi jdbi;
+    private AmazonSQS sqsClient;
+
     private DropwizardAppExtension<WebhooksConfig> dropwizardAppExtension;
 
     public AppWithPostgresExtension() {
@@ -33,6 +37,7 @@ public class AppWithPostgresExtension implements BeforeAllCallback, AfterAllCall
 
     public AppWithPostgresExtension(ConfigOverride... configOverrides) {
         getOrCreate();
+        sqsClient = SqsTestDocker.initialise("event-queue");
 
 
         ConfigOverride[] newConfigOverrides = overrideDatabaseConfig(configOverrides);
@@ -74,6 +79,8 @@ public class AppWithPostgresExtension implements BeforeAllCallback, AfterAllCall
 
     private ConfigOverride[] overrideSqsConfig(ConfigOverride[] configOverrides) {
         List<ConfigOverride> newConfigOverride = newArrayList(configOverrides);
+        newConfigOverride.add(config("sqsConfig.eventQueueUrl", SqsTestDocker.getQueueUrl("event-queue")));
+        newConfigOverride.add(config("sqsConfig.endpoint", SqsTestDocker.getEndpoint()));
         return newConfigOverride.toArray(new ConfigOverride[0]);
     }
 
@@ -84,7 +91,11 @@ public class AppWithPostgresExtension implements BeforeAllCallback, AfterAllCall
     public Jdbi getJdbi() {
         return jdbi;
     }
-    
+
+    public AmazonSQS getSqsClient() {
+        return sqsClient;
+    }
+
 }
 
 

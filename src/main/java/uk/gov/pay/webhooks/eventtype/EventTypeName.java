@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 public enum EventTypeName {
     @JsonProperty("card_payment_captured")
-    CARD_PAYMENT_CAPTURED("card_payment_captured");
+    PAYMENT_CAPTURED("card_payment_captured");
     
     private final String name;
     

@@ -37,8 +37,8 @@ class WebhookServiceTest {
 
     @Test
     public void shouldCallWebhookDaoWithAllSetAttributes() {
-        EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
-        when(eventTypeDao.findByName(eq(EventTypeName.CARD_PAYMENT_CAPTURED)))
+        EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.PAYMENT_CAPTURED);
+        when(eventTypeDao.findByName(eq(EventTypeName.PAYMENT_CAPTURED)))
                 .thenReturn(Optional.of(eventTypeEntity));
         
         var createWebhookRequest = new CreateWebhookRequest(
@@ -46,7 +46,7 @@ class WebhookServiceTest {
                 live,
                 callbackUrl,
                 description,
-                List.of(EventTypeName.CARD_PAYMENT_CAPTURED)
+                List.of(EventTypeName.PAYMENT_CAPTURED)
         );
 
         webhookService.createWebhook(createWebhookRequest);

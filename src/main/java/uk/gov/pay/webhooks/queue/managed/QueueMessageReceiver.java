@@ -1,8 +1,12 @@
 package uk.gov.pay.webhooks.queue.managed;
 
 import com.google.inject.Inject;
+import io.dropwizard.hibernate.UnitOfWork;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.context.internal.ManagedSessionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
@@ -20,14 +24,17 @@ public class QueueMessageReceiver implements Managed {
 
     private ScheduledExecutorService scheduledExecutorService;
     private EventMessageHandler eventMessageHandler;
+    private SessionFactory sessionFactory;
 
     @Inject
     public QueueMessageReceiver(
             Environment environment,
             WebhooksConfig configuration,
-            EventMessageHandler eventMessageHandler) {
+            EventMessageHandler eventMessageHandler,
+            SessionFactory sessionFactory) {
         this.eventMessageHandler = eventMessageHandler;
         this.queueReadScheduleNumberOfThreads = 1;
+        this.sessionFactory = sessionFactory;
 
         scheduledExecutorService = environment
                 .lifecycle()
@@ -53,10 +60,14 @@ public class QueueMessageReceiver implements Managed {
 
     private void receive() {
         LOGGER.info("Queue message receiver thread polling queue");
-        try {
+        Session session = sessionFactory.openSession();
+        try (session) {
+            ManagedSessionContext.bind(session);
             eventMessageHandler.handle();
         } catch (Exception e) {
             LOGGER.error("Queue message receiver thread exception", e);
+        } finally {
+            ManagedSessionContext.unbind(sessionFactory);
         }
     }
 

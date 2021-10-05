@@ -8,8 +8,11 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import io.dropwizard.hibernate.HibernateBundle;
+import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.setup.Environment;
 import org.hibernate.SessionFactory;
+import uk.gov.pay.webhooks.queue.EventMessageHandler;
+import uk.gov.pay.webhooks.queue.managed.QueueMessageReceiver;
 
 public class WebhooksModule extends AbstractModule {
     private final WebhooksConfig configuration;

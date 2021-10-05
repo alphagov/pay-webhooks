@@ -31,3 +31,13 @@ database:
 
   # the minimum amount of time an connection must sit idle in the pool before it is eligible for eviction
   minIdleTime: 1 minute
+sqsConfig:
+  nonStandardServiceEndpoint: ${AWS_SQS_NON_STANDARD_SERVICE_ENDPOINT:-true}
+  endpoint: ${AWS_SQS_ENDPOINT:-}
+  region: ${AWS_SQS_REGION:-region-1}
+  secretKey: ${AWS_SECRET_KEY:-x}
+  accessKey: ${AWS_ACCESS_KEY:-x}
+  eventQueueUrl: ${AWS_SQS_PAYMENT_EVENT_QUEUE_URL}
+  messageMaximumWaitTimeInSeconds: ${AWS_SQS_MESSAGE_MAXIMUM_WAIT_TIME_IN_SECONDS:-20}
+  messageMaximumBatchSize: ${AWS_SQS_MESSAGE_MAXIMUM_BATCH_SIZE:-10}
+

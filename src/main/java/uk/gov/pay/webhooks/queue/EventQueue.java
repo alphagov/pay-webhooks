@@ -56,9 +56,9 @@ public class EventQueue {
             return EventMessage.of(eventDto, queueMessage);
         } catch (IOException e) {
             LOGGER.warn(
-                    "There was an exception parsing message [messageId={}] into an [{}]",
+                    "There was an exception parsing message [messageId={}] into an [{}] {}",
                     queueMessage.getMessageId(),
-                    EventMessage.class);
+                    EventMessage.class, e.getMessage());
 
             return null;
         }
