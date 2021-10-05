@@ -13,6 +13,7 @@ import io.dropwizard.setup.Environment;
 import uk.gov.pay.webhooks.healthcheck.HealthCheckResource;
 import uk.gov.pay.webhooks.healthcheck.Ping;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
+import uk.gov.pay.webhooks.queue.managed.QueueMessageReceiver;
 import uk.gov.pay.webhooks.webhook.resource.WebhookResource;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 import uk.gov.service.payments.commons.utils.healthchecks.DatabaseHealthCheck;
@@ -41,6 +42,8 @@ public class WebhooksApp extends Application<WebhooksConfig> {
         environment.healthChecks().register("database", new DatabaseHealthCheck(configuration.getDataSourceFactory()));
         environment.jersey().register(injector.getInstance(HealthCheckResource.class));
         environment.jersey().register(injector.getInstance(WebhookResource.class));
+        environment.lifecycle().manage(injector.getInstance(QueueMessageReceiver.class));
+
     }
 
     @Override

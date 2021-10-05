@@ -3,6 +3,7 @@ package uk.gov.pay.webhooks.app;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
+import uk.gov.pay.webhooks.app.config.SqsConfig;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -11,6 +12,11 @@ public class WebhooksConfig extends Configuration {
     @Valid
     @NotNull
     private DataSourceFactory database = new DataSourceFactory();
+    
+    @Valid
+    @NotNull
+    @JsonProperty("sqsConfig")
+    private SqsConfig sqsConfig;
 
     @JsonProperty("database")
     public DataSourceFactory getDataSourceFactory() {
@@ -20,5 +26,10 @@ public class WebhooksConfig extends Configuration {
     @JsonProperty("database")
     public void setDataSourceFactory(DataSourceFactory dataSourceFactory) {
         this.database = dataSourceFactory;
+    }
+    
+    @JsonProperty("sqs")
+    public SqsConfig getSqsConfig() {
+        return sqsConfig;
     }
 }

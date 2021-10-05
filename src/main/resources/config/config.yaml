@@ -1,3 +1,7 @@
+server:
+  applicationConnectors:
+    - type: http
+      port: ${PORT:-8080}
 logging:
   level: INFO
   loggers:
@@ -7,6 +11,10 @@ database:
   user: ${DB_USER}
   password: ${DB_PASSWORD}
   url: jdbc:postgresql://${DB_HOST}:5432/webhooks?sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory&${DB_SSL_OPTION}
+
+  properties:
+    charSet: UTF-8
+    hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
 
   # the maximum amount of time to wait on an empty pool before throwing an exception
   maxWaitForConnection: 1s
@@ -31,3 +39,12 @@ database:
 
   # the minimum amount of time an connection must sit idle in the pool before it is eligible for eviction
   minIdleTime: 1 minute
+sqsConfig:
+  nonStandardServiceEndpoint: ${AWS_SQS_NON_STANDARD_SERVICE_ENDPOINT:-false}
+  endpoint: ${AWS_SQS_ENDPOINT:-}
+  region: ${AWS_SQS_REGION}
+  secretKey: ${AWS_SECRET_KEY}
+  accessKey: ${AWS_ACCESS_KEY}
+  eventQueueUrl: ${AWS_SQS_PAYMENT_EVENT_QUEUE_URL}
+  messageMaximumWaitTimeInSeconds: ${AWS_SQS_MESSAGE_MAXIMUM_WAIT_TIME_IN_SECONDS:-20}
+  messageMaximumBatchSize: ${AWS_SQS_MESSAGE_MAXIMUM_BATCH_SIZE:-10}
