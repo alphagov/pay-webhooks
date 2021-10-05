@@ -38,7 +38,7 @@ public class EventQueue {
                 .stream()
                 .map(this::getMessage)
                 .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public void markMessageAsProcessed(EventMessage message) throws QueueException {
