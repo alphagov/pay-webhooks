@@ -38,5 +38,10 @@ public class WebhookService {
 
     public Optional<WebhookEntity> findByExternalId(String externalId) {
         return webhookDao.findByExternalId(externalId);
+    }    
+    
+    public void deleteWebhook(String externalId) {
+        webhookDao.deleteByExternalId(externalId);
+        
     }
 }

@@ -5,6 +5,7 @@ import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
 import java.util.Optional;
 
 public class WebhookDao extends AbstractDAO<WebhookEntity> {
@@ -17,6 +18,12 @@ public class WebhookDao extends AbstractDAO<WebhookEntity> {
     public WebhookEntity create(WebhookEntity webhook) {
         persist(webhook);
         return webhook;
+    }
+
+    public void deleteByExternalId(String externalId) {
+        Optional<WebhookEntity> webhookEntity = findByExternalId(externalId);
+        var we = webhookEntity.orElseThrow(NotFoundException::new);
+        currentSession().remove(we);
     }
 
     public Optional<WebhookEntity> findByExternalId(String webhookExternalId) {

@@ -127,4 +127,16 @@ public class WebhookResourceTest {
 
         assertThat(response.getStatus(), is(404));
     }
+    
+    @Test
+    public void deleteWebhook(){
+        when(webhookService.findByExternalId(eq(existingWebhookId))).thenReturn(Optional.of(webhook));
+        
+        var deleteResponse = resources.target("/v1/webhook/%s".formatted(existingWebhookId))
+                .request()
+                .delete();
+
+        assertThat(deleteResponse.getStatus(), is(204));
+        
+    }
 }

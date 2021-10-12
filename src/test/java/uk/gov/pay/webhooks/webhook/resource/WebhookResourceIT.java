@@ -58,5 +58,15 @@ public class WebhookResourceIT {
                 .body("description", is("description"))
                 .body("status", is("ACTIVE"))
                 .body("subscriptions", containsInAnyOrder("card_payment_captured"));
+    
+        given().port(port)
+                .delete("/v1/webhook/%s".formatted(externalId))
+                .then()
+                .statusCode(Response.Status.NO_CONTENT.getStatusCode());
+        
+        
+        
     }
+    
+    
 }
