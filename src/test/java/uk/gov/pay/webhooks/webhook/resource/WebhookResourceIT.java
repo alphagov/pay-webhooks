@@ -35,7 +35,7 @@ public class WebhookResourceIT {
                 .body(json)
                 .post("/v1/webhook")
                 .then()
-                .statusCode(Response.Status.OK.getStatusCode())
+                .statusCode(Response.Status.CREATED.getStatusCode())
                 .body("service_id", is("test_service_id"))
                 .body("live", is(true))
                 .body("callback_url", is("https://example.com"))

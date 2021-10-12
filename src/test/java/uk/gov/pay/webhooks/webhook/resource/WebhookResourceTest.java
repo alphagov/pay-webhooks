@@ -9,6 +9,7 @@ import uk.gov.pay.webhooks.webhook.WebhookService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Response;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
@@ -53,7 +54,7 @@ public class WebhookResourceTest {
                 .request()
                 .post(Entity.json(json));
 
-        assertThat(response.getStatus(), is(200));
+        assertThat(response.getStatus(), is(Response.Status.CREATED.getStatusCode()));
     }
 
     @Test

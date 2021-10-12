@@ -14,7 +14,9 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
 
+import static javax.servlet.http.HttpServletResponse.SC_CREATED;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Path("/v1/webhook")
@@ -31,9 +33,9 @@ public class WebhookResource {
     
     @UnitOfWork
     @POST
-    public WebhookResponse createWebhook(@NotNull @Valid CreateWebhookRequest webhookRequest) {
+    public Response createWebhook(@NotNull @Valid CreateWebhookRequest webhookRequest) {
         WebhookEntity webhookEntity = webhookService.createWebhook(webhookRequest);
-        return WebhookResponse.from(webhookEntity);
+        return Response.status(SC_CREATED).entity(WebhookResponse.from(webhookEntity)).build();
     }
     
     @UnitOfWork
