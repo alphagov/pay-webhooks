@@ -46,10 +46,11 @@ public class WebhookResourceIT {
                 .as(Map.class);
         
         var externalId = response.get("external_id");
+        var serviceId = response.get("service_id");
         
         given().port(port)
                 .contentType(JSON)
-                .get("/v1/webhook/%s".formatted(externalId))
+                .get("/v1/webhook/%s?service_id=%s".formatted(externalId, serviceId))
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("service_id", is("test_service_id"))
