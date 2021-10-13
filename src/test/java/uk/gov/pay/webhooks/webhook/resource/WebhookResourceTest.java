@@ -1,7 +1,10 @@
 package uk.gov.pay.webhooks.webhook.resource;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.dropwizard.testing.junit5.ResourceExtension;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,10 +13,17 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import javax.ws.rs.client.Entity;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayWithSize;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -153,6 +163,49 @@ public class WebhookResourceTest {
                 .request()
                 .get();
 
+        assertThat(response.getStatus(), is(400));
+    }    
+    
+    @Test
+    public void getWebhooksReturnsListOfWebhooks() throws JsonProcessingException {
+        webhook.setServiceId("some-service-id");
+        when(webhookService.list(true, existingServiceId)).thenReturn((List.of(webhook, webhook)));
+        
+        var response = resources
+                .target("/v1/webhook")
+                .queryParam("live", true)
+                .queryParam("service_id", existingServiceId)
+                .request()
+                .get();
+        assertThat(response.getStatus(), is(200));
+        var responseList =  response.readEntity(ArrayList.class);
+        assertThat(responseList.size(), is(equalTo(2)));
+        var firstItem = (LinkedHashMap) responseList.get(0);
+        assertThat(firstItem.get("service_id"), is("some-service-id"));
+    }    
+    
+    @Test
+    public void getWebhooksReturnsEmptyListIfNoResults() {
+        when(webhookService.list(true, existingServiceId)).thenReturn((List.of()));
+        
+        var response = resources
+                .target("/v1/webhook")
+                .queryParam("live", true)
+                .queryParam("service_id", existingServiceId)
+                .request()
+                .get();
+        assertThat(response.getStatus(), is(200));
+        assertThat(response.readEntity(String.class), is("[]"));
+    }    
+    
+    @Test
+    public void getWebhooksRequestMissingParamsShould400() {
+        when(webhookService.list(true, existingServiceId)).thenReturn((List.of()));
+        
+        var response = resources
+                .target("/v1/webhook")
+                .request()
+                .get();
         assertThat(response.getStatus(), is(400));
     }
 }
