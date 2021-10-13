@@ -43,5 +43,50 @@ public class WebhookDaoTest {
         assertThat(persisted.getSubscriptions(), iterableWithSize(1));
         assertThat(persisted.getSubscriptions(), containsInAnyOrder(any(EventTypeEntity.class)));
         assertThat(persisted.getSubscriptions().iterator().next().getName(), is(EventTypeName.CARD_PAYMENT_CAPTURED));
+    }    
+    
+    @Test
+    public void returnsEmptyListIfNoWebhooksFound() {
+        assertThat(webhookDao.list(true, "not-real-service-id"), iterableWithSize(0));
     }
+    
+    @Test
+    public void returnsMatchingListOfWebhooks() {
+        database.inTransaction(() -> {
+            WebhookEntity webhookEntity = new WebhookEntity();
+            webhookEntity.setLive(true);
+            webhookEntity.setServiceId("real-service-id");
+            EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
+            webhookEntity.addSubscription(eventTypeEntity);
+            webhookDao.create(webhookEntity);
+            assertThat(webhookDao.list(true, "real-service-id"), iterableWithSize(1));
+        });
+    }
+
+    @Test
+    public void filtersWebhooksByLiveStatus() {
+        database.inTransaction(() -> {
+            WebhookEntity webhookEntity = new WebhookEntity();
+            webhookEntity.setLive(true);
+            webhookEntity.setServiceId("not-real-service-id");
+            EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
+            webhookEntity.addSubscription(eventTypeEntity);
+            webhookDao.create(webhookEntity);
+            assertThat(webhookDao.list(false, "not-real-service-id"), iterableWithSize(0));
+        });
+    }
+        
+    @Test
+    public void filtersWebhooksByServiceId() {
+        database.inTransaction(() -> {
+            WebhookEntity webhookEntity = new WebhookEntity();
+            webhookEntity.setLive(true);
+            webhookEntity.setServiceId("not-real-service-id");
+            EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
+            webhookEntity.addSubscription(eventTypeEntity);
+            webhookDao.create(webhookEntity);
+            assertThat(webhookDao.list(true, "real-service-id"), iterableWithSize(0));
+        });
+    }    
+    
 }
