@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 public class WebhookResourceTest {
    WebhookService webhookService = mock(WebhookService.class);
    String existingWebhookId = "existing_webhook_id";
+   String existingServiceId = "some-service-id";
 
     public final ResourceExtension resources = ResourceExtension.builder()
             .addResource(new WebhookResource(webhookService))
@@ -106,25 +107,52 @@ public class WebhookResourceTest {
     
     @Test
     public void getWebhookByIdWhenWebhookExists() {
-        when(webhookService.findByExternalId(eq(existingWebhookId))).thenReturn(Optional.of(webhook));
+        when(webhookService.findByExternalId(eq(existingWebhookId), eq(existingServiceId))).thenReturn(Optional.of(webhook));
+        
+        var response = resources
+                .target("/v1/webhook/%s".formatted(existingWebhookId))
+                .queryParam("service_id", existingServiceId)
+                .request()
+                .get();
+
+        assertThat(response.getStatus(), is(200));
+    }    
+    
+    @Test
+    public void getWebhookByIdWhenWebhookExistsAndServiceIdIncorrect404() {
+        when(webhookService.findByExternalId(eq(existingWebhookId), eq(existingServiceId))).thenReturn(Optional.of(webhook));
+        
+        var response = resources
+                .target("/v1/webhook/%s".formatted(existingWebhookId))
+                .queryParam("service_id", "aint-no-serviceid")
+                .request()
+                .get();
+
+        assertThat(response.getStatus(), is(404));
+    }
+    
+    @Test
+    public void getWebhookByIdWhenDoesNotExist404() {
+        when(webhookService.findByExternalId(any(String.class), any(String.class))).thenReturn(Optional.empty());
+        
+        var response = resources
+                .target("/v1/webhook/%s".formatted("aint_no_webhook"))
+                .queryParam("service_id", "aint_no_service_id")
+                .request()
+                .get();
+
+        assertThat(response.getStatus(), is(404));
+    }    
+    
+    @Test
+    public void getWebhookByIdWithoutServiceId400() {
+        when(webhookService.findByExternalId(eq(existingWebhookId), any(String.class))).thenReturn(Optional.of(webhook));
         
         var response = resources
                 .target("/v1/webhook/%s".formatted(existingWebhookId))
                 .request()
                 .get();
 
-        assertThat(response.getStatus(), is(200));
-    }
-    
-    @Test
-    public void getWebhookByIdWhenDoesNotExist404() {
-        when(webhookService.findByExternalId(any(String.class))).thenReturn(Optional.empty());
-        
-        var response = resources
-                .target("/v1/webhook/%s".formatted("aint_no_webhook"))
-                .request()
-                .get();
-
-        assertThat(response.getStatus(), is(404));
+        assertThat(response.getStatus(), is(400));
     }
 }
