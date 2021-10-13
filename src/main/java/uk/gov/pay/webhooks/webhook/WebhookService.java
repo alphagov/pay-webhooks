@@ -36,7 +36,7 @@ public class WebhookService {
         return webhookEntity;
     }
 
-    public Optional<WebhookEntity> findByExternalId(String externalId) {
-        return webhookDao.findByExternalId(externalId);
+    public Optional<WebhookEntity> findByExternalId(String externalId, String serviceId) {
+        return webhookDao.findByExternalId(externalId, serviceId);
     }
 }

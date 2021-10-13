@@ -27,14 +27,14 @@ import java.util.Set;
 
 
 @NamedQuery(
-    name = WebhookEntity.GET_BY_EXTERNAL_ID,
-    query = "select p from WebhookEntity p where externalId = :externalId"
+    name = WebhookEntity.GET_BY_EXTERNAL_ID_AND_SERVICE_ID,
+    query = "select p from WebhookEntity p where externalId = :externalId and serviceId = :serviceId"
 )
 @Entity
 @SequenceGenerator(name="webhooks_id_seq", sequenceName = "webhooks_id_seq", allocationSize = 1)
 @Table(name = "webhooks")
 public class WebhookEntity {
-    public static final String GET_BY_EXTERNAL_ID = "Webhook.get_webhook_by_external_id";
+    public static final String GET_BY_EXTERNAL_ID_AND_SERVICE_ID = "Webhook.get_webhook_by_external_id_and_service_id";
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "webhooks_id_seq")

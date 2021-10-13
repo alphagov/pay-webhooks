@@ -19,9 +19,10 @@ public class WebhookDao extends AbstractDAO<WebhookEntity> {
         return webhook;
     }
 
-    public Optional<WebhookEntity> findByExternalId(String webhookExternalId) {
-        return Optional.ofNullable(namedTypedQuery(WebhookEntity.GET_BY_EXTERNAL_ID)
+    public Optional<WebhookEntity> findByExternalId(String webhookExternalId, String serviceId) {
+        return Optional.ofNullable(namedTypedQuery(WebhookEntity.GET_BY_EXTERNAL_ID_AND_SERVICE_ID)
                 .setParameter("externalId", webhookExternalId)
+                .setParameter("serviceId", serviceId)
                 .getSingleResult());
     }
 }
