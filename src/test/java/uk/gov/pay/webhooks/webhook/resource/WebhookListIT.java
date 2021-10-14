@@ -24,7 +24,7 @@ public class WebhookListIT {
 
     @BeforeEach
     public void setUp() {
-        dbHelper = dbHelper.aDatabaseTestHelper(app.getJdbi());
+        dbHelper = DatabaseTestHelper.aDatabaseTestHelper(app.getJdbi());
         dbHelper.truncateAllData();
     }
 

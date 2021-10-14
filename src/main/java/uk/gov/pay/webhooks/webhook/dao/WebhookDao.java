@@ -28,9 +28,9 @@ public class WebhookDao extends AbstractDAO<WebhookEntity> {
     }
 
     public List<WebhookEntity> list(boolean live, String serviceId) {
-        return (namedTypedQuery(WebhookEntity.LIST_BY_LIVE_AND_SERVICE_ID)
+        return namedTypedQuery(WebhookEntity.LIST_BY_LIVE_AND_SERVICE_ID)
                 .setParameter("live", live)
                 .setParameter("serviceId", serviceId)
-                .getResultList());
+                .getResultList();
     }
 }

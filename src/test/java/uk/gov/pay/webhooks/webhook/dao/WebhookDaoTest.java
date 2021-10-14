@@ -5,6 +5,8 @@ import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
@@ -54,39 +56,50 @@ public class WebhookDaoTest {
     public void returnsMatchingListOfWebhooks() {
         database.inTransaction(() -> {
             WebhookEntity webhookEntity = new WebhookEntity();
+            
             webhookEntity.setLive(true);
             webhookEntity.setServiceId("real-service-id");
+            
             EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
             webhookEntity.addSubscription(eventTypeEntity);
+            
             webhookDao.create(webhookEntity);
-            assertThat(webhookDao.list(true, "real-service-id"), iterableWithSize(1));
         });
+        
+        assertThat(webhookDao.list(true, "real-service-id"), iterableWithSize(1));
+    }
+    
+    @ParameterizedTest
+    @CsvSource({"false, false,1", "true, false, 0"})
+    public void filtersWebhooksByLiveStatus(boolean setLive, boolean queryLive,  int numberOfExpectedResults) {
+        database.inTransaction(() -> {
+            WebhookEntity webhookEntity = new WebhookEntity();
+            webhookEntity.setLive(setLive);
+            
+            webhookEntity.setServiceId("not-real-service-id");
+            EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
+            
+            webhookEntity.addSubscription(eventTypeEntity);
+            webhookDao.create(webhookEntity);
+        });
+            assertThat(webhookDao.list(queryLive, "not-real-service-id"), iterableWithSize(numberOfExpectedResults));
     }
 
-    @Test
-    public void filtersWebhooksByLiveStatus() {
+    @ParameterizedTest
+    @CsvSource({"real-service-id,1", "not-real-service-id,0"})
+    public void filtersWebhooksByServiceId(String serviceId, int numberOfExpectedResults) {
         database.inTransaction(() -> {
             WebhookEntity webhookEntity = new WebhookEntity();
             webhookEntity.setLive(true);
-            webhookEntity.setServiceId("not-real-service-id");
+            
+            webhookEntity.setServiceId(serviceId);
             EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
+            
             webhookEntity.addSubscription(eventTypeEntity);
             webhookDao.create(webhookEntity);
-            assertThat(webhookDao.list(false, "not-real-service-id"), iterableWithSize(0));
         });
-    }
         
-    @Test
-    public void filtersWebhooksByServiceId() {
-        database.inTransaction(() -> {
-            WebhookEntity webhookEntity = new WebhookEntity();
-            webhookEntity.setLive(true);
-            webhookEntity.setServiceId("not-real-service-id");
-            EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
-            webhookEntity.addSubscription(eventTypeEntity);
-            webhookDao.create(webhookEntity);
-            assertThat(webhookDao.list(true, "real-service-id"), iterableWithSize(0));
-        });
+            assertThat(webhookDao.list(true, "real-service-id"), iterableWithSize(numberOfExpectedResults));
     }    
     
 }

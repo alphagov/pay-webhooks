@@ -1,13 +1,17 @@
 package uk.gov.pay.webhooks.webhook.resource;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.TextNode;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.dropwizard.testing.junit5.ResourceExtension;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import uk.gov.pay.webhooks.eventtype.EventTypeName;
+import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.WebhookService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
@@ -169,8 +173,14 @@ public class WebhookResourceTest {
     @Test
     public void getWebhooksReturnsListOfWebhooks() throws JsonProcessingException {
         webhook.setServiceId("some-service-id");
+        webhook.setLive(true);
+        webhook.setDescription("fooBar");
+        webhook.addSubscription(new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED));
+        
+        
         when(webhookService.list(true, existingServiceId)).thenReturn((List.of(webhook, webhook)));
         
+        var objectMapper = new ObjectMapper();
         var response = resources
                 .target("/v1/webhook")
                 .queryParam("live", true)
@@ -178,10 +188,33 @@ public class WebhookResourceTest {
                 .request()
                 .get();
         assertThat(response.getStatus(), is(200));
-        var responseList =  response.readEntity(ArrayList.class);
-        assertThat(responseList.size(), is(equalTo(2)));
-        var firstItem = (LinkedHashMap) responseList.get(0);
-        assertThat(firstItem.get("service_id"), is("some-service-id"));
+
+//        Exclude createdDate as that is dynamic
+        var expectedResponse = objectMapper.readTree("""
+                [{"service_id":"some-service-id",
+                "live":true,
+                "callback_url":null,
+                "description":"fooBar",
+                "external_id":null,
+                "status":null,
+                "subscriptions":["card_payment_captured"]},
+                {"service_id":"some-service-id",
+                "live":true,
+                "callback_url":null,
+                "description":"fooBar",
+                "external_id":null,
+                "status":null,
+                "subscriptions":["card_payment_captured"]}]
+                """);
+
+        var jsonResponse = objectMapper.readTree(response.readEntity(String.class));
+        assertThat(jsonResponse.size(), is(equalTo(expectedResponse.size())));
+        for (final JsonNode objNode : jsonResponse) {
+            assertThat(objNode.get("live"), equalTo(expectedResponse.get(0).get("live")));
+            assertThat(objNode.get("description"), equalTo(expectedResponse.get(0).get("description")));
+            assertThat(objNode.get("service_id"), equalTo(expectedResponse.get(0).get("service_id")));
+            assertThat(objNode.get("subscriptions"), equalTo(expectedResponse.get(0).get("subscriptions")));
+        }
     }    
     
     @Test
