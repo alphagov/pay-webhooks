@@ -9,8 +9,6 @@ import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
-import java.util.Optional;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -57,44 +55,73 @@ public class WebhookDaoTest {
     public void returnsMatchingListOfWebhooks() {
         database.inTransaction(() -> {
             WebhookEntity webhookEntity = new WebhookEntity();
+            
             webhookEntity.setLive(true);
             webhookEntity.setServiceId("real-service-id");
+            
             EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
             webhookEntity.addSubscription(eventTypeEntity);
+            
             webhookDao.create(webhookEntity);
-            assertThat(webhookDao.list(true, "real-service-id"), iterableWithSize(1));
         });
+        
+        assertThat(webhookDao.list(true, "real-service-id"), iterableWithSize(1));
     }
-
+    
     @Test
-    public void filtersWebhooksByLiveStatus() {
+    public void filtersWebhooksByLiveStatusFalse() {
         database.inTransaction(() -> {
-            WebhookEntity webhookEntity = new WebhookEntity();
-            webhookEntity.setLive(true);
-            webhookEntity.setServiceId("not-real-service-id");
-            EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
-            webhookEntity.addSubscription(eventTypeEntity);
-            webhookDao.create(webhookEntity);
-            assertThat(webhookDao.list(false, "not-real-service-id"), iterableWithSize(0));
+            WebhookEntity webhookEntityLiveFalse = new WebhookEntity();
+            webhookEntityLiveFalse.setLive(false);
+            webhookEntityLiveFalse.setServiceId("service-id");
+            webhookDao.create(webhookEntityLiveFalse);
+            
+            WebhookEntity webhookEntityLiveTrue = new WebhookEntity();
+            webhookEntityLiveTrue.setLive(true);
+            webhookEntityLiveTrue.setServiceId("service-id");
+            webhookDao.create(webhookEntityLiveTrue);
         });
+        
+            assertThat(webhookDao.list(false, "service-id"), iterableWithSize(1));
+    }    
+    
+    @Test
+    public void filtersWebhooksByLiveStatusTrue() {
+        database.inTransaction(() -> {
+            WebhookEntity webhookEntityLiveTrue = new WebhookEntity();
+            webhookEntityLiveTrue.setLive(true);
+            webhookEntityLiveTrue.setServiceId("service-id");
+            webhookDao.create(webhookEntityLiveTrue);
+            
+            WebhookEntity webhookEntityLiveFalse = new WebhookEntity();
+            webhookEntityLiveFalse.setLive(false);
+            webhookEntityLiveFalse.setServiceId("service-id");
+            webhookDao.create(webhookEntityLiveFalse);
+
+        });
+            assertThat(webhookDao.list(true, "service-id"), iterableWithSize(1));
     }
     
     @Test
     public void notFoundEntityReturnsEmptyOption(){
         assertThat(webhookDao.findByExternalId("foo", "bar").isEmpty(), equalTo(true));
-    }
-        
+    }     
+
     @Test
     public void filtersWebhooksByServiceId() {
         database.inTransaction(() -> {
             WebhookEntity webhookEntity = new WebhookEntity();
             webhookEntity.setLive(true);
-            webhookEntity.setServiceId("not-real-service-id");
+            
+            webhookEntity.setServiceId("service-id-1");
             EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
+            
             webhookEntity.addSubscription(eventTypeEntity);
             webhookDao.create(webhookEntity);
-            assertThat(webhookDao.list(true, "real-service-id"), iterableWithSize(0));
         });
+        
+            assertThat(webhookDao.list(true, "service-id-1"), iterableWithSize(1));
+            assertThat(webhookDao.list(true, "service-id-2"), iterableWithSize(0));
     }    
     
 }

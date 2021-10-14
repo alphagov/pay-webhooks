@@ -24,7 +24,7 @@ public class WebhookListIT {
 
     @BeforeEach
     public void setUp() {
-        dbHelper = dbHelper.aDatabaseTestHelper(app.getJdbi());
+        dbHelper = DatabaseTestHelper.aDatabaseTestHelper(app.getJdbi());
         dbHelper.truncateAllData();
     }
 
@@ -58,7 +58,7 @@ public class WebhookListIT {
                 .extract().as(List.class);
             assertThat(listResponse.size(),is(equalTo(1)));
             var firstItem = (LinkedHashMap) listResponse.get(0);
-            assertThat(firstItem.get("service_id"),is("test_service_id"));
+            assertThat(firstItem.get("service_id"), is("test_service_id"));
     }
 }
 
