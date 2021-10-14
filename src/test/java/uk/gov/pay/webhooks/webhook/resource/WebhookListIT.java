@@ -1,8 +1,10 @@
 package uk.gov.pay.webhooks.webhook.resource;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import uk.gov.pay.extension.AppWithPostgresExtension;
+import uk.gov.pay.webhooks.util.DatabaseTestHelper;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,6 +20,13 @@ public class WebhookListIT {
     @RegisterExtension
     public static AppWithPostgresExtension app = new AppWithPostgresExtension();
     private Integer port = app.getAppRule().getLocalPort();
+    private DatabaseTestHelper dbHelper;
+
+    @BeforeEach
+    public void setUp() {
+        dbHelper = dbHelper.aDatabaseTestHelper(app.getJdbi());
+        dbHelper.truncateAllData();
+    }
 
     @Test
     public void shouldRetrieveWebhookList() {
