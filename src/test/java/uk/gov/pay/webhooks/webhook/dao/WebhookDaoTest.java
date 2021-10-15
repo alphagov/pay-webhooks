@@ -9,9 +9,12 @@ import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
+import java.util.Optional;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 
@@ -43,5 +46,10 @@ public class WebhookDaoTest {
         assertThat(persisted.getSubscriptions(), iterableWithSize(1));
         assertThat(persisted.getSubscriptions(), containsInAnyOrder(any(EventTypeEntity.class)));
         assertThat(persisted.getSubscriptions().iterator().next().getName(), is(EventTypeName.CARD_PAYMENT_CAPTURED));
+    }
+    
+    @Test
+    public void notFoundEntityReturnsEmptyOption(){
+        assertThat(webhookDao.findByExternalId("foo", "bar").isEmpty(), equalTo(true));
     }
 }
