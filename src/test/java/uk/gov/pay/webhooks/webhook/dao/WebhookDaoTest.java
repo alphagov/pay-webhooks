@@ -49,7 +49,7 @@ public class WebhookDaoTest {
     
     @Test
     public void returnsEmptyListIfNoWebhooksFound() {
-        assertThat(webhookDao.list(true, "not-real-service-id"), iterableWithSize(0));
+        assertThat(webhookDao.list(true, "not-real-service-id", null), iterableWithSize(0));
     }
     
     @Test
@@ -66,7 +66,7 @@ public class WebhookDaoTest {
             webhookDao.create(webhookEntity);
         });
         
-        assertThat(webhookDao.list(true, "real-service-id"), iterableWithSize(1));
+        assertThat(webhookDao.list(true, "real-service-id", null), iterableWithSize(1));
     }
     
     @ParameterizedTest
@@ -82,7 +82,7 @@ public class WebhookDaoTest {
             webhookEntity.addSubscription(eventTypeEntity);
             webhookDao.create(webhookEntity);
         });
-            assertThat(webhookDao.list(queryLive, "not-real-service-id"), iterableWithSize(numberOfExpectedResults));
+            assertThat(webhookDao.list(queryLive, "not-real-service-id", null), iterableWithSize(numberOfExpectedResults));
     }
 
     @ParameterizedTest
@@ -99,7 +99,24 @@ public class WebhookDaoTest {
             webhookDao.create(webhookEntity);
         });
         
-            assertThat(webhookDao.list(true, "real-service-id"), iterableWithSize(numberOfExpectedResults));
-    }    
-    
+            assertThat(webhookDao.list(true, "real-service-id", null), iterableWithSize(numberOfExpectedResults));
+    }
+
+    @Test
+    public void listsAllWebhooksWhenOverrideParamProvided() {
+        database.inTransaction(() -> {
+            WebhookEntity webhookEntityOne = new WebhookEntity();
+            webhookEntityOne.setLive(true);
+            webhookEntityOne.setServiceId("service1");
+            webhookDao.create(webhookEntityOne);            
+            
+            WebhookEntity webhookEntityTwo = new WebhookEntity();
+            webhookEntityTwo.setLive(true);
+            webhookEntityTwo.setServiceId("service2");
+            webhookDao.create(webhookEntityTwo);
+        });
+
+        assertThat(webhookDao.list(true, null, true), iterableWithSize(2));
+    }
+
 }

@@ -52,9 +52,11 @@ public class WebhookResource {
 
     @UnitOfWork
     @GET
-    public List<WebhookResponse> getWebhooks(@QueryParam("live") @NotNull boolean live,
-                                             @QueryParam("service_id") @NotNull String service_id) {
-        return webhookService.list(live, service_id)
+    public List<WebhookResponse> getWebhooks(@NotNull @QueryParam("live") Boolean live,
+                                             @QueryParam("service_id") String service_id,
+                                             @QueryParam("override_service_id_restriction") Boolean showAll)
+    {
+        return webhookService.list(live, service_id, showAll)
                 .stream()
                 .map(WebhookResponse::from)
                 .toList();

@@ -178,7 +178,7 @@ public class WebhookResourceTest {
         webhook.addSubscription(new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED));
         
         
-        when(webhookService.list(true, existingServiceId)).thenReturn((List.of(webhook, webhook)));
+        when(webhookService.list(true, existingServiceId, null)).thenReturn((List.of(webhook, webhook)));
         
         var objectMapper = new ObjectMapper();
         var response = resources
@@ -219,7 +219,7 @@ public class WebhookResourceTest {
     
     @Test
     public void getWebhooksReturnsEmptyListIfNoResults() {
-        when(webhookService.list(true, existingServiceId)).thenReturn((List.of()));
+        when(webhookService.list(true, existingServiceId, null)).thenReturn((List.of()));
         
         var response = resources
                 .target("/v1/webhook")
@@ -233,7 +233,7 @@ public class WebhookResourceTest {
     
     @Test
     public void getWebhooksRequestMissingParamsShould400() {
-        when(webhookService.list(true, existingServiceId)).thenReturn((List.of()));
+        when(webhookService.list(true, existingServiceId, null)).thenReturn((List.of()));
         
         var response = resources
                 .target("/v1/webhook")

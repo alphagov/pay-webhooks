@@ -60,5 +60,44 @@ public class WebhookListIT {
             var firstItem = (LinkedHashMap) listResponse.get(0);
             assertThat(firstItem.get("service_id"),is("test_service_id"));
     }
+
+    @Test
+    public void shouldRetrieveWebhookListUnfiltered() {
+        var serviceOne = """
+                {
+                  "service_id": "service_one",
+                  "live": true,
+                  "callback_url": "https://example.com",
+                  "description": "description",
+                  "subscriptions": ["card_payment_captured"]
+                }
+                """;
+
+        var serviceTwo = """
+                {
+                  "service_id": "service_two",
+                  "live": true,
+                  "callback_url": "https://example.com",
+                  "description": "description",
+                  "subscriptions": ["card_payment_captured"]
+                }
+                """;
+        
+        List.of(serviceOne, serviceTwo).forEach(service ->
+                        given().port(port)
+                                .contentType(JSON)
+                                .body(service)
+                                .post("/v1/webhook")
+                );
+        
+        var listResponse = given().port(port)
+                .contentType(JSON)
+                .get("/v1/webhook?override_service_id_restriction=true&live=true")
+                .then()
+                .extract().as(List.class);
+        assertThat(listResponse.size(),is(equalTo(2)));
+        var firstItem = (LinkedHashMap) listResponse.get(0);
+        assertThat(firstItem.get("service_id"),is("service_one"));
+    }
 }
 

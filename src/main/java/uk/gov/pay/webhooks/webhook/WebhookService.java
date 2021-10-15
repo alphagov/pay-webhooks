@@ -40,7 +40,7 @@ public class WebhookService {
         return webhookDao.findByExternalId(externalId, serviceId);
     }    
     
-    public List<WebhookEntity> list(boolean live, String serviceId) {
-        return webhookDao.list(live, serviceId);
+    public List<WebhookEntity> list(boolean live, String serviceId, Boolean showAll) {
+        return webhookDao.list(live, serviceId, showAll);
     }
 }
