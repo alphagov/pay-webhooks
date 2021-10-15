@@ -16,7 +16,6 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import javax.ws.rs.client.Entity;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -232,5 +231,35 @@ public class WebhookResourceTest {
                 .request()
                 .get();
         assertThat(response.getStatus(), is(400));
+    }    
+    
+    @Test
+    public void getWebhooksRequestWithServiceIdAndOverrideShould400() throws JsonProcessingException {
+        var response = resources
+                .target("/v1/webhook")
+                .queryParam("service_id", existingServiceId)
+                .queryParam("live", true)
+                .queryParam("override_service_id_restriction", true)
+                .request()
+                .get();
+        var objectMapper = new ObjectMapper();
+        Map<String, String> responseBody = objectMapper.readValue(response.readEntity(String.class), new TypeReference<>() {
+        });
+        assertThat(response.getStatus(), is(400));
+        assertThat(responseBody.get("message"), is("service_id not permitted when using override_service_id_restriction"));
+    }    
+    
+    @Test
+    public void getWebhooksRequestWithLiveParamOnlyShould400() throws JsonProcessingException {
+        var response = resources
+                .target("/v1/webhook")
+                .queryParam("live", true)
+                .request()
+                .get();
+        var objectMapper = new ObjectMapper();
+        Map<String, String> responseBody = objectMapper.readValue(response.readEntity(String.class), new TypeReference<>() {
+        });
+        assertThat(response.getStatus(), is(400));
+        assertThat(responseBody.get("message"), is("either service_id or override_service_id_restriction query parameter must be provided"));
     }
 }

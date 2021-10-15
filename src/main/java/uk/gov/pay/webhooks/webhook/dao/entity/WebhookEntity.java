@@ -35,12 +35,18 @@ import java.util.Set;
     name = WebhookEntity.LIST_BY_LIVE_AND_SERVICE_ID,
     query = "select p from WebhookEntity p where live = :live and serviceId = :serviceId"
 )
+
+@NamedQuery(
+    name = WebhookEntity.LIST_BY_LIVE,
+    query = "select p from WebhookEntity p where live = :live"
+)
 @Entity
 @SequenceGenerator(name="webhooks_id_seq", sequenceName = "webhooks_id_seq", allocationSize = 1)
 @Table(name = "webhooks")
 public class WebhookEntity {
     public static final String GET_BY_EXTERNAL_ID_AND_SERVICE_ID = "Webhook.get_webhook_by_external_id_and_service_id";
-    public static final String LIST_BY_LIVE_AND_SERVICE_ID = "Webhook.list_webhooks";
+    public static final String LIST_BY_LIVE_AND_SERVICE_ID = "Webhook.list_webhooks_by_live_and_service_id";
+    public static final String LIST_BY_LIVE = "Webhook.list_webhooks_by_live";
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "webhooks_id_seq")

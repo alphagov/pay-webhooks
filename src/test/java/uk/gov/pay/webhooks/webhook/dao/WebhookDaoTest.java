@@ -124,4 +124,45 @@ public class WebhookDaoTest {
             assertThat(webhookDao.list(true, "service-id-2"), iterableWithSize(0));
     }    
     
+    @Test
+    public void listsAllWebhooks() {
+        database.inTransaction(() -> {
+            WebhookEntity webhookEntityServiceOne = new WebhookEntity();
+            webhookEntityServiceOne.setLive(true);
+            webhookEntityServiceOne.setServiceId("service-id-1");
+            webhookDao.create(webhookEntityServiceOne);
+
+            WebhookEntity webhookEntityServiceTwo = new WebhookEntity();
+            webhookEntityServiceTwo.setLive(true);
+            webhookEntityServiceTwo.setServiceId("service-id-2");
+            webhookDao.create(webhookEntityServiceTwo);
+        }); 
+            
+        assertThat(webhookDao.list(true), iterableWithSize(2));
+    }
+
+    @Test
+    public void listsAllWebhooksFilteredByLive() {
+        database.inTransaction(() -> {
+            WebhookEntity webhookEntityLiveTrue = new WebhookEntity();
+            webhookEntityLiveTrue.setLive(true);
+            webhookEntityLiveTrue.setServiceId("service-id");
+            webhookDao.create(webhookEntityLiveTrue);
+
+            WebhookEntity webhookEntityLiveFalse = new WebhookEntity();
+            webhookEntityLiveFalse.setLive(false);
+            webhookEntityLiveFalse.setServiceId("service-id");
+            webhookDao.create(webhookEntityLiveFalse);            
+            
+            WebhookEntity webhookEntityLiveFalseTwo = new WebhookEntity();
+            webhookEntityLiveFalseTwo.setLive(false);
+            webhookEntityLiveFalseTwo.setServiceId("service-id-2");
+            webhookDao.create(webhookEntityLiveFalseTwo);
+        });
+        var response = webhookDao.list(false);
+        assertThat(response, iterableWithSize(2));
+        response.forEach(webhookEntity -> 
+                assertThat(webhookEntity.isLive(), equalTo(false)));
+    }
+        
 }

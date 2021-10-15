@@ -7,6 +7,7 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -52,11 +53,23 @@ public class WebhookResource {
 
     @UnitOfWork
     @GET
-    public List<WebhookResponse> getWebhooks(@QueryParam("live") @NotNull boolean live,
-                                             @QueryParam("service_id") @NotNull String service_id) {
-        return webhookService.list(live, service_id)
-                .stream()
-                .map(WebhookResponse::from)
-                .toList();
+    public List<WebhookResponse> getWebhooks(@NotNull @QueryParam("live") Boolean live,
+                                             @QueryParam("service_id") String service_id,
+                                             @QueryParam("override_service_id_restriction") boolean overrideServiceIdRestriction) {
+            if (service_id != null && overrideServiceIdRestriction) {
+                throw new BadRequestException("service_id not permitted when using override_service_id_restriction");
+            }
+            
+            if (service_id == null && !overrideServiceIdRestriction) {
+                throw new BadRequestException("either service_id or override_service_id_restriction query parameter must be provided");
+            }
+            
+            List<WebhookEntity> results = overrideServiceIdRestriction ? webhookService.list(live) : webhookService.list(live, service_id);
+
+            return results
+                    .stream()
+                    .map(WebhookResponse::from)
+                    .toList();
     }
+
 }
