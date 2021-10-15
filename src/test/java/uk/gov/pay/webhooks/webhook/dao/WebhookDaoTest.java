@@ -43,5 +43,19 @@ public class WebhookDaoTest {
         assertThat(persisted.getSubscriptions(), iterableWithSize(1));
         assertThat(persisted.getSubscriptions(), containsInAnyOrder(any(EventTypeEntity.class)));
         assertThat(persisted.getSubscriptions().iterator().next().getName(), is(EventTypeName.CARD_PAYMENT_CAPTURED));
+    }    
+    
+    @Test
+    public void deletesWebhook() {
+        
+        WebhookEntity persisted = database.inTransaction(() -> {
+            WebhookEntity webhookEntity = new WebhookEntity();
+            EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
+            webhookEntity.addSubscription(eventTypeEntity);
+            return webhookDao.create(webhookEntity);
+        });
+
+        var externalId = persisted.getExternalId();
+        assertThat(webhookDao.findByExternalId(externalId), is("true"));
     }
 }

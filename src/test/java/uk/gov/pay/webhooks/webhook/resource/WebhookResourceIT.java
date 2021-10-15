@@ -62,7 +62,12 @@ public class WebhookResourceIT {
         given().port(port)
                 .delete("/v1/webhook/%s".formatted(externalId))
                 .then()
-                .statusCode(Response.Status.NO_CONTENT.getStatusCode());
+                .statusCode(Response.Status.NO_CONTENT.getStatusCode());        
+        
+        given().port(port)
+                .get("/v1/webhook/%s".formatted(externalId))
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
         
         
         

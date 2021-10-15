@@ -14,6 +14,7 @@ public class WebhookDao extends AbstractDAO<WebhookEntity> {
     public WebhookDao(SessionFactory factory) {
         super(factory);
     }
+    
 
     public WebhookEntity create(WebhookEntity webhook) {
         persist(webhook);
@@ -23,7 +24,7 @@ public class WebhookDao extends AbstractDAO<WebhookEntity> {
     public void deleteByExternalId(String externalId) {
         Optional<WebhookEntity> webhookEntity = findByExternalId(externalId);
         var we = webhookEntity.orElseThrow(NotFoundException::new);
-        currentSession().remove(we);
+        currentSession().delete(we);
     }
 
     public Optional<WebhookEntity> findByExternalId(String webhookExternalId) {
