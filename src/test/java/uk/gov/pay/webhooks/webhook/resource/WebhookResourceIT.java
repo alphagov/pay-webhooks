@@ -60,4 +60,14 @@ public class WebhookResourceIT {
                 .body("status", is("ACTIVE"))
                 .body("subscriptions", containsInAnyOrder("card_payment_captured"));
     }
+    
+    @Test
+    public void notFoundShouldReturn404() {
+        given().port(port)
+                .contentType(JSON)
+                .get("/v1/webhook/not-real-external-id?service_id=not-real-service-id")
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+    }
+    
 }
