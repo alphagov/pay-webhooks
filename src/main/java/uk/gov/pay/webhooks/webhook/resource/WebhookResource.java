@@ -16,6 +16,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
+import java.util.List;
+
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Path("/v1/webhook")
@@ -46,5 +48,15 @@ public class WebhookResource {
                 .findByExternalId(externalId, serviceId)
                 .map(WebhookResponse::from)
                 .orElseThrow(NotFoundException::new);
+    }
+
+    @UnitOfWork
+    @GET
+    public List<WebhookResponse> getWebhooks(@QueryParam("live") @NotNull boolean live,
+                                             @QueryParam("service_id") @NotNull String service_id) {
+        return webhookService.list(live, service_id)
+                .stream()
+                .map(WebhookResponse::from)
+                .toList();
     }
 }

@@ -1,19 +1,29 @@
 package uk.gov.pay.webhooks.webhook.resource;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.dropwizard.testing.junit5.ResourceExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import uk.gov.pay.webhooks.eventtype.EventTypeName;
+import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.WebhookService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import javax.ws.rs.client.Entity;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -153,6 +163,74 @@ public class WebhookResourceTest {
                 .request()
                 .get();
 
+        assertThat(response.getStatus(), is(400));
+    }
+
+    @Test
+    public void getWebhooksReturnsListOfWebhooks() throws JsonProcessingException {
+        webhook.setServiceId("some-service-id");
+        webhook.setLive(true);
+        webhook.setDescription("fooBar");
+        webhook.addSubscription(new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED));
+        webhook.setCreatedDate(Date.from(Instant.parse("2007-12-03T10:15:30.00Z")));
+
+        when(webhookService.list(true, existingServiceId)).thenReturn((List.of(webhook, webhook)));
+
+        var objectMapper = new ObjectMapper();
+        var response = resources
+                .target("/v1/webhook")
+                .queryParam("live", true)
+                .queryParam("service_id", existingServiceId)
+                .request()
+                .get();
+        assertThat(response.getStatus(), is(200));
+        JsonNode expected = objectMapper.readTree("""
+                [{
+                	"service_id": "some-service-id",
+                	"live": true,
+                	"callback_url": null,
+                	"description": "fooBar",
+                	"external_id": null,
+                	"status": null,
+                	"created_date": "2007-12-03T10:15:30.000Z",
+                	"subscriptions": ["card_payment_captured"]
+                }, {
+                	"service_id": "some-service-id",
+                	"live": true,
+                	"callback_url": null,
+                	"description": "fooBar",
+                	"external_id": null,
+                	"status": null,
+                	"created_date": "2007-12-03T10:15:30.000Z",
+                	"subscriptions": ["card_payment_captured"]
+                }]
+                """);
+        JsonNode actual = objectMapper.readTree(response.readEntity(String.class));
+        assertThat(actual, equalTo(expected));
+    }
+
+    @Test
+    public void getWebhooksReturnsEmptyListIfNoResults() {
+        when(webhookService.list(true, existingServiceId)).thenReturn((List.of()));
+        
+        var response = resources
+                .target("/v1/webhook")
+                .queryParam("live", true)
+                .queryParam("service_id", existingServiceId)
+                .request()
+                .get();
+        assertThat(response.getStatus(), is(200));
+        assertThat(response.readEntity(String.class), is("[]"));
+    }    
+    
+    @Test
+    public void getWebhooksRequestMissingParamsShould400() {
+        when(webhookService.list(true, existingServiceId)).thenReturn((List.of()));
+        
+        var response = resources
+                .target("/v1/webhook")
+                .request()
+                .get();
         assertThat(response.getStatus(), is(400));
     }
 }
