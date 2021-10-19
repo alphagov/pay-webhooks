@@ -10,7 +10,7 @@ import javax.validation.constraints.Size;
 import java.util.List;
 
 public record CreateWebhookRequest(
-        @JsonProperty("service_id") @NotEmpty @Size(max = 30) String serviceId,
+        @JsonProperty("service_id") @NotEmpty @Size(max = 32) String serviceId,
         @JsonProperty("live") @NotNull Boolean live,
         @JsonProperty("callback_url") @NotEmpty @Size(max = 2048) String callbackUrl,
         @JsonProperty("description") String description,
