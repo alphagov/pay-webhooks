@@ -1,8 +1,12 @@
 package uk.gov.pay.webhooks.webhook.resource;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.dropwizard.hibernate.UnitOfWork;
+import uk.gov.pay.webhooks.validations.WebhookRequestValidator;
 import uk.gov.pay.webhooks.webhook.WebhookService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
+import uk.gov.service.payments.commons.api.exception.ValidationException;
+import uk.gov.service.payments.commons.model.jsonpatch.JsonPatchRequest;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -11,6 +15,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -18,6 +23,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
@@ -27,10 +33,12 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 public class WebhookResource {
     
     private final WebhookService webhookService;
+    private final WebhookRequestValidator webhookRequestValidator;
     
     @Inject
     public WebhookResource(WebhookService webhookService) {
         this.webhookService = webhookService;
+        this.webhookRequestValidator =  new WebhookRequestValidator();
     }
     
     @UnitOfWork
@@ -71,5 +79,24 @@ public class WebhookResource {
                     .map(WebhookResponse::from)
                     .toList();
     }
+    
+    @UnitOfWork
+    @PATCH
+    @Path("/{externalId}")
+    public WebhookResponse updateWebhook(@PathParam("externalId") @NotNull String externalId, 
+                                  @QueryParam("service_id") @NotNull String serviceId, 
+                                  JsonNode payload) {
+        try {
+            webhookRequestValidator.validateJsonPatch(payload);
+        }
+        catch (ValidationException e) {
+            throw new BadRequestException(String.join(", ", e.getErrors()));
+        }
+        List<JsonPatchRequest> patchRequests = StreamSupport.stream(payload.spliterator(), false)
+                .map(JsonPatchRequest::from)
+                .toList();
+        return WebhookResponse.from(webhookService.update(externalId, serviceId, patchRequests));
+    }
+    
 
 }

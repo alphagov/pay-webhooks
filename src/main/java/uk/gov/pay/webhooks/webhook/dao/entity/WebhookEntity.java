@@ -127,7 +127,7 @@ public class WebhookEntity {
         this.externalId = externalId;
     }
 
-    private void setStatus(WebhookStatus status) {
+    public void setStatus(WebhookStatus status) {
         this.status = status;
     }
 
@@ -157,5 +157,9 @@ public class WebhookEntity {
 
     public void addSubscriptions(List<EventTypeEntity> subscriptions) {
         subscriptions.forEach(this::addSubscription);
+    }
+    
+    public void replaceSubscriptions(List<EventTypeEntity> subscriptions) {
+        this.subscriptions = new HashSet<>(subscriptions);
     }
 }

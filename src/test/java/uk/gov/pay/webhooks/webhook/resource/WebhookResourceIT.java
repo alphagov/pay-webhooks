@@ -26,7 +26,7 @@ public class WebhookResourceIT {
 
     @BeforeEach
     public void setUp() {
-        dbHelper = dbHelper.aDatabaseTestHelper(app.getJdbi());
+        dbHelper = DatabaseTestHelper.aDatabaseTestHelper(app.getJdbi());
         dbHelper.truncateAllData();
     }
     
@@ -52,7 +52,7 @@ public class WebhookResourceIT {
                 .body("live", is(true))
                 .body("callback_url", is("https://example.com"))
                 .body("description", is("description"))
-                .body("status", is("ACTIVE"))
+                .body("status", is("active"))
                 .body("subscriptions", containsInAnyOrder("card_payment_captured"))
                 .extract()
                 .as(Map.class);
@@ -69,7 +69,7 @@ public class WebhookResourceIT {
                 .body("live", is(true))
                 .body("callback_url", is("https://example.com"))
                 .body("description", is("description"))
-                .body("status", is("ACTIVE"))
+                .body("status", is("active"))
                 .body("subscriptions", containsInAnyOrder("card_payment_captured"));
     }
     
