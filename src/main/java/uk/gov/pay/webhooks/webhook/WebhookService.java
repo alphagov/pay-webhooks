@@ -1,6 +1,5 @@
 package uk.gov.pay.webhooks.webhook;
 
-import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
@@ -42,5 +41,10 @@ public class WebhookService {
     
     public List<WebhookEntity> list(boolean live, String serviceId) {
         return webhookDao.list(live, serviceId);
-    }
+    }      
+    
+    public List<WebhookEntity> list(boolean live) {
+        return webhookDao.list(live);
+    }    
+    
 }

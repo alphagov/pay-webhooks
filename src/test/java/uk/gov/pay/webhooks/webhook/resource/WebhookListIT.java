@@ -1,5 +1,7 @@
 package uk.gov.pay.webhooks.webhook.resource;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -15,6 +17,7 @@ import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 
 public class WebhookListIT {
     @RegisterExtension
@@ -59,6 +62,47 @@ public class WebhookListIT {
             assertThat(listResponse.size(),is(equalTo(1)));
             var firstItem = (LinkedHashMap) listResponse.get(0);
             assertThat(firstItem.get("service_id"), is("test_service_id"));
+    }
+
+    @Test
+    public void shouldRetrieveWebhookListByLiveStatus() {
+        var serviceOne = """
+                {
+                  "service_id": "service_one",
+                  "live": true,
+                  "callback_url": "https://example.com",
+                  "description": "description",
+                  "subscriptions": ["card_payment_captured"]
+                }
+                """;
+
+        var serviceTwo = """
+                {
+                  "service_id": "service_two",
+                  "live": true,
+                  "callback_url": "https://example.com",
+                  "description": "description",
+                  "subscriptions": ["card_payment_captured"]
+                }
+                """;
+        
+        List.of(serviceOne, serviceTwo).forEach(service ->
+                        given().port(port)
+                                .contentType(JSON)
+                                .body(service)
+                                .post("/v1/webhook")
+                );
+        
+        var jsonNodeResponse = given().port(port)
+                .contentType(JSON)
+                .get("/v1/webhook?override_service_id_restriction=true&live=true")
+                .then()
+                .extract().as(JsonNode.class);
+        
+        assertThat(jsonNodeResponse.size(),is(equalTo(2)));
+        assertThat(jsonNodeResponse.findValues("service_id"), 
+                containsInAnyOrder(new TextNode("service_one"), new TextNode("service_two")));
+
     }
 }
 
