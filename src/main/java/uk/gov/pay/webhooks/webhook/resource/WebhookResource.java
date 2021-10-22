@@ -1,8 +1,12 @@
 package uk.gov.pay.webhooks.webhook.resource;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.dropwizard.hibernate.UnitOfWork;
+import uk.gov.pay.webhooks.validations.WebhookRequestValidator;
 import uk.gov.pay.webhooks.webhook.WebhookService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
+import uk.gov.service.payments.commons.api.validation.JsonPatchRequestValidator;
+import uk.gov.service.payments.commons.model.jsonpatch.JsonPatchRequest;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -20,6 +24,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
@@ -29,10 +34,13 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 public class WebhookResource {
     
     private final WebhookService webhookService;
+    private final WebhookRequestValidator requestValidator;
     
     @Inject
-    public WebhookResource(WebhookService webhookService) {
+    public WebhookResource(WebhookService webhookService,
+                           WebhookRequestValidator requestValidator) {
         this.webhookService = webhookService;
+        this.requestValidator = requestValidator;
     }
     
     @UnitOfWork
@@ -77,8 +85,17 @@ public class WebhookResource {
     @UnitOfWork
     @PATCH
     @Path("/{externalId}")
-    public Response patchWebhook(@PathParam("externalId") @NotNull String externalId) {
-        return Response.noContent().build();
+    public WebhookResponse updateWebhook(@PathParam("externalId") @NotNull String externalId, 
+                                  @QueryParam("service_id") @NotNull String serviceId, 
+                                  JsonNode payload) {
+        requestValidator.validateJsonPatch(payload);
+        //TODO: This is wrong I think
+//        requestValidator.validateUpdateRequest(payload)
+        List<JsonPatchRequest> patchRequests = StreamSupport.stream(payload.spliterator(), false)
+                .map(JsonPatchRequest::from)
+                .toList();
+        return WebhookResponse.from(webhookService.update(externalId, serviceId, patchRequests));
+       
     }
     
 

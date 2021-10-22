@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
+import uk.gov.pay.webhooks.validations.WebhookRequestValidator;
 import uk.gov.pay.webhooks.webhook.WebhookService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
@@ -32,11 +33,12 @@ import static org.mockito.Mockito.when;
 @ExtendWith(DropwizardExtensionsSupport.class)
 public class WebhookResourceTest {
    WebhookService webhookService = mock(WebhookService.class);
+   WebhookRequestValidator requestValidator = mock(WebhookRequestValidator.class);
    String existingWebhookId = "existing_webhook_id";
    String existingServiceId = "some-service-id";
 
     public final ResourceExtension resources = ResourceExtension.builder()
-            .addResource(new WebhookResource(webhookService))
+            .addResource(new WebhookResource(webhookService, requestValidator))
             .build();
     
     WebhookEntity webhook;
