@@ -4,6 +4,7 @@ import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
+import uk.gov.pay.webhooks.webhook.dao.entity.WebhookStatus;
 import uk.gov.pay.webhooks.webhook.resource.CreateWebhookRequest;
 import uk.gov.service.payments.commons.model.jsonpatch.JsonPatchOp;
 import uk.gov.service.payments.commons.model.jsonpatch.JsonPatchRequest;
@@ -14,7 +15,9 @@ import javax.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.pay.webhooks.webhook.resource.WebhookResponse.FIELD_CALLBACK_URL;
 import static uk.gov.pay.webhooks.webhook.resource.WebhookResponse.FIELD_DESCRIPTION;
+import static uk.gov.pay.webhooks.webhook.resource.WebhookResponse.FIELD_STATUS;
 
 public class WebhookService {
     WebhookDao webhookDao;
@@ -60,7 +63,11 @@ public class WebhookService {
                     switch (patchRequest.getPath()) {
                         case FIELD_DESCRIPTION:
                             webhookEntity.setDescription(patchRequest.valueAsString());
-                            break;
+                        case FIELD_CALLBACK_URL:
+                            webhookEntity.setCallbackUrl(patchRequest.valueAsString());
+                        case FIELD_STATUS:
+                            webhookEntity.setStatus(WebhookStatus.of(patchRequest.valueAsString()));
+                            break; 
                         default:
                             throw new BadRequestException("Unexpected path for patch operation: " + patchRequest.getPath());
                     }

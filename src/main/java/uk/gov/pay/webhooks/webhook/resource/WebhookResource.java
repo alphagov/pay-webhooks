@@ -89,8 +89,6 @@ public class WebhookResource {
                                   @QueryParam("service_id") @NotNull String serviceId, 
                                   JsonNode payload) {
         requestValidator.validateJsonPatch(payload);
-        //TODO: This is wrong I think
-//        requestValidator.validateUpdateRequest(payload)
         List<JsonPatchRequest> patchRequests = StreamSupport.stream(payload.spliterator(), false)
                 .map(JsonPatchRequest::from)
                 .toList();

@@ -127,7 +127,7 @@ public class WebhookEntity {
         this.externalId = externalId;
     }
 
-    private void setStatus(WebhookStatus status) {
+    public void setStatus(WebhookStatus status) {
         this.status = status;
     }
 
