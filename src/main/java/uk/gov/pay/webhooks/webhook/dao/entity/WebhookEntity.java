@@ -33,12 +33,12 @@ import java.util.Set;
 
 @NamedQuery(
     name = WebhookEntity.LIST_BY_LIVE_AND_SERVICE_ID,
-    query = "select p from WebhookEntity p where live = :live and serviceId = :serviceId"
+    query = "select p from WebhookEntity p where live = :live and serviceId = :serviceId order by created_date DESC"
 )
 
 @NamedQuery(
     name = WebhookEntity.LIST_BY_LIVE,
-    query = "select p from WebhookEntity p where live = :live"
+    query = "select p from WebhookEntity p where live = :live order by created_date DESC"
 )
 @Entity
 @SequenceGenerator(name="webhooks_id_seq", sequenceName = "webhooks_id_seq", allocationSize = 1)
