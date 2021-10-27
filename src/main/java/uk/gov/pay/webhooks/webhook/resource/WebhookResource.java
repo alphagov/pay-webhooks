@@ -5,7 +5,6 @@ import io.dropwizard.hibernate.UnitOfWork;
 import uk.gov.pay.webhooks.validations.WebhookRequestValidator;
 import uk.gov.pay.webhooks.webhook.WebhookService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
-import uk.gov.service.payments.commons.api.validation.JsonPatchRequestValidator;
 import uk.gov.service.payments.commons.model.jsonpatch.JsonPatchRequest;
 
 import javax.inject.Inject;
@@ -21,7 +20,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
 
 import java.util.List;
 import java.util.stream.StreamSupport;

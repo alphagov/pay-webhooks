@@ -9,7 +9,6 @@ import uk.gov.pay.extension.AppWithPostgresExtension;
 import uk.gov.pay.webhooks.util.DatabaseTestHelper;
 
 import java.util.Map;
-import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -50,7 +49,8 @@ public class WebhookUpdateIT {
                 .extract()
                 .as(Map.class);
 
-        var payload = singletonList(Map.of("path", "description",
+        var payload = singletonList(Map.of(
+                "path", "description",
                 "op", "replace",
                 "value", "new description"));
 

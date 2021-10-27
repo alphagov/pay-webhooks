@@ -61,15 +61,10 @@ public class WebhookService {
             patchRequests.forEach(patchRequest -> {
                 if (JsonPatchOp.REPLACE == patchRequest.getOp()) {
                     switch (patchRequest.getPath()) {
-                        case FIELD_DESCRIPTION:
-                            webhookEntity.setDescription(patchRequest.valueAsString());
-                        case FIELD_CALLBACK_URL:
-                            webhookEntity.setCallbackUrl(patchRequest.valueAsString());
-                        case FIELD_STATUS:
-                            webhookEntity.setStatus(WebhookStatus.of(patchRequest.valueAsString()));
-                            break; 
-                        default:
-                            throw new BadRequestException("Unexpected path for patch operation: " + patchRequest.getPath());
+                        case FIELD_DESCRIPTION -> webhookEntity.setDescription(patchRequest.valueAsString());
+                        case FIELD_CALLBACK_URL -> webhookEntity.setCallbackUrl(patchRequest.valueAsString());
+                        case FIELD_STATUS -> webhookEntity.setStatus(WebhookStatus.of(patchRequest.valueAsString()));
+                        default -> throw new BadRequestException("Unexpected path for patch operation: " + patchRequest.getPath());
                     }
                 }
             });
