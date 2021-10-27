@@ -15,6 +15,7 @@ import static io.restassured.http.ContentType.JSON;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 
 public class WebhookUpdateIT {
     @RegisterExtension
@@ -73,7 +74,7 @@ public class WebhookUpdateIT {
                 .statusCode(200)
                 .body("description", is("new description"));
     }
-    
+
     @Test
     public void shouldMakeWebhookInactive() throws JsonProcessingException {
         var json = """
@@ -98,7 +99,7 @@ public class WebhookUpdateIT {
                 "path", "status",
                 "op", "replace",
                 "value", "inactive"));
-        
+
         var externalId = response.get("external_id");
         var serviceId = response.get("service_id");
 
@@ -111,5 +112,45 @@ public class WebhookUpdateIT {
                 .then()
                 .statusCode(200)
                 .body("status", is("inactive"));
+    }
+
+    @Test
+    public void shouldUpdateSubscriptions() throws JsonProcessingException {
+        var json = """
+                {
+                  "service_id": "test_service_id",
+                  "live": true,
+                  "callback_url": "https://example.com",
+                  "description": "original description",
+                  "subscriptions": []
+                }
+                """;
+
+        var response = given().port(port)
+                .contentType(JSON)
+                .body(json)
+                .post("/v1/webhook")
+                .then()
+                .extract()
+                .as(Map.class);
+
+        var payload = singletonList(Map.of(
+                "path", "subscriptions",
+                "op", "replace",
+                "value", "[\"card_payment_captured\"]"));
+
+        var externalId = response.get("external_id");
+        var serviceId = response.get("service_id");
+
+
+        var mapper = new ObjectMapper();
+        given().port(port)
+                .contentType(JSON)
+                .body(mapper.writeValueAsString(payload))
+                .patch(format("/v1/webhook/%s?service_id=%s", externalId, serviceId))
+                .then()
+                .statusCode(200)
+                .body("subscriptions", containsInAnyOrder("card_payment_captured"));
+
     }
 }

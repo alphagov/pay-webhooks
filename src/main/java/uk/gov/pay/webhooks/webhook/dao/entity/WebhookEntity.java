@@ -158,4 +158,8 @@ public class WebhookEntity {
     public void addSubscriptions(List<EventTypeEntity> subscriptions) {
         subscriptions.forEach(this::addSubscription);
     }
+    
+    public void replaceSubscriptions(List<EventTypeEntity> subscriptions) {
+        this.subscriptions = new HashSet<>(subscriptions);
+    }
 }
