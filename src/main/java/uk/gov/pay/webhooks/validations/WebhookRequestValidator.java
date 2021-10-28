@@ -20,7 +20,7 @@ public class WebhookRequestValidator {
             new PatchPathOperation(FIELD_DESCRIPTION, JsonPatchOp.REPLACE), JsonPatchRequestValidator::throwIfValueNotString,
             new PatchPathOperation(FIELD_CALLBACK_URL, JsonPatchOp.REPLACE), RequestValidations::throwIfValueNotValidUrl,
             new PatchPathOperation(FIELD_STATUS, JsonPatchOp.REPLACE), RequestValidations::throwIfValueNotValidStatusEnum,
-            new PatchPathOperation(FIELD_SUBSCRIPTIONS, JsonPatchOp.REPLACE), JsonPatchRequestValidator::throwIfValueNotString
+            new PatchPathOperation(FIELD_SUBSCRIPTIONS, JsonPatchOp.REPLACE), JsonPatchRequestValidator::throwIfValueNotArray
     );
     private final JsonPatchRequestValidator patchRequestValidator = new JsonPatchRequestValidator(patchOperationValidators);
 

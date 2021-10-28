@@ -83,7 +83,7 @@ public class WebhookService {
                         case FIELD_DESCRIPTION -> webhookEntity.setDescription(patchRequest.valueAsString());
                         case FIELD_CALLBACK_URL -> webhookEntity.setCallbackUrl(patchRequest.valueAsString());
                         case FIELD_STATUS -> webhookEntity.setStatus(WebhookStatus.of(patchRequest.valueAsString()));
-                        case FIELD_SUBSCRIPTIONS -> webhookEntity.replaceSubscriptions(getSubscriptions(patchRequest.valueAsString()));
+                        case FIELD_SUBSCRIPTIONS -> System.out.println("In here");
                         default -> throw new BadRequestException("Unexpected path for patch operation: " + patchRequest.getPath());
                     }
                 }
