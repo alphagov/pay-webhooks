@@ -107,7 +107,7 @@ public class WebhookUpdateIT {
         var payload = singletonList(Map.of(
                 "path", "status",
                 "op", "replace",
-                "value", "inactive"));
+                "value", "INACTIVE"));
 
         var externalId = response.get("external_id");
         var serviceId = response.get("service_id");
@@ -120,7 +120,7 @@ public class WebhookUpdateIT {
                 .patch(format("/v1/webhook/%s?service_id=%s", externalId, serviceId))
                 .then()
                 .statusCode(200)
-                .body("status", is("inactive"));
+                .body("status", is("INACTIVE"));
     }
 
     @Test

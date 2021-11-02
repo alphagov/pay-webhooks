@@ -1,21 +1,9 @@
 package uk.gov.pay.webhooks.webhook.dao.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.stream.Stream;
 
 public enum WebhookStatus {
-
-    @JsonProperty("active")
-    ACTIVE("active"),
-    @JsonProperty("inactive")
-    INACTIVE("inactive");
-
-    private final String name;
-
-    WebhookStatus(String name) {
-        this.name = name;
-    }
+    ACTIVE, INACTIVE;
 
     public static WebhookStatus of(String name) {
         return Stream.of(WebhookStatus.values())
@@ -25,6 +13,6 @@ public enum WebhookStatus {
     }
 
     public String getName() {
-        return this.name;
+        return this.toString();
     }
 }
