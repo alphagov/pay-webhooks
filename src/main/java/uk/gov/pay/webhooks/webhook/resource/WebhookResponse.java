@@ -14,13 +14,18 @@ import java.util.List;
 public record WebhookResponse(
         @JsonProperty("service_id") String serviceId,
         @JsonProperty("live") Boolean live,
-        @JsonProperty("callback_url") String callbackUrl,
-        @JsonProperty("description") String description,
+        @JsonProperty(FIELD_CALLBACK_URL) String callbackUrl,
+        @JsonProperty(FIELD_DESCRIPTION) String description,
         @JsonProperty("external_id") String externalId,
-        @JsonProperty("status") WebhookStatus status,
+        @JsonProperty(FIELD_STATUS) WebhookStatus status,
         @JsonProperty("created_date") @JsonSerialize(using = ApiResponseInstantSerializer.class) Instant createdDate,
-        @JsonProperty("subscriptions") List<EventTypeName> subscriptions
+        @JsonProperty(FIELD_SUBSCRIPTIONS) List<EventTypeName> subscriptions
 ) {
+    
+    public static final String FIELD_CALLBACK_URL = "callback_url";
+    public static final String FIELD_DESCRIPTION = "description";
+    public static final String FIELD_STATUS = "status";
+    public static final String FIELD_SUBSCRIPTIONS = "subscriptions";
     
     public static WebhookResponse from(WebhookEntity webhookEntity) {
         return new WebhookResponse(

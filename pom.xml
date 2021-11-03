@@ -21,7 +21,7 @@
         <jackson.version>2.12.5</jackson.version>
         <junit5.version>5.8.0</junit5.version>
         <testcontainers.version>1.16.0</testcontainers.version>
-        <pay-java-commons.version>1.0.20210914101116</pay-java-commons.version>
+        <pay-java-commons.version>1.0.20211101164951</pay-java-commons.version>
         <mainClass>uk.gov.pay.webhooks.app.WebhooksApp</mainClass>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
