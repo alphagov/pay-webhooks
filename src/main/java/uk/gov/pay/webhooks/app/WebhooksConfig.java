@@ -21,4 +21,12 @@ public class WebhooksConfig extends Configuration {
     public void setDataSourceFactory(DataSourceFactory dataSourceFactory) {
         this.database = dataSourceFactory;
     }
+
+    @NotNull
+    @JsonProperty("ledgerBaseURL")
+    private String ledgerBaseUrl;
+
+    public String getLedgerBaseUrl() {
+        return ledgerBaseUrl;
+    }
 }
