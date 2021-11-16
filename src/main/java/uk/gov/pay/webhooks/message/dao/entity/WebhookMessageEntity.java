@@ -1,6 +1,6 @@
 package uk.gov.pay.webhooks.message.dao.entity;
 
-import uk.gov.pay.webhooks.eventtype.EventTypeName;
+import com.fasterxml.jackson.databind.JsonNode;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
@@ -11,11 +11,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQuery;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.Transient;
-import java.time.OffsetDateTime;
 import java.util.Date;
 
 @Entity
@@ -45,5 +42,55 @@ public class WebhookMessageEntity {
     @ManyToOne
     @JoinColumn(name = "event_type", updatable = false)
     private EventTypeEntity eventType;
+    
+    @Column(name = "resource")
+    private JsonNode resource;
 
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public WebhookEntity getWebhookEntity() {
+        return webhookEntity;
+    }
+
+    public void setWebhookEntity(WebhookEntity webhookEntity) {
+        this.webhookEntity = webhookEntity;
+    }
+
+    public Date getEventDate() {
+        return eventDate;
+    }
+
+    public void setEventDate(Date eventDate) {
+        this.eventDate = eventDate;
+    }
+
+    public EventTypeEntity getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(EventTypeEntity eventType) {
+        this.eventType = eventType;
+    }
+
+    public JsonNode getResource() {
+        return resource;
+    }
+
+    public void setResource(JsonNode resource) {
+        this.resource = resource;
+    }
 }

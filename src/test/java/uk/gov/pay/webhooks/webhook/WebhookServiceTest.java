@@ -6,13 +6,19 @@ import org.mockito.ArgumentCaptor;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
+import uk.gov.pay.webhooks.queue.InternalEvent;
+import uk.gov.pay.webhooks.util.ExternalIdGenerator;
 import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 import uk.gov.pay.webhooks.webhook.resource.CreateWebhookRequest;
 
+import java.time.Instant;
+import java.time.InstantSource;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -21,17 +27,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class WebhookServiceTest {
-    private WebhookDao webhookDao = mock(WebhookDao.class);
-    private EventTypeDao eventTypeDao = mock(EventTypeDao.class);
+    private final WebhookDao webhookDao = mock(WebhookDao.class);
+    private final EventTypeDao eventTypeDao = mock(EventTypeDao.class);
+    private final InstantSource instantSource = InstantSource.fixed(Instant.now());
+    private final ExternalIdGenerator externalIdGenerator = new ExternalIdGenerator();
     private WebhookService webhookService;
-    private String serviceId = "test_service_id";
-    private String callbackUrl = "test_callback_url";
-    private boolean live = true;
-    private String description = "test_description";
+    private final String serviceId = "test_service_id";
+    private final String callbackUrl = "test_callback_url";
+    private final boolean live = true;
+    private final String description = "test_description";
     
     @BeforeEach
     public void setUp() {
-        webhookService = new WebhookService(webhookDao, eventTypeDao);
+        webhookService = new WebhookService(webhookDao, eventTypeDao, instantSource, externalIdGenerator);
     }
 
     @Test
@@ -84,6 +92,23 @@ class WebhookServiceTest {
         assertThat(captured.getServiceId(), is(serviceId));
         assertThat(captured.getCallbackUrl(), is(callbackUrl));
         assertThat(captured.isLive(), is(live));    
+    }
+    
+    @Test
+    public void shouldReturnSubscribedWebhooksForGivenEventTypeServiceIdLivenessTuple() {
+        var capturedEventType = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
+        var webhookSubscribedToCaptureEvent = new WebhookEntity();
+        webhookSubscribedToCaptureEvent.addSubscription(capturedEventType);
+        var webhookNotSubscribedToAnyEvents = new WebhookEntity();
+        when(webhookDao.list(live, serviceId))
+                .thenReturn(List.of(webhookSubscribedToCaptureEvent, webhookNotSubscribedToAnyEvents));
+        var event = new InternalEvent("CAPTURE_CONFIRMED", serviceId, live, "resource_id", ZonedDateTime.now());
+        
+        var subscribedWebhooks = webhookService.getWebhooksSubscribedToEvent(event);
+        
+        assertThat(subscribedWebhooks.size(), is(1));
+        var subscribedWebhook = subscribedWebhooks.get(0);
+        assertThat(subscribedWebhook.getSubscriptions(), hasItem(capturedEventType));
     }
 }
 

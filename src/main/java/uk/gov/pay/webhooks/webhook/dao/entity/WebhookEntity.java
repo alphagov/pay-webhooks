@@ -17,8 +17,6 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashSet;
@@ -78,15 +76,15 @@ public class WebhookEntity {
     @Enumerated(EnumType.STRING)
     private WebhookStatus status;
 
-    public static WebhookEntity from(CreateWebhookRequest createWebhookRequest) {
+    public static WebhookEntity from(CreateWebhookRequest createWebhookRequest, String externalId, Instant createdDate) {
         var entity = new WebhookEntity();
         entity.setDescription(createWebhookRequest.description());
         entity.setCallbackUrl(createWebhookRequest.callbackUrl());
         entity.setServiceId(createWebhookRequest.serviceId());
         entity.setLive(createWebhookRequest.live());
-        entity.setCreatedDate(Date.from(Instant.now()));
+        entity.setCreatedDate(Date.from(createdDate));
         entity.setStatus(WebhookStatus.ACTIVE);
-        entity.setExternalId(new BigInteger(130, new SecureRandom()).toString(32));
+        entity.setExternalId(externalId);
         return entity;
     }
 
