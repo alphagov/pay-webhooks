@@ -7,7 +7,7 @@ import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.queue.InternalEvent;
-import uk.gov.pay.webhooks.util.ExternalIdGenerator;
+import uk.gov.pay.webhooks.util.IdGenerator;
 import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 import uk.gov.pay.webhooks.webhook.resource.CreateWebhookRequest;
@@ -18,6 +18,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,7 +31,7 @@ class WebhookServiceTest {
     private final WebhookDao webhookDao = mock(WebhookDao.class);
     private final EventTypeDao eventTypeDao = mock(EventTypeDao.class);
     private final InstantSource instantSource = InstantSource.fixed(Instant.now());
-    private final ExternalIdGenerator externalIdGenerator = new ExternalIdGenerator();
+    private final IdGenerator idGenerator = mock(IdGenerator.class);
     private WebhookService webhookService;
     private final String serviceId = "test_service_id";
     private final String callbackUrl = "test_callback_url";
@@ -39,7 +40,7 @@ class WebhookServiceTest {
     
     @BeforeEach
     public void setUp() {
-        webhookService = new WebhookService(webhookDao, eventTypeDao, instantSource, externalIdGenerator);
+        webhookService = new WebhookService(webhookDao, eventTypeDao, instantSource, idGenerator);
     }
 
     @Test
@@ -110,5 +111,27 @@ class WebhookServiceTest {
         var subscribedWebhook = subscribedWebhooks.get(0);
         assertThat(subscribedWebhook.getSubscriptions(), hasItem(capturedEventType));
     }
+
+    @Test
+    public void shouldReturnSigningKey() {
+        when(idGenerator.newWebhookSigningKey(live))
+                .thenReturn("some-signing-key");
+        
+        var createWebhookRequest = new CreateWebhookRequest(
+                serviceId,
+                live,
+                callbackUrl,
+                null,
+                null
+        );
+
+        webhookService.createWebhook(createWebhookRequest);
+
+        ArgumentCaptor<WebhookEntity> argumentCaptor = ArgumentCaptor.forClass(WebhookEntity.class);
+        verify(webhookDao).create(argumentCaptor.capture());
+        WebhookEntity captured = argumentCaptor.getAllValues().get(0);
+        assertThat(captured.getSigningKey(), equalTo("some-signing-key"));
+    }
+    
 }
 

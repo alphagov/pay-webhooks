@@ -5,7 +5,7 @@ import com.google.inject.Provides;
 import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.setup.Environment;
 import org.hibernate.SessionFactory;
-import uk.gov.pay.webhooks.util.ExternalIdGenerator;
+import uk.gov.pay.webhooks.util.IdGenerator;
 
 import javax.inject.Singleton;
 import java.time.InstantSource;
@@ -36,8 +36,8 @@ public class WebhooksModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public ExternalIdGenerator externalIdGenerator() {
-        return new ExternalIdGenerator();
+    public IdGenerator externalIdGenerator() {
+        return new IdGenerator();
     }
 
 }

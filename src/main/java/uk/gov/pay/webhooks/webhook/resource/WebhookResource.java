@@ -59,6 +59,30 @@ public class WebhookResource {
                 .orElseThrow(NotFoundException::new);
     }
 
+
+    @UnitOfWork
+    @GET
+    @Path("/{externalId}/signing-key")
+    public SigningKeyResponse getSigningKeyByExternalId(@PathParam("externalId") @NotNull String externalId,
+                                                        @QueryParam("service_id") @NotNull String serviceId) {
+        return webhookService
+                .findByExternalId(externalId, serviceId)
+                .map(WebhookEntity::getSigningKey)
+                .map(SigningKeyResponse::new)
+                .orElseThrow(NotFoundException::new);
+    }
+    
+    @UnitOfWork
+    @POST
+    @Path("/{externalId}/signing-key")
+    public SigningKeyResponse regenerateSigningKey(@PathParam("externalId") @NotNull String externalId,
+                                                   @QueryParam("service_id") @NotNull String serviceId) {
+        return webhookService.regenerateSigningKey(externalId, serviceId)
+                .map(WebhookEntity::getSigningKey)
+                .map(SigningKeyResponse::new)
+                .orElseThrow(NotFoundException::new);
+    }
+
     @UnitOfWork
     @GET
     public List<WebhookResponse> getWebhooks(@NotNull @QueryParam("live") Boolean live,

@@ -5,7 +5,7 @@ import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.EventMapper;
 import uk.gov.pay.webhooks.queue.InternalEvent;
-import uk.gov.pay.webhooks.util.ExternalIdGenerator;
+import uk.gov.pay.webhooks.util.IdGenerator;
 import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookStatus;
@@ -30,18 +30,18 @@ public class WebhookService {
     private final WebhookDao webhookDao;
     private final EventTypeDao eventTypeDao;
     private final InstantSource instantSource;
-    private final ExternalIdGenerator externalIdGenerator;
+    private final IdGenerator idGenerator;
 
     @Inject
-    public WebhookService(WebhookDao webhookDao, EventTypeDao eventTypeDao, InstantSource instantSource, ExternalIdGenerator externalIdGenerator) {
+    public WebhookService(WebhookDao webhookDao, EventTypeDao eventTypeDao, InstantSource instantSource, IdGenerator idGenerator) {
         this.webhookDao = webhookDao;
         this.eventTypeDao = eventTypeDao;
         this.instantSource = instantSource;
-        this.externalIdGenerator = externalIdGenerator;
+        this.idGenerator = idGenerator;
     }
 
     public WebhookEntity createWebhook(CreateWebhookRequest createWebhookRequest) {
-        var webhookEntity = WebhookEntity.from(createWebhookRequest, externalIdGenerator.newExternalId(), instantSource.instant());
+        var webhookEntity = WebhookEntity.from(createWebhookRequest, idGenerator.newExternalId(), instantSource.instant(), idGenerator.newWebhookSigningKey(createWebhookRequest.live()));
         if (createWebhookRequest.subscriptions() != null) {
             List<EventTypeEntity> subscribedEventTypes = createWebhookRequest.subscriptions().stream()
                     .map(eventTypeDao::findByName)
@@ -65,6 +65,13 @@ public class WebhookService {
     public List<WebhookEntity> list(boolean live) {
         return webhookDao.list(live);
     }
+    
+    public Optional<WebhookEntity> regenerateSigningKey(String externalId, String serviceId) {
+         return webhookDao.findByExternalId(externalId, serviceId).map(webhookEntity -> { 
+          webhookEntity.setSigningKey(idGenerator.newWebhookSigningKey(webhookEntity.isLive()));
+             return webhookEntity;
+         });
+    } 
     
     public WebhookEntity update(String externalId, String serviceId, List<JsonPatchRequest> patchRequests) {
         return webhookDao.findByExternalId(externalId, serviceId).map(webhookEntity -> {
