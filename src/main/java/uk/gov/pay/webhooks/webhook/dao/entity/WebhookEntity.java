@@ -75,8 +75,11 @@ public class WebhookEntity {
     
     @Enumerated(EnumType.STRING)
     private WebhookStatus status;
+    
+    @Column(name = "signing_key")
+    private String signingKey;
 
-    public static WebhookEntity from(CreateWebhookRequest createWebhookRequest, String externalId, Instant createdDate) {
+    public static WebhookEntity from(CreateWebhookRequest createWebhookRequest, String externalId, Instant createdDate, String webhookSigningKey) {
         var entity = new WebhookEntity();
         entity.setDescription(createWebhookRequest.description());
         entity.setCallbackUrl(createWebhookRequest.callbackUrl());
@@ -85,6 +88,7 @@ public class WebhookEntity {
         entity.setCreatedDate(Date.from(createdDate));
         entity.setStatus(WebhookStatus.ACTIVE);
         entity.setExternalId(externalId);
+        entity.setSigningKey(webhookSigningKey);
         return entity;
     }
 
@@ -117,6 +121,10 @@ public class WebhookEntity {
         return status;
     }
 
+    public String getSigningKey() {
+        return signingKey;
+    }
+
     public Set<EventTypeEntity> getSubscriptions() {
         return subscriptions;
     }
@@ -147,6 +155,10 @@ public class WebhookEntity {
 
     public void setCreatedDate(Date instant) {
         this.createdDate = instant;
+    }
+    
+    public void setSigningKey(String signingKey) {
+        this.signingKey = signingKey;
     }
 
     public void addSubscription(EventTypeEntity eventTypeEntity) {

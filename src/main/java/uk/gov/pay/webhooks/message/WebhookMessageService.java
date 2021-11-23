@@ -11,7 +11,7 @@ import uk.gov.pay.webhooks.ledger.model.LedgerTransaction;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.queue.InternalEvent;
-import uk.gov.pay.webhooks.util.ExternalIdGenerator;
+import uk.gov.pay.webhooks.util.IdGenerator;
 import uk.gov.pay.webhooks.webhook.WebhookService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
@@ -28,7 +28,7 @@ public class WebhookMessageService {
     private final LedgerService ledgerService;
     private final EventTypeDao eventTypeDao;
     private final InstantSource instantSource;
-    private final ExternalIdGenerator externalIdGenerator;
+    private final IdGenerator idGenerator;
     private final ObjectMapper objectMapper;
     private final WebhookMessageDao webhookMessageDao;
 
@@ -37,14 +37,14 @@ public class WebhookMessageService {
                                  LedgerService ledgerService, 
                                  EventTypeDao eventTypeDao,
                                  InstantSource instantSource,
-                                 ExternalIdGenerator externalIdGenerator,
+                                 IdGenerator idGenerator,
                                  ObjectMapper objectMapper,
                                  WebhookMessageDao webhookMessageDao) {
         this.webhookService = webhookService;
         this.ledgerService = ledgerService;
         this.eventTypeDao = eventTypeDao;
         this.instantSource = instantSource;
-        this.externalIdGenerator = externalIdGenerator;
+        this.idGenerator = idGenerator;
         this.objectMapper = objectMapper;
         this.webhookMessageDao = webhookMessageDao;
     }
@@ -65,7 +65,7 @@ public class WebhookMessageService {
         JsonNode resource = objectMapper.valueToTree(ledgerTransaction); // will probably need some more transformation
 
         var webhookMessageEntity = new WebhookMessageEntity();
-        webhookMessageEntity.setExternalId(externalIdGenerator.newExternalId());
+        webhookMessageEntity.setExternalId(idGenerator.newExternalId());
         webhookMessageEntity.setCreatedDate(Date.from(instantSource.instant()));
         webhookMessageEntity.setWebhookEntity(webhook);
         webhookMessageEntity.setEventDate(Date.from(event.eventDate().toInstant()));
