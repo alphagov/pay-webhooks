@@ -41,3 +41,13 @@ database:
   minIdleTime: 1 minute
 
 ledgerBaseURL: ${LEDGER_URL}
+
+sqsConfig:
+  nonStandardServiceEndpoint: ${AWS_SQS_NON_STANDARD_SERVICE_ENDPOINT:-false}
+  endpoint: ${AWS_SQS_ENDPOINT:-}
+  region: ${AWS_SQS_REGION}
+  secretKey: ${AWS_SECRET_KEY}
+  accessKey: ${AWS_ACCESS_KEY}
+  eventQueueUrl: ${AWS_SQS_PAYMENT_EVENT_QUEUE_URL}
+  messageMaximumWaitTimeInSeconds: ${AWS_SQS_MESSAGE_MAXIMUM_WAIT_TIME_IN_SECONDS:-20}
+  messageMaximumBatchSize: ${AWS_SQS_MESSAGE_MAXIMUM_BATCH_SIZE:-10}
