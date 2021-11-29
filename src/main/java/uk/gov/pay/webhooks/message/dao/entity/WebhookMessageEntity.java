@@ -32,6 +32,9 @@ public class WebhookMessageEntity {
     @Column(name = "created_date")
     private Date createdDate;
 
+    @Column(name = "send_at")
+    private Date sendAt;
+
     @ManyToOne
     @JoinColumn(name = "webhook_id", updatable = false)
     private WebhookEntity webhookEntity;
@@ -60,6 +63,10 @@ public class WebhookMessageEntity {
 
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
+    }    
+    
+    public void setSendAt(Date createdDate) {
+        this.sendAt = sendAt;
     }
 
     public WebhookEntity getWebhookEntity() {

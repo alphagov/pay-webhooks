@@ -71,6 +71,7 @@ public class WebhookMessageService {
         webhookMessageEntity.setEventDate(Date.from(event.eventDate().toInstant()));
         webhookMessageEntity.setEventType(eventTypeDao.findByName(EventTypeName.of(event.eventType())).orElseThrow(IllegalArgumentException::new));
         webhookMessageEntity.setResource(resource);
+        webhookMessageEntity.setSendAt(Date.from(instantSource.instant()));
         return webhookMessageEntity;
     }
 }
