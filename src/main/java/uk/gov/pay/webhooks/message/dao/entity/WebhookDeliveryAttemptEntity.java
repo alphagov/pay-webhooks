@@ -11,6 +11,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import java.time.Instant;
 import java.util.Date;
 
 @Entity
@@ -43,6 +44,16 @@ public class WebhookDeliveryAttemptEntity {
     
     @Column(name = "successful")
     private boolean successful;
+    
+    public static WebhookDeliveryAttemptEntity from(WebhookMessageEntity webhookMessageEntity, Instant createdDate, String deliveryStatus, boolean successful) {
+     var entity = new WebhookDeliveryAttemptEntity();
+     entity.setCreatedDate(Date.from(createdDate));
+     entity.setWebhookEntity(webhookMessageEntity.getWebhookEntity());
+     entity.setWebhookMessageEntity(webhookMessageEntity);
+     entity.setDeliveryStatus(deliveryStatus);
+     entity.setSuccessful(successful);
+     return entity;
+    }
 
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
