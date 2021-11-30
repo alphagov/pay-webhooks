@@ -13,7 +13,6 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 import java.sql.Date;
 import java.time.Instant;
 import java.time.InstantSource;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -35,12 +34,10 @@ public class WebhookMessageDaoTest {
     public void setUp() {
         webhookMessageDao = new WebhookMessageDao(database.getSessionFactory());
         instantSource = InstantSource.fixed(Instant.now());
-        
     }
 
     @Test
     public void persistsSendAtDate() {
-
         WebhookMessageEntity persisted = database.inTransaction(() -> {
             WebhookMessageEntity webhookMessageEntity = new WebhookMessageEntity();
             webhookMessageEntity.setSendAt(Date.from(instantSource.instant()));
