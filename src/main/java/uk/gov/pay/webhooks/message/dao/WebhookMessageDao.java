@@ -22,9 +22,9 @@ public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
         return webhookMessage;
     }
     
-    public Optional<WebhookMessageEntity> nextToSend(Date sendAt){
+    public Optional<WebhookMessageEntity> nextToSend(Date sendBefore){
      return namedTypedQuery(WebhookMessageEntity.NEXT_TO_SEND)
-             .setParameter("send_at", sendAt)
+             .setParameter("send_before", sendBefore)
              .setMaxResults(1)
              .setLockMode(LockModeType.PESSIMISTIC_WRITE)
              .setHint(

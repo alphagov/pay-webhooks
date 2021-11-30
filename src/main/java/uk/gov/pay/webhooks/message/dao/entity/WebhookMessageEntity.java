@@ -22,7 +22,7 @@ import java.util.Date;
 
 @NamedQuery(
         name = WebhookMessageEntity.NEXT_TO_SEND,
-        query = "select m from WebhookMessageEntity m where send_at < :send_at order by send_at ASC"
+        query = "select m from WebhookMessageEntity m where send_at < :send_before order by send_at ASC"
 )
 
 @Entity
