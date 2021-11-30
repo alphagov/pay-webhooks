@@ -1,6 +1,10 @@
 package uk.gov.pay.webhooks.message.dao.entity;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.vladmihalcea.hibernate.type.json.JsonType;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
@@ -11,16 +15,29 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import java.util.Date;
 
+@NamedQuery(
+        name = WebhookMessageEntity.NEXT_TO_SEND,
+        query = "select m from WebhookMessageEntity m where send_at > :send_at order by created_date ASC FOR UPDATE SKIP LOCKED"
+)
+
 @Entity
 @SequenceGenerator(name="webhook_messages_id_seq", sequenceName = "webhook_messages_id_seq", allocationSize = 1)
 @Table(name = "webhook_messages")
-public class WebhookMessageEntity {
 
-    public WebhookMessageEntity() {}
+@TypeDefs({
+        @TypeDef(name = "json", typeClass = JsonType.class)
+})
+
+public class WebhookMessageEntity {
+    public static final String NEXT_TO_SEND = "WebhookMessages.next_to_send";
+
+    public WebhookMessageEntity() {
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "event_types_id_seq")
@@ -45,8 +62,9 @@ public class WebhookMessageEntity {
     @ManyToOne
     @JoinColumn(name = "event_type", updatable = false)
     private EventTypeEntity eventType;
-    
-    @Column(name = "resource")
+
+    @Type(type = "json")
+    @Column(name = "resource", columnDefinition = "json")
     private JsonNode resource;
 
     public String getExternalId() {

@@ -9,7 +9,7 @@ CREATE table webhook_messages (
     webhook_id INT NOT NULL,
     event_date TIMESTAMP WITH TIME ZONE NOT NULL,
     event_type INT NOT NULL,
-    resource JSONB NOT NULL,
+    resource JSON NOT NULL,
     send_at TIMESTAMP WITH TIME ZONE
 );
 
