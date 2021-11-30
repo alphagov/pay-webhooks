@@ -83,8 +83,8 @@ public class WebhookMessageEntity {
         this.createdDate = createdDate;
     }    
     
-    public void setSendAt(Date createdDate) {
-        this.sendAt = sendAt;
+    public void setSendAt(Date sendAtDate) {
+        this.sendAt = sendAtDate;
     }
 
     public WebhookEntity getWebhookEntity() {
@@ -97,6 +97,10 @@ public class WebhookMessageEntity {
 
     public Date getEventDate() {
         return eventDate;
+    }
+
+    public Date getSendAt() {
+        return sendAt;
     }
 
     public void setEventDate(Date eventDate) {

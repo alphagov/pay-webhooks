@@ -19,6 +19,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.time.InstantSource;
 import java.util.Date;
+import java.util.Optional;
 
 public class WebhookMessageService {
 
@@ -59,6 +60,10 @@ public class WebhookMessageService {
                     .map(webhook -> buildWebhookMessage(webhook, event, ledgerTransaction))
                     .forEach(webhookMessageDao::create);
         }
+    }
+    
+    Optional<WebhookMessageEntity> nextToSend() {
+        return webhookMessageDao.nextToSend(Date.from(instantSource.instant()));
     }
 
     private WebhookMessageEntity buildWebhookMessage(WebhookEntity webhook, InternalEvent event, LedgerTransaction ledgerTransaction) {
