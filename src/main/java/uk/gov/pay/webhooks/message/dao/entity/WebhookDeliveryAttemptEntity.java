@@ -45,9 +45,9 @@ public class WebhookDeliveryAttemptEntity {
     @Column(name = "successful")
     private boolean successful;
     
-    public static WebhookDeliveryAttemptEntity from(WebhookMessageEntity webhookMessageEntity, Instant createdDate, String deliveryStatus, boolean successful) {
+    public static WebhookDeliveryAttemptEntity from(WebhookMessageEntity webhookMessageEntity, Instant createdInstant, String deliveryStatus, boolean successful) {
      var entity = new WebhookDeliveryAttemptEntity();
-     entity.setCreatedDate(Date.from(createdDate));
+     entity.setCreatedDate(Date.from(createdInstant));
      entity.setWebhookEntity(webhookMessageEntity.getWebhookEntity());
      entity.setWebhookMessageEntity(webhookMessageEntity);
      entity.setDeliveryStatus(deliveryStatus);
