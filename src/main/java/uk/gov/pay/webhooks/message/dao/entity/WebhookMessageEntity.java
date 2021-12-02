@@ -34,7 +34,7 @@ import java.util.Date;
 })
 
 public class WebhookMessageEntity {
-    public static final String NEXT_TO_SEND = "WebhookMessages.next_to_send";
+    public static final String NEXT_TO_SEND = "WebhookMessageEntity.next_to_send";
 
     public WebhookMessageEntity() {
     }

@@ -1,12 +1,20 @@
 package uk.gov.pay.webhooks.queue.managed;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.hibernate.UnitOfWork;
+import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.lifecycle.Managed;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.context.internal.ManagedSessionContext;
+import uk.gov.pay.webhooks.app.WebhooksConfig;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookDeliveryAttemptEntity;
 import uk.gov.pay.webhooks.webhook.WebhookService;
 
 import javax.inject.Inject;
+import javax.ws.rs.Path;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -17,31 +25,48 @@ import java.time.Duration;
 import java.time.InstantSource;
 import java.util.Date;
 
+
 public class WebhookMessageSender implements Managed {
     
     private final WebhookService webhookService;
     private final ObjectMapper objectMapper;
     private final InstantSource instantSource;
+    private  final SessionFactory sessionFactory;
 
     @Inject
-    public WebhookMessageSender(WebhookService webhookService, ObjectMapper objectMapper, InstantSource instantSource) {
+    public WebhookMessageSender(WebhookService webhookService, ObjectMapper objectMapper, InstantSource instantSource, SessionFactory sessionFactory) {
         this.webhookService = webhookService;
         this.objectMapper = objectMapper;
-        this.instantSource = instantSource;
+        this.instantSource = instantSource; 
+        this.sessionFactory = sessionFactory;
     }
 
     @Override
     public void start() throws Exception {
-            
-    }
+        Session session = sessionFactory.openSession();
+        try (session) {
+            ManagedSessionContext.bind(session);
+            Transaction transaction = session.beginTransaction();
+            try {
+                sendWebhook();
+            }
+            catch (Exception e) {
+                transaction.rollback();
+                throw new RuntimeException(e);
+            } finally {
+                session.close();
+                ManagedSessionContext.unbind(sessionFactory);
+            }
+     }
+}
 
     @Override
     public void stop() throws Exception {
 
     }
     
-    @UnitOfWork
-    private void sendWebhook() throws IOException, InterruptedException {
+    
+    private boolean sendWebhook() throws IOException, InterruptedException {
         var nextToSend = webhookService.nextWebhookMessageToSend();
         if (nextToSend.isPresent()) {
             var uri = URI.create(nextToSend.get().getWebhookEntity().getCallbackUrl());
@@ -89,5 +114,6 @@ public class WebhookMessageSender implements Managed {
                 );  
             }
         }
+        return nextToSend.isPresent();
     }
 }
