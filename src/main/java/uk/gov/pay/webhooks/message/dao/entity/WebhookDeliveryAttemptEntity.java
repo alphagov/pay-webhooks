@@ -30,11 +30,7 @@ public class WebhookDeliveryAttemptEntity {
 
     @Column(name = "created_date")
     private Date createdDate;
-
-    @ManyToOne
-    @JoinColumn(name = "webhook_id", updatable = false)
-    private WebhookEntity webhookEntity;
-    
+        
     @Column(name = "delivery_status")
     private String deliveryStatus;
 
@@ -48,7 +44,6 @@ public class WebhookDeliveryAttemptEntity {
     public static WebhookDeliveryAttemptEntity from(WebhookMessageEntity webhookMessageEntity, Instant createdInstant, String deliveryStatus, boolean successful) {
      var entity = new WebhookDeliveryAttemptEntity();
      entity.setCreatedDate(Date.from(createdInstant));
-     entity.setWebhookEntity(webhookMessageEntity.getWebhookEntity());
      entity.setWebhookMessageEntity(webhookMessageEntity);
      entity.setDeliveryStatus(deliveryStatus);
      entity.setSuccessful(successful);
@@ -59,9 +54,7 @@ public class WebhookDeliveryAttemptEntity {
         this.createdDate = createdDate;
     }
 
-    public void setWebhookEntity(WebhookEntity webhookEntity) {
-        this.webhookEntity = webhookEntity;
-    }
+
 
     public void setDeliveryStatus(String deliveryStatus) {
         this.deliveryStatus = deliveryStatus;
