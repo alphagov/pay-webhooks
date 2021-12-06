@@ -36,9 +36,6 @@ import java.util.Date;
 public class WebhookMessageEntity {
     public static final String NEXT_TO_SEND = "WebhookMessageEntity.next_to_send";
 
-    public WebhookMessageEntity() {
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "event_types_id_seq")
     private Long id;
