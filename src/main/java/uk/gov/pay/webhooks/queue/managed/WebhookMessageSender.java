@@ -7,7 +7,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.context.internal.ManagedSessionContext;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
-import uk.gov.pay.webhooks.message.dao.entity.WebhookDeliveryAttemptEntity;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -27,13 +26,13 @@ public class WebhookMessageSender implements Managed {
     private WebhookMessageDao webhookMessageDao;
     private final ObjectMapper objectMapper;
     private final InstantSource instantSource;
-    private  final SessionFactory sessionFactory;
+    private final SessionFactory sessionFactory;
 
     @Inject
     public WebhookMessageSender(WebhookMessageDao webhookMessageDao, ObjectMapper objectMapper, InstantSource instantSource, SessionFactory sessionFactory) {
         this.webhookMessageDao = webhookMessageDao;
         this.objectMapper = objectMapper;
-        this.instantSource = instantSource; 
+        this.instantSource = instantSource;
         this.sessionFactory = sessionFactory;
     }
 
@@ -46,71 +45,72 @@ public class WebhookMessageSender implements Managed {
             try {
                 sendWebhook();
                 transaction.commit();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 transaction.rollback();
                 throw new RuntimeException(e);
             } finally {
                 session.close();
                 ManagedSessionContext.unbind(sessionFactory);
             }
-     }
-}
+        }
+    }
 
     @Override
     public void stop() throws Exception {
 
     }
-    
-    
+
+
     private boolean sendWebhook() throws IOException, InterruptedException {
-        var nextToSend = webhookMessageDao.nextToSend(Date.from(Instant.now()));
-        if (nextToSend.isPresent()) {
-            var uri = URI.create(nextToSend.get().getWebhookEntity().getCallbackUrl());
-            var httpRequest = HttpRequest.newBuilder(uri)
-                    .timeout(Duration.ofSeconds(5))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(nextToSend.get().getResource())))
-                    .build();
-            HttpResponse<String> response = null;
-            try {
-                response = HttpClient.newHttpClient().send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            } catch (HttpTimeoutException e) {
-                        nextToSend.get().setSendAt(Date.from(instantSource.instant().plusSeconds(600)));
-                        WebhookDeliveryAttemptEntity.from(
-                        nextToSend.get(),
-                        instantSource.instant(),
-                        "Request timed out",
-                        false
-                );
-            } catch (IOException | InterruptedException e) {
-            nextToSend.get().setSendAt(Date.from(instantSource.instant().plusSeconds(600)));
-           WebhookDeliveryAttemptEntity.from(
-                   nextToSend.get(),
-                   instantSource.instant(),
-                   e.getMessage(),
-                   false
-           );
-            }
-            var statusCode = response.statusCode();
-            if (statusCode >= 200 && statusCode <= 299) {
-                nextToSend.get().setSendAt(null);
-                                WebhookDeliveryAttemptEntity.from(
-                                        nextToSend.get(),
-                                        instantSource.instant(),
-                                        String.valueOf(statusCode),
-                                        true
-                                );
-            } else {
-                nextToSend.get().setSendAt(Date.from(instantSource.instant().plusSeconds(600)) );
-                WebhookDeliveryAttemptEntity.from(
-                        nextToSend.get(),
-                        instantSource.instant(),
-                        String.valueOf(statusCode),
-                        false
-                );  
-            }
-        }
-        return nextToSend.isPresent();
+//        var nextToSend = webhookMessageDao.nextToSend(Date.from(Instant.now()));
+//        if (nextToSend.isPresent()) {
+//            var uri = URI.create(nextToSend.get().getWebhookEntity().getCallbackUrl());
+//            var httpRequest = HttpRequest.newBuilder(uri)
+//                    .timeout(Duration.ofSeconds(5))
+//                    .header("Content-Type", "application/json")
+//                    .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(nextToSend.get().getResource())))
+//                    .build();
+//            HttpResponse<String> response = null;
+//            try {
+//                response = HttpClient.newHttpClient().send(httpRequest, HttpResponse.BodyHandlers.ofString());
+//            } catch (HttpTimeoutException e) {
+//                        nextToSend.get().setSendAt(Date.from(instantSource.instant().plusSeconds(600)));
+//                        WebhookDeliveryQueueEntity.from(
+//                        nextToSend.get(),
+//                        instantSource.instant(),
+//                        "Request timed out",
+//                        false
+//                );
+//            } catch (IOException | InterruptedException e) {
+//            nextToSend.get().setSendAt(Date.from(instantSource.instant().plusSeconds(600)));
+//           WebhookDeliveryQueueEntity.from(
+//                   nextToSend.get(),
+//                   instantSource.instant(),
+//                   e.getMessage(),
+//                   false
+//           );
+//            }
+//            var statusCode = response.statusCode();
+//            if (statusCode >= 200 && statusCode <= 299) {
+//                nextToSend.get().setSendAt(null);
+//                                WebhookDeliveryQueueEntity.from(
+//                                        nextToSend.get(),
+//                                        instantSource.instant(),
+//                                        String.valueOf(statusCode),
+//                                        true
+//                                );
+//            } else {
+//                nextToSend.get().setSendAt(Date.from(instantSource.instant().plusSeconds(600)) );
+//                WebhookDeliveryQueueEntity.from(
+//                        nextToSend.get(),
+//                        instantSource.instant(),
+//                        String.valueOf(statusCode),
+//                        false
+//                );  
+//            }
+//        }
+//        return nextToSend.isPresent();
+//    }
+        return false;
     }
 }
