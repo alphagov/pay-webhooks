@@ -46,7 +46,7 @@ public class WebhookDeliveryQueueDaoTest {
     public void getsNextQueuedItem() {
         WebhookMessageEntity persisted = database.inTransaction(() -> {
             WebhookMessageEntity webhookMessageEntity = new WebhookMessageEntity();
-            webhookMessageEntity.setSendAt(Date.from(instantSource.instant().minusSeconds(10)));
+            webhookMessageEntity.setCreatedDate(Date.from(instantSource.instant().minusSeconds(10)));
             return webhookMessageDao.create(webhookMessageEntity);
         });
 

@@ -1,5 +1,7 @@
 package uk.gov.pay.webhooks.webhook;
 
+import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
+import uk.gov.pay.webhooks.deliveryqueue.dao.entity.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
@@ -32,17 +34,17 @@ public class WebhookService {
 
     private final WebhookDao webhookDao;
     private final EventTypeDao eventTypeDao;
-    private final WebhookMessageDao webhookMessageDao;
     private final InstantSource instantSource;
     private final IdGenerator idGenerator;
+    private WebhookDeliveryQueueDao webhookDeliveryQueueDao;
 
     @Inject
-    public WebhookService(WebhookDao webhookDao, EventTypeDao eventTypeDao, InstantSource instantSource, IdGenerator idGenerator, WebhookMessageDao webhookMessageDao) {
+    public WebhookService(WebhookDao webhookDao, EventTypeDao eventTypeDao, InstantSource instantSource, IdGenerator idGenerator, WebhookDeliveryQueueDao webhookDeliveryQueueDao) {
         this.webhookDao = webhookDao;
         this.eventTypeDao = eventTypeDao;
         this.instantSource = instantSource;
         this.idGenerator = idGenerator;
-        this.webhookMessageDao = webhookMessageDao;
+        this.webhookDeliveryQueueDao = webhookDeliveryQueueDao;
     }
 
     public WebhookEntity createWebhook(CreateWebhookRequest createWebhookRequest) {
@@ -115,7 +117,7 @@ public class WebhookService {
                 .anyMatch(internalEventName -> internalEventName.equals(event.eventType()));
     }
     
-    public Optional<WebhookMessageEntity> nextWebhookMessageToSend() {
-        return webhookMessageDao.nextToSend(Date.from(instantSource.instant()));
+    public Optional<WebhookDeliveryQueueEntity> nextWebhookMessageToSend() {
+        return webhookDeliveryQueueDao.nextToSend(Date.from(instantSource.instant()));
     }
 }

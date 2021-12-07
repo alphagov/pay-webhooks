@@ -9,8 +9,7 @@ CREATE table webhook_messages (
     webhook_id INT NOT NULL,
     event_date TIMESTAMP WITH TIME ZONE NOT NULL,
     event_type INT NOT NULL,
-    resource JSON NOT NULL,
-    send_at TIMESTAMP WITH TIME ZONE
+    resource JSON NOT NULL
 );
 
 ALTER TABLE webhook_messages ADD CONSTRAINT fk_webhook_message_webhook_id FOREIGN KEY (webhook_id) REFERENCES webhooks (id);

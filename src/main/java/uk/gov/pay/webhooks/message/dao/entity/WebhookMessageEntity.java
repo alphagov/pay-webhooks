@@ -20,11 +20,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import java.util.Date;
 
-@NamedQuery(
-        name = WebhookMessageEntity.NEXT_TO_SEND,
-        query = "select m from WebhookMessageEntity m where send_at < :send_before order by send_at ASC"
-)
-
 @Entity
 @SequenceGenerator(name="webhook_messages_id_seq", sequenceName = "webhook_messages_id_seq", allocationSize = 1)
 @Table(name = "webhook_messages")
@@ -45,9 +40,6 @@ public class WebhookMessageEntity {
 
     @Column(name = "created_date")
     private Date createdDate;
-
-    @Column(name = "send_at")
-    private Date sendAt;
 
     @ManyToOne
     @JoinColumn(name = "webhook_id", updatable = false)
@@ -78,10 +70,6 @@ public class WebhookMessageEntity {
 
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
-    }    
-    
-    public void setSendAt(Date sendAtDate) {
-        this.sendAt = sendAtDate;
     }
 
     public WebhookEntity getWebhookEntity() {
@@ -94,10 +82,6 @@ public class WebhookMessageEntity {
 
     public Date getEventDate() {
         return eventDate;
-    }
-
-    public Date getSendAt() {
-        return sendAt;
     }
 
     public void setEventDate(Date eventDate) {
