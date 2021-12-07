@@ -11,7 +11,6 @@ CREATE table webhook_delivery_queue (
                                   delivery_status VARCHAR(64)
 );
 
-ALTER TABLE webhook_delivery_queue ADD CONSTRAINT fk_webhook_id FOREIGN KEY (webhook_id) REFERENCES webhooks (id);
 ALTER TABLE webhook_delivery_queue ADD CONSTRAINT fk_webhook_message_id FOREIGN KEY (webhook_message_id) REFERENCES webhook_messages (id);
 
 --rollback DROP table webhook_delivery_queue
