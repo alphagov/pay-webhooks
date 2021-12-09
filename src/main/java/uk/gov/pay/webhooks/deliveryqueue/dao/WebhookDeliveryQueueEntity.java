@@ -18,16 +18,12 @@ import java.util.Optional;
 
 @NamedQuery(
         name = WebhookDeliveryQueueEntity.NEXT_TO_SEND,
-<<<<<<< HEAD
         query = "select m from WebhookDeliveryQueueEntity m where :send_at > send_at and delivery_status = 'PENDING' order by send_at asc"
 )
 
 @NamedQuery(
         name = WebhookDeliveryQueueEntity.COUNT_FAILED,
         query = "select count(m) from WebhookDeliveryQueueEntity m where webhook_message_id = :webhook_message_id and delivery_status = 'FAILED'"
-=======
-        query = "select m from WebhookDeliveryQueueEntity m where :send_at <= send_at"
->>>>>>> add entity
 )
 
 @Entity
