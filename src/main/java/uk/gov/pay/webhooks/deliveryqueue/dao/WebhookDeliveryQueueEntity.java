@@ -112,11 +112,11 @@ public class WebhookDeliveryQueueEntity {
         return entity;
     }
 
-    public static WebhookDeliveryQueueEntity recordResult(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, String deliveryResult, Optional<Integer> statusCode, DeliveryStatus deliveryStatus) {
+    public static WebhookDeliveryQueueEntity recordResult(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, String deliveryResult, Integer statusCode, DeliveryStatus deliveryStatus) {
         var entity = webhookDeliveryQueueEntity;
         entity.setDeliveryResult(deliveryResult);
         entity.setDeliveryStatus(deliveryStatus.name());
-        statusCode.ifPresent(entity::setStatusCode);
+        Optional.ofNullable(statusCode).ifPresent(entity::setStatusCode);
         return entity;
     }
 
