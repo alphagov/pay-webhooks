@@ -18,7 +18,7 @@ import java.util.Optional;
 
 @NamedQuery(
         name = WebhookDeliveryQueueEntity.NEXT_TO_SEND,
-        query = "select m from WebhookDeliveryQueueEntity m where :send_at <= send_at"
+        query = "select m from WebhookDeliveryQueueEntity m where :send_at > send_at order by send_at asc"
 )
 
 @Entity
