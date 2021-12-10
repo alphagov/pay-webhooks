@@ -11,17 +11,14 @@ import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
+import uk.gov.pay.webhooks.deliveryqueue.managed.WebhookMessageSender;
 import uk.gov.pay.webhooks.healthcheck.HealthCheckResource;
 import uk.gov.pay.webhooks.healthcheck.Ping;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.webhook.resource.WebhookResource;
-import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
-import uk.gov.pay.webhooks.healthcheck.HealthCheckResource;
-import uk.gov.pay.webhooks.healthcheck.Ping;
 import uk.gov.pay.webhooks.queue.QueueMessageReceiver;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
-import uk.gov.pay.webhooks.webhook.resource.WebhookResource;
 import uk.gov.service.payments.commons.utils.healthchecks.DatabaseHealthCheck;
 
 public class WebhooksApp extends Application<WebhooksConfig> {
@@ -54,6 +51,7 @@ public class WebhooksApp extends Application<WebhooksConfig> {
         if (configuration.getQueueMessageReceiverConfig().isBackgroundProcessingEnabled()) {
             environment.lifecycle().manage(injector.getInstance(QueueMessageReceiver.class));
         }
+        environment.lifecycle().manage(injector.getInstance(WebhookMessageSender.class));
     }
 
     @Override
