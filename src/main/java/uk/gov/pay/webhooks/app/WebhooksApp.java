@@ -11,6 +11,7 @@ import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
+import uk.gov.pay.webhooks.deliveryqueue.managed.WebhookMessageSender;
 import uk.gov.pay.webhooks.healthcheck.HealthCheckResource;
 import uk.gov.pay.webhooks.healthcheck.Ping;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
@@ -45,6 +46,7 @@ public class WebhooksApp extends Application<WebhooksConfig> {
         environment.healthChecks().register("database", new DatabaseHealthCheck(configuration.getDataSourceFactory()));
         environment.jersey().register(injector.getInstance(HealthCheckResource.class));
         environment.jersey().register(injector.getInstance(WebhookResource.class));
+        environment.lifecycle().manage(injector.getInstance(WebhookMessageSender.class));
     }
 
     @Override
