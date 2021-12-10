@@ -34,10 +34,7 @@ import java.util.Optional;
 
 public class WebhookDeliveryQueueEntity {
     public static final String NEXT_TO_SEND = "WebhookDeliveryQueue.next_to_send";
-<<<<<<< HEAD
     public static final String COUNT_FAILED = "WebhookDeliveryQueue.count_failed";
-=======
->>>>>>> add entity
 
 
     @Id

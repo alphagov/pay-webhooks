@@ -12,6 +12,11 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import java.time.Instant;
 import java.time.InstantSource;
+import java.util.Date;
+import java.util.Optional;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 
 @ExtendWith(DropwizardExtensionsSupport.class)
@@ -36,6 +41,15 @@ class WebhookDeliveryQueueDaoTest {
     }
 
     @Test
-    void nextToSend() {
+    void nextToSendReturnsEnqueuedMessage() {
+        WebhookMessageEntity persisted = database.inTransaction(() -> {
+            WebhookMessageEntity webhookMessageEntity = new WebhookMessageEntity();
+            webhookMessageEntity.setCreatedDate(Date.from(instantSource.instant()));
+            return webhookMessageDao.create(webhookMessageEntity);
+        });
+        database.inTransaction(() -> {
+            webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Date.from(instantSource.instant().minusMillis(1)));
+            assertThat(webhookDeliveryQueueDao.nextToSend(Date.from(instantSource.instant())).get().getWebhookMessageEntity(), is(persisted));
+        });
     }
 }
