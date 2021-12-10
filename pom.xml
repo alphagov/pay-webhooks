@@ -48,7 +48,7 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.8.1</version>
+                <version>5.8.2</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -150,7 +150,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>4.0.0</version>
+            <version>4.1.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
