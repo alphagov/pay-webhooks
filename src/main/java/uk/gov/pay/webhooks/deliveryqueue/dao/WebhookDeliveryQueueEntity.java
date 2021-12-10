@@ -64,6 +64,10 @@ public class WebhookDeliveryQueueEntity {
     }
 
 
+    public String getDeliveryStatus() {
+        return deliveryStatus;
+    }
+
     @Column(name = "delivery_status")
     private String deliveryStatus;
 

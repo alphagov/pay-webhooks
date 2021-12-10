@@ -34,8 +34,8 @@ public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEnt
                 .findAny();
     }
 
-    public void enqueueFrom(WebhookMessageEntity webhookMessageEntity, WebhookDeliveryQueueEntity.DeliveryStatus deliveryStatus, Date sendAt) {
-        persist(WebhookDeliveryQueueEntity.enqueueFrom(
+    public WebhookDeliveryQueueEntity enqueueFrom(WebhookMessageEntity webhookMessageEntity, WebhookDeliveryQueueEntity.DeliveryStatus deliveryStatus, Date sendAt) {
+       return persist(WebhookDeliveryQueueEntity.enqueueFrom(
                 webhookMessageEntity,
                 instantSource.instant(),
                 deliveryStatus,
