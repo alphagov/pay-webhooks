@@ -67,4 +67,19 @@ class WebhookDeliveryQueueDaoTest {
             assertThat(updated.getStatusCode(), is(200));
         });
     }
+
+    @Test
+    void countFailed() {
+        WebhookMessageEntity persisted = database.inTransaction(() -> {
+            WebhookMessageEntity webhookMessageEntity = new WebhookMessageEntity();
+            webhookMessageEntity.setCreatedDate(Date.from(instantSource.instant()));
+            return webhookMessageDao.create(webhookMessageEntity);
+        });
+        database.inTransaction(() -> {
+            webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, Date.from(instantSource.instant()));
+            webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, Date.from(instantSource.instant()));
+            assertThat(webhookDeliveryQueueDao.countFailed(persisted), is(2L));
+        });
+    }
 }
+

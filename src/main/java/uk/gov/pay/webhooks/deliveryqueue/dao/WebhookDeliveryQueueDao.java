@@ -41,6 +41,12 @@ public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEnt
                 deliveryStatus,
                 sendAt));
     }
+    
+    public Long countFailed(WebhookMessageEntity webhookMessageEntity) {
+        return (Long) namedQuery(WebhookDeliveryQueueEntity.COUNT_FAILED)
+                .setParameter("webhook_message_id", webhookMessageEntity)
+                .getSingleResult();
+    }
 
     public WebhookDeliveryQueueEntity recordResult(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, String deliveryResult, Integer statusCode, WebhookDeliveryQueueEntity.DeliveryStatus deliveryStatus) {
         return persist(WebhookDeliveryQueueEntity.recordResult(webhookDeliveryQueueEntity, deliveryResult, statusCode, deliveryStatus));
