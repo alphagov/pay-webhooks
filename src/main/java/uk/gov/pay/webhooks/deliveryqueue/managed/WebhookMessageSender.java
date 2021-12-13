@@ -48,7 +48,7 @@ public class WebhookMessageSender implements Managed {
         scheduledExecutorService.scheduleWithFixedDelay(
                 this::processQueue,
                 30,
-                30,
+                1,
                 TimeUnit.SECONDS
         );
     }
