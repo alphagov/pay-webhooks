@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class WebhookMessageSender implements Managed {
+public class WebhookMessageSendingQueueProcessor implements Managed {
 
     private WebhookDeliveryQueueDao webhookDeliveryQueueDao;
     private final ObjectMapper objectMapper;
@@ -30,7 +30,7 @@ public class WebhookMessageSender implements Managed {
     private final ScheduledExecutorService scheduledExecutorService;
 
     @Inject
-    public WebhookMessageSender(Environment environment, WebhookDeliveryQueueDao webhookDeliveryQueueDao, ObjectMapper objectMapper, InstantSource instantSource, SessionFactory sessionFactory) {
+    public WebhookMessageSendingQueueProcessor(Environment environment, WebhookDeliveryQueueDao webhookDeliveryQueueDao, ObjectMapper objectMapper, InstantSource instantSource, SessionFactory sessionFactory) {
         this.webhookDeliveryQueueDao = webhookDeliveryQueueDao;
         this.objectMapper = objectMapper;
         this.instantSource = instantSource;
@@ -55,8 +55,8 @@ public class WebhookMessageSender implements Managed {
     public void processQueue() {
         try {
             Session session = sessionFactory.openSession();
-            Optional<WebhookDeliveryQueueEntity> maybeQueueItem = pollQueue(session);
-            maybeQueueItem.ifPresent(this::attemptSend);
+            pollQueue(session);
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -88,12 +88,14 @@ public class WebhookMessageSender implements Managed {
 
     }
 
-    private Optional<WebhookDeliveryQueueEntity> pollQueue(Session session) {
+    private void pollQueue(Session session) {
         try (session) {
             ManagedSessionContext.bind(session);
             Transaction transaction = session.beginTransaction();
             try {
-                return webhookDeliveryQueueDao.nextToSend(Date.from(instantSource.instant()));
+                Optional<WebhookDeliveryQueueEntity> maybeQueueItem = webhookDeliveryQueueDao.nextToSend(Date.from(instantSource.instant()));
+                maybeQueueItem.ifPresent(this::attemptSend);
+                transaction.commit();
             } catch (Exception e) {
                 transaction.rollback();
                 throw new RuntimeException(e);
