@@ -10,7 +10,9 @@ import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 
 import javax.inject.Inject;
+import java.time.Duration;
 import java.time.InstantSource;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Optional;
 
@@ -38,10 +40,22 @@ public class WebhookMessageSender implements Managed {
     }
 
     private void attemptSend(WebhookDeliveryQueueEntity queueItem) {
-//    Do HTTP sending
+// Check for previous retry attempts
+        var retryCount = webhookDeliveryQueueDao.countFailed(queueItem.getWebhookMessageEntity());
+        var nextRetryIn = switch (Math.toIntExact(retryCount)) {
+            case 0 -> Duration.of(60, ChronoUnit.SECONDS);
+            case 1 -> Duration.of(5, ChronoUnit.MINUTES);
+            case 2 -> Duration.of(1, ChronoUnit.HOURS);
+            case 3 -> Duration.of(1, ChronoUnit.DAYS);
+            case 4 -> Duration.of(2, ChronoUnit.DAYS);
+            default -> null;
+        };
+        
+        //    Do HTTP sending
       webhookDeliveryQueueDao.recordResult(queueItem, "200 OK", 200, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL);
-//    Retry after failure
-      webhookDeliveryQueueDao.enqueueFrom(queueItem.getWebhookMessageEntity(), WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Date.from(instantSource.instant().plusSeconds(60)));
+        //    Retry after failure
+       Optional.ofNullable(nextRetryIn).ifPresent(retryDuration ->
+               webhookDeliveryQueueDao.enqueueFrom(queueItem.getWebhookMessageEntity(), WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Date.from(instantSource.instant().plus(retryDuration))));
     }
 
     @Override
