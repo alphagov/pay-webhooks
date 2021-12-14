@@ -31,17 +31,26 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
     private final InstantSource instantSource;
     private final SessionFactory sessionFactory;
     private final ScheduledExecutorService scheduledExecutorService;
-
+    private final ObjectMapper objectMapper;
+    private final WebhookMessageSignatureGenerator webhookMessageSignatureGenerator;
+    private final HttpClient httpClient;
+    
     @Inject
     public WebhookMessageSendingQueueProcessor(Environment environment, WebhookDeliveryQueueDao webhookDeliveryQueueDao, ObjectMapper objectMapper, InstantSource instantSource, SessionFactory sessionFactory, WebhookMessageSignatureGenerator webhookMessageSignatureGenerator) {
         this.webhookDeliveryQueueDao = webhookDeliveryQueueDao;
         this.instantSource = instantSource;
         this.sessionFactory = sessionFactory;
+        this.objectMapper = objectMapper;
+        this.webhookMessageSignatureGenerator = webhookMessageSignatureGenerator;
 
         scheduledExecutorService = environment
                 .lifecycle()
                 .scheduledExecutorService("retries")
                 .threads(1)
+                .build();
+        httpClient = HttpClient
+                .newBuilder()
+                .connectTimeout(Duration.ofSeconds(5))
                 .build();
     }
 
@@ -77,12 +86,8 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
             case 4 -> Duration.of(2, ChronoUnit.DAYS);
             default -> null;
         };
-
-        var httpClient = HttpClient
-                .newBuilder()
-                .connectTimeout(Duration.ofSeconds(5))
-                .build();
-        var webhookMessageSender = new WebhookMessageSender(httpClient, new ObjectMapper(), new WebhookMessageSignatureGenerator());
+        
+        var webhookMessageSender = new WebhookMessageSender(httpClient, objectMapper, webhookMessageSignatureGenerator);
         try {
             var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity());
             var statusCode = response.statusCode();
