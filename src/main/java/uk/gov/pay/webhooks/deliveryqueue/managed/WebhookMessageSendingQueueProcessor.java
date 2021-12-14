@@ -78,14 +78,6 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
 
     private void attemptSend(WebhookDeliveryQueueEntity queueItem) {
         var retryCount = webhookDeliveryQueueDao.countFailed(queueItem.getWebhookMessageEntity());
-        var nextRetryIn = switch (Math.toIntExact(retryCount)) {
-            case 0 -> Duration.of(60, ChronoUnit.SECONDS);
-            case 1 -> Duration.of(5, ChronoUnit.MINUTES);
-            case 2 -> Duration.of(1, ChronoUnit.HOURS);
-            case 3 -> Duration.of(1, ChronoUnit.DAYS);
-            case 4 -> Duration.of(2, ChronoUnit.DAYS);
-            default -> null;
-        };
         
         var webhookMessageSender = new WebhookMessageSender(httpClient, objectMapper, webhookMessageSignatureGenerator);
         try {
@@ -95,14 +87,14 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
                 webhookDeliveryQueueDao.recordResult(queueItem, String.valueOf(statusCode), statusCode, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL);
             } else {
                 webhookDeliveryQueueDao.recordResult(queueItem, String.valueOf(statusCode), statusCode, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED);
-                enqueueRetry(queueItem, nextRetryIn);
+                enqueueRetry(queueItem, nextRetryIn(retryCount));
             }
         } catch (HttpTimeoutException e) {
             webhookDeliveryQueueDao.recordResult(queueItem, "HTTP Timeout after 5 seconds", null, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED);
-            enqueueRetry(queueItem, nextRetryIn);
+            enqueueRetry(queueItem, nextRetryIn(retryCount));
         } catch (IOException | InterruptedException | InvalidKeyException e) {
             webhookDeliveryQueueDao.recordResult(queueItem, e.getMessage(), null, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED);
-            enqueueRetry(queueItem, nextRetryIn);
+            enqueueRetry(queueItem, nextRetryIn(retryCount));
         }
     }
 
@@ -110,6 +102,17 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
         Optional.ofNullable(nextRetryIn).ifPresent(
                 retryDelay -> webhookDeliveryQueueDao.enqueueFrom(queueItem.getWebhookMessageEntity(), WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Date.from(instantSource.instant().plus(retryDelay)))
         );
+    }
+    
+    private Duration nextRetryIn(Long retryCount) {
+        return switch (Math.toIntExact(retryCount)) {
+            case 0 -> Duration.of(60, ChronoUnit.SECONDS);
+            case 1 -> Duration.of(5, ChronoUnit.MINUTES);
+            case 2 -> Duration.of(1, ChronoUnit.HOURS);
+            case 3 -> Duration.of(1, ChronoUnit.DAYS);
+            case 4 -> Duration.of(2, ChronoUnit.DAYS);
+            default -> null;
+        };  
     }
 
     @Override
