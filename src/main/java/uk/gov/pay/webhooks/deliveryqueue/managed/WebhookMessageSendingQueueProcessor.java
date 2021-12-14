@@ -3,16 +3,19 @@ package uk.gov.pay.webhooks.deliveryqueue.managed;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
-import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.context.internal.ManagedSessionContext;
-import uk.gov.pay.webhooks.app.WebhooksConfig;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
+import uk.gov.pay.webhooks.message.WebhookMessageSender;
+import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
 
 import javax.inject.Inject;
+import java.io.IOException;
+import java.net.http.HttpClient;
+import java.security.InvalidKeyException;
 import java.time.Duration;
 import java.time.InstantSource;
 import java.time.temporal.ChronoUnit;
@@ -23,16 +26,15 @@ import java.util.concurrent.TimeUnit;
 
 public class WebhookMessageSendingQueueProcessor implements Managed {
 
+    private final WebhookMessageSender webhookMessageSender;
     private WebhookDeliveryQueueDao webhookDeliveryQueueDao;
-    private final ObjectMapper objectMapper;
     private final InstantSource instantSource;
     private final SessionFactory sessionFactory;
     private final ScheduledExecutorService scheduledExecutorService;
 
     @Inject
-    public WebhookMessageSendingQueueProcessor(Environment environment, WebhookDeliveryQueueDao webhookDeliveryQueueDao, ObjectMapper objectMapper, InstantSource instantSource, SessionFactory sessionFactory) {
+    public WebhookMessageSendingQueueProcessor(Environment environment, WebhookDeliveryQueueDao webhookDeliveryQueueDao, ObjectMapper objectMapper, InstantSource instantSource, SessionFactory sessionFactory, HttpClient httpClient, WebhookMessageSignatureGenerator webhookMessageSignatureGenerator) {
         this.webhookDeliveryQueueDao = webhookDeliveryQueueDao;
-        this.objectMapper = objectMapper;
         this.instantSource = instantSource;
         this.sessionFactory = sessionFactory;
 
@@ -41,6 +43,7 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
                 .scheduledExecutorService("retries")
                 .threads(1)
                 .build();
+        this.webhookMessageSender = new WebhookMessageSender(httpClient, objectMapper, webhookMessageSignatureGenerator);
     }
 
     @Override
@@ -77,7 +80,18 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
         };
         
         //    Do HTTP sending
-      webhookDeliveryQueueDao.recordResult(queueItem, "200 OK", 200, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL);
+        try {
+            var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity());
+            response.
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        }
+
+        webhookDeliveryQueueDao.recordResult(queueItem, "200 OK", 200, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL);
         //    Retry after failure
        Optional.ofNullable(nextRetryIn).ifPresent(retryDuration ->
                webhookDeliveryQueueDao.enqueueFrom(queueItem.getWebhookMessageEntity(), WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Date.from(instantSource.instant().plus(retryDuration))));
