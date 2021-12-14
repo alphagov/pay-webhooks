@@ -10,9 +10,11 @@ import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.healthcheck.HealthCheckResource;
 import uk.gov.pay.webhooks.healthcheck.Ping;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
+import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.webhook.resource.WebhookResource;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 import uk.gov.service.payments.commons.utils.healthchecks.DatabaseHealthCheck;
@@ -24,7 +26,9 @@ public class WebhooksApp extends Application<WebhooksConfig> {
     
     private HibernateBundle<WebhooksConfig> hibernate = new HibernateBundle<>(
             WebhookEntity.class,
-            EventTypeEntity.class
+            EventTypeEntity.class,
+            WebhookMessageEntity.class,
+            WebhookDeliveryQueueEntity.class
     ) {
         @Override
         public DataSourceFactory getDataSourceFactory(WebhooksConfig configuration) {

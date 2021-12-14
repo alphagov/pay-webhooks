@@ -1,6 +1,10 @@
 package uk.gov.pay.webhooks.message.dao.entity;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.vladmihalcea.hibernate.type.json.JsonType;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
@@ -18,6 +22,9 @@ import java.util.Date;
 @Entity
 @SequenceGenerator(name="webhook_messages_id_seq", sequenceName = "webhook_messages_id_seq", allocationSize = 1)
 @Table(name = "webhook_messages")
+@TypeDefs({
+        @TypeDef(name = "json", typeClass = JsonType.class)
+})
 public class WebhookMessageEntity {
 
     public WebhookMessageEntity() {}
@@ -43,7 +50,8 @@ public class WebhookMessageEntity {
     @JoinColumn(name = "event_type", updatable = false)
     private EventTypeEntity eventType;
     
-    @Column(name = "resource")
+    @Type(type = "json")
+    @Column(name = "resource", columnDefinition = "json")
     private JsonNode resource;
 
     public String getExternalId() {
