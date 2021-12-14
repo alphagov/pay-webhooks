@@ -11,6 +11,7 @@ import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
+import uk.gov.pay.webhooks.deliveryqueue.managed.WebhookMessageSendingQueueProcessor;
 import uk.gov.pay.webhooks.healthcheck.HealthCheckResource;
 import uk.gov.pay.webhooks.healthcheck.Ping;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
@@ -54,6 +55,7 @@ public class WebhooksApp extends Application<WebhooksConfig> {
         if (configuration.getQueueMessageReceiverConfig().isBackgroundProcessingEnabled()) {
             environment.lifecycle().manage(injector.getInstance(QueueMessageReceiver.class));
         }
+        environment.lifecycle().manage(injector.getInstance(WebhookMessageSendingQueueProcessor.class));
     }
 
     @Override
