@@ -29,4 +29,22 @@ public class WebhooksConfig extends Configuration {
     public String getLedgerBaseUrl() {
         return ledgerBaseUrl;
     }
+
+    @Valid
+    @NotNull
+    @JsonProperty("sqsConfig")
+    private SqsConfig sqsConfig;
+
+    public SqsConfig getSqsConfig() {
+        return sqsConfig;
+    }
+
+    @NotNull
+    @JsonProperty("queueMessageReceiverConfig")
+    private QueueMessageReceiverConfig queueMessageReceiverConfig;
+
+    public QueueMessageReceiverConfig getQueueMessageReceiverConfig() {
+        return queueMessageReceiverConfig;
+    }
+
 }

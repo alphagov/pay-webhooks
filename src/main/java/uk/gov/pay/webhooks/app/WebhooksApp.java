@@ -16,15 +16,20 @@ import uk.gov.pay.webhooks.healthcheck.Ping;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.webhook.resource.WebhookResource;
+import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
+import uk.gov.pay.webhooks.healthcheck.HealthCheckResource;
+import uk.gov.pay.webhooks.healthcheck.Ping;
+import uk.gov.pay.webhooks.queue.QueueMessageReceiver;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
+import uk.gov.pay.webhooks.webhook.resource.WebhookResource;
 import uk.gov.service.payments.commons.utils.healthchecks.DatabaseHealthCheck;
 
 public class WebhooksApp extends Application<WebhooksConfig> {
     public static void main(String[] args) throws Exception {
         new WebhooksApp().run(args);
     }
-    
-    private HibernateBundle<WebhooksConfig> hibernate = new HibernateBundle<>(
+
+    private final HibernateBundle<WebhooksConfig> hibernate = new HibernateBundle<>(
             WebhookEntity.class,
             EventTypeEntity.class,
             WebhookMessageEntity.class,
@@ -45,6 +50,10 @@ public class WebhooksApp extends Application<WebhooksConfig> {
         environment.healthChecks().register("database", new DatabaseHealthCheck(configuration.getDataSourceFactory()));
         environment.jersey().register(injector.getInstance(HealthCheckResource.class));
         environment.jersey().register(injector.getInstance(WebhookResource.class));
+
+        if (configuration.getQueueMessageReceiverConfig().isBackgroundProcessingEnabled()) {
+            environment.lifecycle().manage(injector.getInstance(QueueMessageReceiver.class));
+        }
     }
 
     @Override
@@ -63,6 +72,5 @@ public class WebhooksApp extends Application<WebhooksConfig> {
 
         bootstrap.addBundle(hibernate);
     }
-
 
 }
