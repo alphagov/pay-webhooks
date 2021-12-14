@@ -82,7 +82,10 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
         //    Do HTTP sending
         try {
             var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity());
-            response.
+            var statusCode = response.statusCode();
+            if (statusCode >= 200 && statusCode <= 299) {
+                webhookDeliveryQueueDao.recordResult(queueItem, String.valueOf(statusCode), statusCode, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
