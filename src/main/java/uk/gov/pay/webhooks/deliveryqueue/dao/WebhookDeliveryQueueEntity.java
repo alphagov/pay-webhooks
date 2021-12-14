@@ -65,13 +65,13 @@ public class WebhookDeliveryQueueEntity {
     }
 
 
-    public void setDeliveryStatus(String deliveryStatus) {
-        this.deliveryStatus = deliveryStatus;
+    public void setDeliveryStatus(DeliveryStatus deliveryStatusEnum) {
+        this.deliveryStatus = deliveryStatusEnum.name();
     }
 
 
-    public String getDeliveryStatus() {
-        return deliveryStatus;
+    public DeliveryStatus getDeliveryStatus() {
+        return DeliveryStatus.valueOf(deliveryStatus);
     }
 
     @Column(name = "delivery_status")
@@ -117,7 +117,7 @@ public class WebhookDeliveryQueueEntity {
         var entity = new WebhookDeliveryQueueEntity();
         entity.setCreatedDate(Date.from(createdInstant));
         entity.setWebhookMessageEntity(webhookMessageEntity);
-        entity.setDeliveryStatus(deliveryStatus.name());
+        entity.setDeliveryStatus(deliveryStatus);
         entity.setSendAt(sendAt);
         return entity;
     }
@@ -125,7 +125,7 @@ public class WebhookDeliveryQueueEntity {
     public static WebhookDeliveryQueueEntity recordResult(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, String deliveryResult, Integer statusCode, DeliveryStatus deliveryStatus) {
         var entity = webhookDeliveryQueueEntity;
         entity.setDeliveryResult(deliveryResult);
-        entity.setDeliveryStatus(deliveryStatus.name());
+        entity.setDeliveryStatus(deliveryStatus);
         Optional.ofNullable(statusCode).ifPresent(entity::setStatusCode);
         return entity;
     }
