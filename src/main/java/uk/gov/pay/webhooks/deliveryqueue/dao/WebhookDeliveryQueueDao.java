@@ -20,7 +20,7 @@ public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEnt
         this.instantSource = instantSource;
     }
 
-    public Optional<WebhookDeliveryQueueEntity> nextToSend(java.util.Date sendAt) {
+    public Optional<WebhookDeliveryQueueEntity> nextToSend(Date sendAt) {
         return namedTypedQuery(WebhookDeliveryQueueEntity.NEXT_TO_SEND)
                 .setParameter("send_at", sendAt)
                 .setMaxResults(1)
