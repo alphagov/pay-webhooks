@@ -7,6 +7,8 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.context.internal.ManagedSessionContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.message.WebhookMessageSender;
@@ -26,6 +28,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class WebhookMessageSendingQueueProcessor implements Managed {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebhookMessageSendingQueueProcessor.class);
 
     private WebhookDeliveryQueueDao webhookDeliveryQueueDao;
     private final InstantSource instantSource;
@@ -93,8 +96,10 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
             webhookDeliveryQueueDao.recordResult(queueItem, "HTTP Timeout after 5 seconds", null, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED);
             enqueueRetry(queueItem, nextRetryIn(retryCount));
         } catch (IOException | InterruptedException | InvalidKeyException e) {
+            LOGGER.warn("Unexpected exception %s attempting to send webhook message ID: %s".formatted(e.getMessage(), queueItem.getWebhookMessageEntity().getExternalId()));
             webhookDeliveryQueueDao.recordResult(queueItem, e.getMessage(), null, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED);
             enqueueRetry(queueItem, nextRetryIn(retryCount));
+            
         }
     }
 
@@ -128,6 +133,7 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
                 maybeQueueItem.ifPresent(this::attemptSend);
                 transaction.commit();
             } catch (Exception e) {
+                LOGGER.warn("Unexpected exception when polling queue  %s: ".formatted(e.getMessage()));
                 transaction.rollback();
             } finally {
                 ManagedSessionContext.unbind(sessionFactory);
