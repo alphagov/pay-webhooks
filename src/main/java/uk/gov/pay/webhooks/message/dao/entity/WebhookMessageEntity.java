@@ -5,11 +5,14 @@ import com.vladmihalcea.hibernate.type.json.JsonType;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @NamedQuery(
         name = WebhookMessageEntity.SEARCH_BY_STATUS,
@@ -28,6 +31,16 @@ public class WebhookMessageEntity {
     
     public WebhookMessageEntity() {}
 
+    public Set<WebhookDeliveryQueueEntity> getDeliveryAttempts() {
+        return deliveryAttempts;
+    }
+    
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinTable(name="webhook_delivery_queue",
+            joinColumns=@JoinColumn(name="webhook_message_id", referencedColumnName="id"))
+    Set<WebhookDeliveryQueueEntity> deliveryAttempts = new HashSet<>();
+    
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "event_types_id_seq")
     private Long id;
@@ -52,6 +65,7 @@ public class WebhookMessageEntity {
     @Type(type = "json")
     @Column(name = "resource", columnDefinition = "json")
     private JsonNode resource;
+    
 
     public String getExternalId() {
         return externalId;
