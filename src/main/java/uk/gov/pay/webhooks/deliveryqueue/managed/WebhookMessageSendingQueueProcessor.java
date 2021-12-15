@@ -84,6 +84,7 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
         
         var webhookMessageSender = new WebhookMessageSender(httpClient, objectMapper, webhookMessageSignatureGenerator);
         try {
+            LOGGER.info("Attempting to send Webhook ID %s to %s".formatted(queueItem.getWebhookMessageEntity().getExternalId(), queueItem.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl()));
             var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity());
             var statusCode = response.statusCode();
             if (statusCode >= 200 && statusCode <= 299) {
