@@ -3,8 +3,10 @@ package uk.gov.pay.webhooks.message.dao;
 import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
+import uk.gov.pay.webhooks.message.resource.WebhookMessageResponse;
 
 import javax.inject.Inject;
+import java.util.List;
 
 public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
 
@@ -16,5 +18,9 @@ public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
     public WebhookMessageEntity create(WebhookMessageEntity webhookMessage) {
         persist(webhookMessage);
         return webhookMessage;
+    }
+    
+    public List<WebhookMessageResponse> search(String webhookId, int pageNumber, String status) {
+        
     }
 }

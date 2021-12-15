@@ -8,16 +8,13 @@ import org.hibernate.annotations.TypeDefs;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
+
+@NamedQuery(
+        name = WebhookMessageEntity.SEARCH_BY_STATUS,
+        query = "select p from WebhookMessageEntity p where live = :live order by created_date DESC"
+)
 
 @Entity
 @SequenceGenerator(name="webhook_messages_id_seq", sequenceName = "webhook_messages_id_seq", allocationSize = 1)
@@ -27,6 +24,8 @@ import java.util.Date;
 })
 public class WebhookMessageEntity {
 
+    public static final String SEARCH_BY_STATUS = "WebhookMessage.search_by_status";
+    
     public WebhookMessageEntity() {}
 
     @Id

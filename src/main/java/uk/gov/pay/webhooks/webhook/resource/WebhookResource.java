@@ -2,6 +2,7 @@ package uk.gov.pay.webhooks.webhook.resource;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dropwizard.hibernate.UnitOfWork;
+import uk.gov.pay.webhooks.message.resource.WebhookMessageSearchResponse;
 import uk.gov.pay.webhooks.validations.WebhookRequestValidator;
 import uk.gov.pay.webhooks.webhook.WebhookService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
@@ -103,6 +104,22 @@ public class WebhookResource {
                     .map(WebhookResponse::from)
                     .toList();
     }
+    
+    @GET
+    public WebhookMessageSearchResponse getWebhookMessages(@PathParam("externalId") @NotNull String externalId,
+                                                           @QueryParam("service_id") String service_id,
+                                                           @QueryParam("override_service_id_restriction") boolean overrideServiceIdRestriction) {
+        if (service_id != null && overrideServiceIdRestriction) {
+            throw new BadRequestException("service_id not permitted when using override_service_id_restriction");
+        }
+
+        if (service_id == null && !overrideServiceIdRestriction) {
+            throw new BadRequestException("either service_id or override_service_id_restriction query parameter must be provided");
+        }
+            
+        
+    }
+                                                           
     
     @UnitOfWork
     @PATCH
