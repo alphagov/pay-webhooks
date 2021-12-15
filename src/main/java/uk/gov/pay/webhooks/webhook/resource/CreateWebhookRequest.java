@@ -2,7 +2,6 @@ package uk.gov.pay.webhooks.webhook.resource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
-import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
