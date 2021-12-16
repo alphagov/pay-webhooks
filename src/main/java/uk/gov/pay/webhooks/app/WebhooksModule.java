@@ -1,5 +1,10 @@
 package uk.gov.pay.webhooks.app;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import io.dropwizard.hibernate.HibernateBundle;
@@ -40,4 +45,28 @@ public class WebhooksModule extends AbstractModule {
         return new IdGenerator();
     }
 
+    @Provides
+    public AmazonSQS sqsClient(WebhooksConfig webhooksConfig) {
+        AmazonSQSClientBuilder clientBuilder = AmazonSQSClientBuilder
+                .standard();
+        if (webhooksConfig.getSqsConfig().isNonStandardServiceEndpoint()) {
+            // build static credentials in a local environment
+            BasicAWSCredentials basicAWSCredentials = new BasicAWSCredentials(
+                    webhooksConfig.getSqsConfig().getAccessKey(),
+                    webhooksConfig.getSqsConfig().getSecretKey());
+
+            clientBuilder
+                    .withCredentials(new AWSStaticCredentialsProvider(basicAWSCredentials))
+                    .withEndpointConfiguration(
+                            new AwsClientBuilder.EndpointConfiguration(
+                                    webhooksConfig.getSqsConfig().getEndpoint(),
+                                    webhooksConfig.getSqsConfig().getRegion())
+                    );
+        } else {
+            // AWS SDK will use the default provider chain to get credentials from ECS
+            clientBuilder.withRegion(webhooksConfig.getSqsConfig().getRegion());
+        }
+
+        return clientBuilder.build();
+    }
 }
