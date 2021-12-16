@@ -13,6 +13,7 @@ import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.util.IdGenerator;
 
 import javax.inject.Singleton;
+import java.net.http.HttpClient;
 import java.time.InstantSource;
 
 public class WebhooksModule extends AbstractModule {
@@ -68,5 +69,11 @@ public class WebhooksModule extends AbstractModule {
         }
 
         return clientBuilder.build();
+    }
+    
+    @Provides
+    @Singleton
+    public HttpClient httpClient() {
+        return HttpClient.newHttpClient();
     }
 }
