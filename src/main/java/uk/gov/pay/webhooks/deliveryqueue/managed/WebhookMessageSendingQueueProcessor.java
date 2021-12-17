@@ -39,7 +39,7 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
     private final HttpClient httpClient;
     
     @Inject
-    public WebhookMessageSendingQueueProcessor(Environment environment, WebhookDeliveryQueueDao webhookDeliveryQueueDao, ObjectMapper objectMapper, InstantSource instantSource, SessionFactory sessionFactory, WebhookMessageSignatureGenerator webhookMessageSignatureGenerator) {
+    public WebhookMessageSendingQueueProcessor(Environment environment, WebhookDeliveryQueueDao webhookDeliveryQueueDao, ObjectMapper objectMapper, InstantSource instantSource, SessionFactory sessionFactory, WebhookMessageSignatureGenerator webhookMessageSignatureGenerator, HttpClient httpClient) {
         this.webhookDeliveryQueueDao = webhookDeliveryQueueDao;
         this.instantSource = instantSource;
         this.sessionFactory = sessionFactory;
@@ -51,10 +51,7 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
                 .scheduledExecutorService("retries")
                 .threads(1)
                 .build();
-        httpClient = HttpClient
-                .newBuilder()
-                .connectTimeout(Duration.ofSeconds(5))
-                .build();
+        this.httpClient = httpClient;
     }
 
     @Override
