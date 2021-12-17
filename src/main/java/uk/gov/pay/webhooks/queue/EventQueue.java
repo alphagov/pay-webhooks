@@ -52,7 +52,15 @@ public class EventQueue {
 
     private EventMessage getMessage(QueueMessage queueMessage) {
         try {
-            EventMessageDto eventMessageDto = objectMapper.readValue(queueMessage.messageBody(), EventMessageDto.class);
+            LOGGER.info("queue message");
+            LOGGER.info("%s".formatted(queueMessage));
+            LOGGER.info("message body");
+            LOGGER.info("%s".formatted(queueMessage.messageBody()));
+            SNSMessageDto snsMessageDto = objectMapper.readValue(queueMessage.messageBody(), SNSMessageDto.class);
+            LOGGER.info("sns message DTO");
+            LOGGER.info("%s".formatted(snsMessageDto));
+            EventMessageDto eventMessageDto = objectMapper.readValue(snsMessageDto.Message(), EventMessageDto.class);
+            LOGGER.info("%s".formatted(eventMessageDto));
             return EventMessage.of(eventMessageDto, queueMessage);
         } catch (IOException e) {
             LOGGER.warn(

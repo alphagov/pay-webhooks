@@ -9,13 +9,14 @@ public record EventMessage(EventMessageDto eventMessageDto, QueueMessage queueMe
     }
 
     public InternalEvent toInternalEvent() {
+        
         return new InternalEvent(
                 eventMessageDto.eventType(),
                 eventMessageDto.serviceId(),
                 eventMessageDto.live(),
                 eventMessageDto.resourceExternalId(),
                 eventMessageDto.eventDetails(),
-                eventMessageDto.timestamp()
+                eventMessageDto.eventDate()
                 );
     }
 
