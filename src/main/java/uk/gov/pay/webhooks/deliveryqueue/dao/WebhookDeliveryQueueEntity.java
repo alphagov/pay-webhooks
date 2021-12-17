@@ -38,7 +38,7 @@ public class WebhookDeliveryQueueEntity {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "event_types_id_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "webhook_delivery_queue_id_seq")
     private Long id;
 
     @Column(name = "created_date")

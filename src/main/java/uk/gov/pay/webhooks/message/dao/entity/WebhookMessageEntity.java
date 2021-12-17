@@ -10,13 +10,20 @@ import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @NamedQuery(
         name = WebhookMessageEntity.SEARCH_BY_STATUS,
         query = "select p from WebhookMessageEntity p where live = :live order by created_date DESC"
+)
+
+@NamedQuery(
+        name = WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID,
+        query = "select p from WebhookMessageEntity p where external_id = :external_id"
 )
 
 @Entity
@@ -28,10 +35,11 @@ import java.util.Set;
 public class WebhookMessageEntity {
 
     public static final String SEARCH_BY_STATUS = "WebhookMessage.search_by_status";
+    public static final String MESSAGES_BY_WEBHOOK_ID = "WebhookMessage.messages_by_webhook_id";
     
     public WebhookMessageEntity() {}
 
-    public Set<WebhookDeliveryQueueEntity> getDeliveryAttempts() {
+    public List<WebhookDeliveryQueueEntity> getDeliveryAttempts() {
         return deliveryAttempts;
     }
     
@@ -39,7 +47,7 @@ public class WebhookMessageEntity {
     @OneToMany(cascade = CascadeType.ALL)
     @JoinTable(name="webhook_delivery_queue",
             joinColumns=@JoinColumn(name="webhook_message_id", referencedColumnName="id"))
-    Set<WebhookDeliveryQueueEntity> deliveryAttempts = new HashSet<>();
+    List<WebhookDeliveryQueueEntity> deliveryAttempts = new ArrayList<>();
     
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "event_types_id_seq")
