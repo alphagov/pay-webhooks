@@ -63,9 +63,7 @@ class WebhookMessageDaoTest {
             return webhookMessageDao.create(webhookMessageEntity);
         });
 
-        WebhookDeliveryQueueEntity queueAttempt = database.inTransaction(() -> {
-            return webhookDeliveryQueueDao.enqueueFrom(webhookMessage, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Date.from(instantSource.instant()));
-        });
+        WebhookDeliveryQueueEntity queueAttempt = database.inTransaction(() -> webhookDeliveryQueueDao.enqueueFrom(webhookMessage, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Date.from(instantSource.instant())));
 
         assertThat(webhookMessage.getDeliveryAttempts(), is(List.of(queueAttempt)));
     }
