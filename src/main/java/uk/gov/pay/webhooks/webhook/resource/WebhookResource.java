@@ -105,10 +105,10 @@ public class WebhookResource {
                     .map(WebhookResponse::from)
                     .toList();
     }
-    
+
+    @Path("/messages")
     @GET
-    public WebhookMessageSearchResponse getWebhookMessages(@PathParam("externalId") @NotNull String externalId,
-                                                           @QueryParam("service_id") String service_id,
+    public WebhookMessageSearchResponse getWebhookMessages(@QueryParam("service_id") String service_id,
                                                            @QueryParam("override_service_id_restriction") boolean overrideServiceIdRestriction) {
         if (service_id != null && overrideServiceIdRestriction) {
             throw new BadRequestException("service_id not permitted when using override_service_id_restriction");
@@ -124,11 +124,11 @@ public class WebhookResource {
     @UnitOfWork
     @GET
     @Path("/messages/{externalId}")
-    public WebhookMessageResponse getWebhook(@PathParam("externalId") @NotNull String externalId) {
+    public WebhookMessageResponse getWebhookMessageResponse(@PathParam("externalId") @NotNull String externalId) {
         return webhookService.findWebhookMessageByExternalId(externalId)
                 .map(WebhookMessageResponse::from)
                 .orElseThrow(NotFoundException::new);
-    };
+    }
                                                            
     
     @UnitOfWork
