@@ -3,7 +3,7 @@ package uk.gov.pay.webhooks.webhook.resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import uk.gov.pay.extension.AppWithPostgresExtension;
+import uk.gov.pay.extension.AppWithPostgresAndSqsExtension;
 import uk.gov.pay.webhooks.util.DatabaseTestHelper;
 
 import java.util.Map;
@@ -16,13 +16,12 @@ import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasLength;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 
 public class WebhookSigningKeyIT {
     @RegisterExtension
-    public static AppWithPostgresExtension app = new AppWithPostgresExtension();
+    public static AppWithPostgresAndSqsExtension app = new AppWithPostgresAndSqsExtension();
     private Integer port = app.getAppRule().getLocalPort();
     private DatabaseTestHelper dbHelper;
 
