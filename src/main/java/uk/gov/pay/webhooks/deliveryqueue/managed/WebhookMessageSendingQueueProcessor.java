@@ -66,31 +66,32 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
 
     public void processQueue() {
         try {
-            Session session = sessionFactory.openSession();
-            pollQueue(session);
-
+            pollQueue();
         } catch (Exception e) {
+            LOGGER.warn("Failed to poll queue %s".formatted(e.getMessage()));
             e.printStackTrace();
         }
-
-
     }
 
     private void attemptSend(WebhookDeliveryQueueEntity queueItem) {
         var retryCount = webhookDeliveryQueueDao.countFailed(queueItem.getWebhookMessageEntity());
-        
+
         var webhookMessageSender = new WebhookMessageSender(httpClient, objectMapper, webhookMessageSignatureGenerator);
         try {
             LOGGER.info("Attempting to send Webhook ID %s to %s".formatted(queueItem.getWebhookMessageEntity().getExternalId(), queueItem.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl()));
             var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity());
+
             var statusCode = response.statusCode();
             if (statusCode >= 200 && statusCode <= 299) {
+                LOGGER.info("Message attempt succeeded with %s".formatted(statusCode));
                 webhookDeliveryQueueDao.recordResult(queueItem, String.valueOf(statusCode), statusCode, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL);
             } else {
+                LOGGER.info("Message attempt failed with %s".formatted(statusCode));
                 webhookDeliveryQueueDao.recordResult(queueItem, String.valueOf(statusCode), statusCode, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED);
                 enqueueRetry(queueItem, nextRetryIn(retryCount));
             }
         } catch (HttpTimeoutException e) {
+            LOGGER.info("HTTP timeout exception %s".formatted(e.toString()));
             webhookDeliveryQueueDao.recordResult(queueItem, "HTTP Timeout after 5 seconds", null, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED);
             enqueueRetry(queueItem, nextRetryIn(retryCount));
         } catch (IOException | InterruptedException | InvalidKeyException e) {
@@ -123,19 +124,19 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
         scheduledExecutorService.shutdown();
     }
 
-    private void pollQueue(Session session) {
-            ManagedSessionContext.bind(session);
-            Transaction transaction = session.beginTransaction();
-            try (session) {
-                Optional<WebhookDeliveryQueueEntity> maybeQueueItem = webhookDeliveryQueueDao.nextToSend(Date.from(instantSource.instant()));
-                maybeQueueItem.ifPresent(this::attemptSend);
-                transaction.commit();
-            } catch (Exception e) {
-                LOGGER.warn("Unexpected exception when polling queue  %s: ".formatted(e.getMessage()));
-                transaction.rollback();
-            } finally {
-                ManagedSessionContext.unbind(sessionFactory);
-            }
-            
+    private void pollQueue() {
+        Session session = sessionFactory.openSession();
+        ManagedSessionContext.bind(session);
+        Transaction transaction = session.beginTransaction();
+        try {
+            Optional<WebhookDeliveryQueueEntity> maybeQueueItem = webhookDeliveryQueueDao.nextToSend(Date.from(instantSource.instant()));
+            maybeQueueItem.ifPresent(this::attemptSend);
+            transaction.commit();
+        } catch (Exception e) {
+            LOGGER.warn("Unexpected exception when polling queue  %s: ".formatted(e.getMessage()));
+            transaction.rollback();
+        } finally {
+            ManagedSessionContext.unbind(sessionFactory);
+        }
     }
 }

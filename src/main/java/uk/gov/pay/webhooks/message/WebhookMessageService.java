@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
+import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.ledger.LedgerService;
@@ -31,15 +33,17 @@ public class WebhookMessageService {
     private final IdGenerator idGenerator;
     private final ObjectMapper objectMapper;
     private final WebhookMessageDao webhookMessageDao;
+    private final WebhookDeliveryQueueDao webhookDeliveryQueueDao;
 
     @Inject
     public WebhookMessageService(WebhookService webhookService,
-                                 LedgerService ledgerService, 
+                                 LedgerService ledgerService,
                                  EventTypeDao eventTypeDao,
                                  InstantSource instantSource,
                                  IdGenerator idGenerator,
                                  ObjectMapper objectMapper,
-                                 WebhookMessageDao webhookMessageDao) {
+                                 WebhookMessageDao webhookMessageDao,
+                                 WebhookDeliveryQueueDao webhookDeliveryQueueDao) {
         this.webhookService = webhookService;
         this.ledgerService = ledgerService;
         this.eventTypeDao = eventTypeDao;
@@ -47,6 +51,7 @@ public class WebhookMessageService {
         this.idGenerator = idGenerator;
         this.objectMapper = objectMapper;
         this.webhookMessageDao = webhookMessageDao;
+        this.webhookDeliveryQueueDao = webhookDeliveryQueueDao;
     }
     
     public void handleInternalEvent(InternalEvent event) throws IOException, InterruptedException {
@@ -57,7 +62,8 @@ public class WebhookMessageService {
             subscribedWebhooks
                     .stream()
                     .map(webhook -> buildWebhookMessage(webhook, event, ledgerTransaction))
-                    .forEach(webhookMessageDao::create);
+                    .map(webhookMessageDao::create)
+                    .forEach(webhookMessageEntity -> webhookDeliveryQueueDao.enqueueFrom(webhookMessageEntity, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Date.from(instantSource.instant())));
         }
     }
 
@@ -69,7 +75,7 @@ public class WebhookMessageService {
         webhookMessageEntity.setCreatedDate(Date.from(instantSource.instant()));
         webhookMessageEntity.setWebhookEntity(webhook);
         webhookMessageEntity.setEventDate(Date.from(event.eventDate().toInstant()));
-        webhookMessageEntity.setEventType(eventTypeDao.findByName(EventTypeName.of(event.eventType())).orElseThrow(IllegalArgumentException::new));
+        webhookMessageEntity.setEventType(eventTypeDao.findByName(EventMapper.getWebhookEventNameFor(event.eventType())).orElseThrow(IllegalArgumentException::new));
         webhookMessageEntity.setResource(resource);
         return webhookMessageEntity;
     }
