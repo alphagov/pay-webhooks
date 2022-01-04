@@ -53,6 +53,7 @@ public class WebhooksModule extends AbstractModule {
         return HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
     }
 
+    @Provides
     public AmazonSQS sqsClient(WebhooksConfig webhooksConfig) {
         AmazonSQSClientBuilder clientBuilder = AmazonSQSClientBuilder
                 .standard();
