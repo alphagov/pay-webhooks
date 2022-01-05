@@ -119,8 +119,8 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
     }
 
     @Override
-    public void stop() throws Exception {
-
+    public void stop() {
+        scheduledExecutorService.shutdown();
     }
 
     private void pollQueue(Session session) {
