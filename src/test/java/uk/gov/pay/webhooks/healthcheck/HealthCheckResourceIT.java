@@ -4,13 +4,13 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import uk.gov.pay.extension.AppWithPostgresExtension;
+import uk.gov.pay.extension.AppWithPostgresAndSqsExtension;
 
 import static org.hamcrest.Matchers.equalTo;
 
 public class HealthCheckResourceIT {
     @RegisterExtension
-    public static AppWithPostgresExtension app = new AppWithPostgresExtension();
+    public static AppWithPostgresAndSqsExtension app = new AppWithPostgresAndSqsExtension();
 
     @Test
     public void HealthCheckIsHealthyTest(){

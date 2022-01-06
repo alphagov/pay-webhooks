@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import uk.gov.pay.extension.AppWithPostgresExtension;
+import uk.gov.pay.extension.AppWithPostgresAndSqsExtension;
 import uk.gov.pay.webhooks.util.DatabaseTestHelper;
 
 import java.util.LinkedHashMap;
@@ -21,7 +21,7 @@ import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInA
 
 public class WebhookListIT {
     @RegisterExtension
-    public static AppWithPostgresExtension app = new AppWithPostgresExtension();
+    public static AppWithPostgresAndSqsExtension app = new AppWithPostgresAndSqsExtension();
     private Integer port = app.getAppRule().getLocalPort();
     private DatabaseTestHelper dbHelper;
 
