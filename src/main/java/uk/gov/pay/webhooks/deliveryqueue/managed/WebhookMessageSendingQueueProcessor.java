@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
+import uk.gov.pay.webhooks.message.WebhookMessageSender;
 import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
 
 import javax.inject.Inject;
@@ -78,7 +79,7 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
             Transaction transaction = session.beginTransaction();
             try (session) {
                 Optional<WebhookDeliveryQueueEntity> maybeQueueItem = webhookDeliveryQueueDao.nextToSend(Date.from(instantSource.instant()));
-                maybeQueueItem.ifPresent(item -> new SendAttempter(webhookDeliveryQueueDao, httpClient, objectMapper, webhookMessageSignatureGenerator, instantSource).attemptSend(item));
+                maybeQueueItem.ifPresent(item -> new SendAttempter(webhookDeliveryQueueDao, instantSource, new WebhookMessageSender(httpClient, objectMapper, webhookMessageSignatureGenerator)).attemptSend(item));
                 transaction.commit();
             } catch (Exception e) {
                 LOGGER.warn("Unexpected exception when polling queue  %s: ".formatted(e.getMessage()));

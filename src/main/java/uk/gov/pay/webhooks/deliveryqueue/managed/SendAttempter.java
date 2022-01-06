@@ -22,24 +22,19 @@ import java.util.Optional;
 public class SendAttempter {
     private static final Logger LOGGER = LoggerFactory.getLogger(SendAttempter.class);
     private WebhookDeliveryQueueDao webhookDeliveryQueueDao;
-    private HttpClient httpClient;
-    private ObjectMapper objectMapper;
-    private WebhookMessageSignatureGenerator webhookMessageSignatureGenerator;
     private InstantSource instantSource;
+    private WebhookMessageSender webhookMessageSender;
 
     @Inject
-    public SendAttempter(WebhookDeliveryQueueDao webhookDeliveryQueueDao, HttpClient httpClient, ObjectMapper objectMapper, WebhookMessageSignatureGenerator webhookMessageSignatureGenerator, InstantSource instantSource) {
+    public SendAttempter(WebhookDeliveryQueueDao webhookDeliveryQueueDao, InstantSource instantSource, WebhookMessageSender webhookMessageSender) {
         this.webhookDeliveryQueueDao = webhookDeliveryQueueDao;
-        this.httpClient = httpClient;
-        this.objectMapper = objectMapper;
-        this.webhookMessageSignatureGenerator = webhookMessageSignatureGenerator;
         this.instantSource = instantSource;
-     }
+        this.webhookMessageSender = webhookMessageSender;
+    }
 
     public void attemptSend(WebhookDeliveryQueueEntity queueItem) {
         var retryCount = webhookDeliveryQueueDao.countFailed(queueItem.getWebhookMessageEntity());
 
-        var webhookMessageSender = new WebhookMessageSender(httpClient, objectMapper, webhookMessageSignatureGenerator);
         try {
             LOGGER.info("Attempting to send Webhook ID %s to %s".formatted(queueItem.getWebhookMessageEntity().getExternalId(), queueItem.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl()));
             var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity());

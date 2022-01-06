@@ -1,34 +1,36 @@
 package uk.gov.pay.webhooks.deliveryqueue.managed;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dropwizard.setup.Environment;
 import io.dropwizard.testing.junit5.DAOTestExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
-import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
+import uk.gov.pay.webhooks.message.WebhookMessageSender;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import java.io.IOException;
-import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
+import java.security.InvalidKeyException;
 import java.time.Instant;
 import java.time.InstantSource;
 import java.util.Date;
 
-import static org.mockito.Mockito.when;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.hamcrest.Matchers.is;
 
+@ExtendWith(MockitoExtension.class)
 @ExtendWith(DropwizardExtensionsSupport.class)
-class WebhookMessageSendingQueueProcessorTest {
+class SendAttempterTest {
 
     public DAOTestExtension database = DAOTestExtension.newBuilder()
             .addEntityClass(EventTypeEntity.class)
@@ -41,15 +43,12 @@ class WebhookMessageSendingQueueProcessorTest {
     private InstantSource instantSource;
     private WebhookMessageDao webhookMessageDao;
     private WebhookDao webhookDao;
-
-    @Mock
-    private Environment environment;
     
     @Mock
-    private HttpClient httpClient;
+    private WebhookMessageSender mockWebhookMessageSender;
     
     @Mock
-    private HttpResponse httpResponse;
+    private HttpResponse mockHttpResponse;
             
     @BeforeEach
     void setUp(){
@@ -60,32 +59,28 @@ class WebhookMessageSendingQueueProcessorTest {
     }
     
     @Test
-    void processQueue() throws IOException, InterruptedException {
+    void sendAttempterSetsDeliveryStatusBasedOnStatusCode() throws IOException, InterruptedException, InvalidKeyException {
+        given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willReturn(mockHttpResponse);
         
-        HttpResponse<String[]> mockedResponse = Mockito.mock(HttpResponse.class);
-        when(mockedResponse.statusCode()).thenReturn(404);
-        var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, httpClient, new ObjectMapper(), new WebhookMessageSignatureGenerator(), instantSource);
-
-        WebhookMessageEntity persisted = database.inTransaction(() -> {
-            WebhookEntity webhookEntityServiceOne = new WebhookEntity();
-            webhookEntityServiceOne.setLive(true);
-            webhookEntityServiceOne.setServiceId("service-id-1");
-            webhookEntityServiceOne.setCreatedDate(Date.from(Instant.parse("2007-12-03T10:15:30.00Z")));
-            webhookEntityServiceOne.setCallbackUrl("http://example.com");
-            webhookEntityServiceOne.setSigningKey("some-signing-key");
-            webhookDao.create(webhookEntityServiceOne);
+            WebhookEntity webhookEntity = new WebhookEntity();
+            webhookEntity.setLive(true);
+            webhookEntity.setServiceId("service-id-1");
+            webhookEntity.setCreatedDate(Date.from(Instant.parse("2007-12-03T10:15:30.00Z")));
+            webhookEntity.setCallbackUrl("http://example.com");
+            webhookEntity.setSigningKey("some-signing-key");
+            webhookDao.create(webhookEntity);
+            
             WebhookMessageEntity webhookMessageEntity = new WebhookMessageEntity();
-            webhookMessageEntity.setWebhookEntity(webhookEntityServiceOne);
+            webhookMessageEntity.setWebhookEntity(webhookEntity);
             webhookMessageEntity.setCreatedDate(Date.from(instantSource.instant()));
-            return webhookMessageDao.create(webhookMessageEntity);
-        });
-        database.inTransaction(() -> {
-            var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Date.from(instantSource.instant().minusMillis(1)));
-            sendAttempter.attemptSend(enqueuedItem);
-        });
+            var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
+        var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender);
+        var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Date.from(instantSource.instant()));
+        given(mockHttpResponse.statusCode()).willReturn(404, 200);
         
-        
+        sendAttempter.attemptSend(enqueuedItem);
+        assertThat(enqueuedItem.getDeliveryStatus(), is(WebhookDeliveryQueueEntity.DeliveryStatus.FAILED));
+        sendAttempter.attemptSend(enqueuedItem);
+        assertThat(enqueuedItem.getDeliveryStatus(), is(WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL));
     }
-    
-    
 }
