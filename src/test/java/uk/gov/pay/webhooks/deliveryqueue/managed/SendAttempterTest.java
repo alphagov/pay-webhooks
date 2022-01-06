@@ -82,8 +82,10 @@ class SendAttempterTest {
         
         sendAttempter.attemptSend(enqueuedItem);
         assertThat(enqueuedItem.getDeliveryStatus(), is(WebhookDeliveryQueueEntity.DeliveryStatus.FAILED));
+        assertThat(enqueuedItem.getDeliveryResult(), is("404 Not Found"));
         sendAttempter.attemptSend(enqueuedItem);
         assertThat(enqueuedItem.getDeliveryStatus(), is(WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL));
+        assertThat(enqueuedItem.getDeliveryResult(), is("200 OK"));
     }
 
     @Test

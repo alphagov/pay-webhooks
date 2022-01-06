@@ -6,18 +6,20 @@ import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.message.WebhookMessageSender;
-import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
 
 import javax.inject.Inject;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.net.http.HttpClient;
 import java.net.http.HttpTimeoutException;
 import java.security.InvalidKeyException;
 import java.time.Duration;
 import java.time.InstantSource;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SendAttempter {
     private static final Logger LOGGER = LoggerFactory.getLogger(SendAttempter.class);
@@ -40,9 +42,9 @@ public class SendAttempter {
             var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity());
             var statusCode = response.statusCode();
             if (statusCode >= 200 && statusCode <= 299) {
-                webhookDeliveryQueueDao.recordResult(queueItem, String.valueOf(statusCode), statusCode, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL);
+                webhookDeliveryQueueDao.recordResult(queueItem, getReasonFromStatusCode(statusCode), statusCode, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL);
             } else {
-                webhookDeliveryQueueDao.recordResult(queueItem, String.valueOf(statusCode), statusCode, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED);
+                webhookDeliveryQueueDao.recordResult(queueItem, getReasonFromStatusCode(statusCode), statusCode, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED);
                 enqueueRetry(queueItem, nextRetryIn(retryCount));
             }
         } catch (HttpTimeoutException e) {
@@ -71,5 +73,11 @@ public class SendAttempter {
             case 4 -> Duration.of(2, ChronoUnit.DAYS);
             default -> null;
         };
+    }
+    
+    private String getReasonFromStatusCode(int statusCode) {
+        return Stream.of(String.valueOf(statusCode), Response.Status.fromStatusCode(statusCode).getReasonPhrase())
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining(" "));
     }
 }
