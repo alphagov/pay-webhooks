@@ -95,10 +95,15 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
             webhookDeliveryQueueDao.recordResult(queueItem, "HTTP Timeout after 5 seconds", null, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED);
             enqueueRetry(queueItem, nextRetryIn(retryCount));
         } catch (IOException | InterruptedException | InvalidKeyException e) {
-            LOGGER.warn("Unexpected exception %s attempting to send webhook message ID: %s".formatted(e.getMessage(), queueItem.getWebhookMessageEntity().getExternalId()));
+            LOGGER.warn("Exception %s attempting to send webhook message ID: %s".formatted(e.getMessage(), queueItem.getWebhookMessageEntity().getExternalId()));
             webhookDeliveryQueueDao.recordResult(queueItem, e.getMessage(), null, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED);
             enqueueRetry(queueItem, nextRetryIn(retryCount));
-            
+        } catch (Exception e) {
+            // handle all exceptions at this level to make sure that the retry mechanism is allowed to work as designed
+            // allowing errors passed this point (not guaranteeing an update) would allow perpetual failures 
+            LOGGER.warn("Unexpected exception %s attempting to send webhook message ID: %s".formatted(e.getMessage(), queueItem.getWebhookMessageEntity().getExternalId()));
+            webhookDeliveryQueueDao.recordResult(queueItem, "Unknown error", null, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED);
+            enqueueRetry(queueItem, nextRetryIn(retryCount));
         }
     }
 
