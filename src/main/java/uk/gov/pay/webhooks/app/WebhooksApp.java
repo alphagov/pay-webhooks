@@ -24,6 +24,8 @@ import uk.gov.pay.webhooks.queue.QueueMessageReceiver;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 import uk.gov.pay.webhooks.webhook.resource.WebhookResource;
 import uk.gov.service.payments.commons.utils.healthchecks.DatabaseHealthCheck;
+import uk.gov.service.payments.logging.GovUkPayDropwizardRequestJsonLogLayoutFactory;
+import uk.gov.service.payments.logging.LogstashConsoleAppenderFactory;
 
 public class WebhooksApp extends Application<WebhooksConfig> {
     public static void main(String[] args) throws Exception {
@@ -73,6 +75,8 @@ public class WebhooksApp extends Application<WebhooksConfig> {
         });
 
         bootstrap.addBundle(hibernate);
+        bootstrap.getObjectMapper().getSubtypeResolver().registerSubtypes(LogstashConsoleAppenderFactory.class);
+        bootstrap.getObjectMapper().getSubtypeResolver().registerSubtypes(GovUkPayDropwizardRequestJsonLogLayoutFactory.class);
     }
 
 }
