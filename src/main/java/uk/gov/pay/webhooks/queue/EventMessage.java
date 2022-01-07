@@ -14,8 +14,8 @@ public record EventMessage(EventMessageDto eventMessageDto, QueueMessage queueMe
                 eventMessageDto.serviceId(),
                 eventMessageDto.live(),
                 eventMessageDto.resourceExternalId(),
-                eventMessageDto.eventDetails(),
-                eventMessageDto.timestamp()
+                eventMessageDto.eventData(),
+                eventMessageDto.eventDate()
                 );
     }
 

@@ -1,6 +1,6 @@
 CREATE table webhook_delivery_queue (
                                         id BIGSERIAL PRIMARY KEY,
-                                        send_at DATE NOT NULL,
+                                        send_at TIMESTAMP WITH TIME ZONE NOT NULL,
                                         created_date TIMESTAMP WITH TIME ZONE NOT NULL,
                                         delivery_result TEXT,
                                         status_code INT,

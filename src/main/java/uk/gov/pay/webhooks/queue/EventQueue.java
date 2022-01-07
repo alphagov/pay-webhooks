@@ -52,7 +52,11 @@ public class EventQueue {
 
     private EventMessage getMessage(QueueMessage queueMessage) {
         try {
-            EventMessageDto eventMessageDto = objectMapper.readValue(queueMessage.messageBody(), EventMessageDto.class);
+            // @TODO(sfount) additional SNS message layer added to unpack the contents from SNS
+            //               this should be sense checked with the publisher (currently Ledger)
+            //               to see if this should be unpacked here or if something can be optimised with the publish
+            SNSMessageDto snsMessageDto = objectMapper.readValue(queueMessage.messageBody(), SNSMessageDto.class);
+            EventMessageDto eventMessageDto = objectMapper.readValue(snsMessageDto.Message(), EventMessageDto.class);
             return EventMessage.of(eventMessageDto, queueMessage);
         } catch (IOException e) {
             LOGGER.warn(

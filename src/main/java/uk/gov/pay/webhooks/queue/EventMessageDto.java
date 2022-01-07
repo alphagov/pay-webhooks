@@ -12,10 +12,10 @@ import java.time.ZonedDateTime;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public record EventMessageDto(String serviceId,
+public record EventMessageDto(@JsonProperty("service_id") String serviceId,
                               Boolean live,
-                              @JsonDeserialize(using = MicrosecondPrecisionDateTimeDeserializer.class) ZonedDateTime timestamp,
+                              @JsonProperty("event_date") @JsonDeserialize(using = MicrosecondPrecisionDateTimeDeserializer.class) ZonedDateTime eventDate,
                               @JsonProperty("resource_external_id") String resourceExternalId,
-                              String eventType,
-                              @JsonProperty("event_details") JsonNode eventDetails
+                              @JsonProperty("event_type") String eventType,
+                              @JsonProperty("event_data") JsonNode eventData
 ) {}

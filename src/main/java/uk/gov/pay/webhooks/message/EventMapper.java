@@ -17,4 +17,8 @@ public class EventMapper {
     public static Optional<String> getInternalEventNameFor(EventTypeName webhookEventTypeName) {
         return Optional.ofNullable(webhookToInternal.get(webhookEventTypeName));
     }
+
+    public static EventTypeName getWebhookEventNameFor(String webhookEventName) {
+        return internalToWebhook.get(webhookEventName);
+    }
 }
