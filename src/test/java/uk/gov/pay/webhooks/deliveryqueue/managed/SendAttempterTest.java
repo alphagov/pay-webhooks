@@ -25,6 +25,7 @@ import java.time.InstantSource;
 import java.util.Date;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -103,5 +104,20 @@ class SendAttempterTest {
         assertThat(enqueuedItem.getDeliveryStatus(), is(WebhookDeliveryQueueEntity.DeliveryStatus.FAILED));
     }
     
-    
+    @Test
+    void sendAttempterEnqueuesRetriesIfFailure() throws IOException, InvalidKeyException, InterruptedException {
+        given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willReturn(mockHttpResponse);
+        var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
+        var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender);
+        var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Date.from(instantSource.instant()));
+        given(mockHttpResponse.statusCode()).willReturn(404);
+        sendAttempter.attemptSend(enqueuedItem);
+        assertThat(enqueuedItem.getDeliveryStatus(), is(WebhookDeliveryQueueEntity.DeliveryStatus.FAILED));
+
+        database.inTransaction(() -> {
+            assertThat(webhookDeliveryQueueDao.nextToSend(Date.from((Instant.parse("2007-12-03T10:15:30.00Z")))), is(notNullValue()));
+            assertThat(webhookDeliveryQueueDao.countFailed(webhookMessageEntity), is(1L));
+        });
+        
+    }
 }
