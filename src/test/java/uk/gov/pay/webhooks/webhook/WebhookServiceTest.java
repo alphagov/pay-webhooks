@@ -3,6 +3,7 @@ package uk.gov.pay.webhooks.webhook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
@@ -31,6 +32,7 @@ import static org.mockito.Mockito.when;
 class WebhookServiceTest {
     private final WebhookDao webhookDao = mock(WebhookDao.class);
     private final WebhookMessageDao webhookMessageDao = mock(WebhookMessageDao.class);
+    private final WebhookDeliveryQueueDao webhookDeliveryQueueDao = mock (WebhookDeliveryQueueDao.class);
     private final EventTypeDao eventTypeDao = mock(EventTypeDao.class);
     private final InstantSource instantSource = InstantSource.fixed(Instant.now());
     private final IdGenerator idGenerator = mock(IdGenerator.class);
@@ -42,7 +44,7 @@ class WebhookServiceTest {
     
     @BeforeEach
     public void setUp() {
-        webhookService = new WebhookService(webhookDao, eventTypeDao, instantSource, idGenerator, webhookMessageDao);
+        webhookService = new WebhookService(webhookDao, eventTypeDao, instantSource, idGenerator, webhookMessageDao, webhookDeliveryQueueDao);
     }
 
     @Test

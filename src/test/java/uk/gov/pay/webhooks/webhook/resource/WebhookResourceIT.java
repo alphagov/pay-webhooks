@@ -74,13 +74,30 @@ public class WebhookResourceIT {
 
     @Test
     public void shouldReturnMessages() {
-        var externalId = setupWebhookWithMessages();
+        var externalId = "awebhookexternalid";
+        var messageExternalId = "message-external-id-1";
+        setupWebhookWithMessages(externalId, messageExternalId);
+
+        // status should: ignore pending statuses, get the latest delivery queue ordered by date, filter messages by status (probably for another test)
         given().port(port)
                 .contentType(JSON)
                 .get("/v1/webhook/%s/messages".formatted(externalId))
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode());
-         
+    }
+
+    @Test
+    public void shouldReturnMessageAttempts() {
+        var externalId = "awebhookexternalid";
+        var messageExternalId = "message-external-id-1";
+        setupWebhookWithMessages(externalId, messageExternalId);
+
+        // should: include all delivery attempts, not include a nested copy of the message
+        given().port(port)
+                .contentType(JSON)
+                .get("/v1/webhook/%s/messages/%s/attempts".formatted(externalId, messageExternalId))
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode());
     }
 
     @Test
@@ -92,19 +109,18 @@ public class WebhookResourceIT {
                 .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
 
-    private String setupWebhookWithMessages() {
-        var externalId = "awebhookexternalid";
-
+    private String setupWebhookWithMessages(String externalId, String messageExternalId) {
         app.getJdbi().withHandle(h -> h.execute(
                 "INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE')".formatted(externalId)
         ));
         app.getJdbi().withHandle(h -> h.execute(
-                "INSERT INTO webhook_messages VALUES (1, 'message-external-id-1', '2022-01-01', 1, '2022-01-01', 1, '{}')".formatted(externalId)
+                "INSERT INTO webhook_messages VALUES (1, '%s', '2022-01-01', 1, '2022-01-01', 1, '{}')".formatted(messageExternalId)
         ));
         app.getJdbi().withHandle(h -> h.execute("""
                         INSERT INTO webhook_delivery_queue VALUES
-                            (1, '2022-01-01', '2022-01-01', '404', 404, 1, 'FAILED'),
-                            (2, '2022-01-02', '2022-01-01', '200', 200, 1, 'SUCCESSFUL')
+                            (1, '2022-01-01', '2022-01-01', '200', 200, 1, 'SUCCESSFUL'),
+                            (2, '2022-01-02', '2022-01-01', '404', 404, 1, 'FAILED'),
+                            (3, '2022-01-02', '2022-01-01', null, null, 1, 'PENDING')
                         """
         ));
         return externalId;

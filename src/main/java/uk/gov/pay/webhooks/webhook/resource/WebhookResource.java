@@ -2,6 +2,7 @@ package uk.gov.pay.webhooks.webhook.resource;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dropwizard.hibernate.UnitOfWork;
+import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageResponse;
 import uk.gov.pay.webhooks.validations.WebhookRequestValidator;
 import uk.gov.pay.webhooks.webhook.WebhookService;
@@ -113,6 +114,16 @@ public class WebhookResource {
                 .stream()
                 .map(WebhookMessageResponse::from)
                 .toList();
+    }
+
+    @UnitOfWork
+    @Path("/{externalId}/messages/{messageId}/attempts")
+    @GET
+    public List<WebhookDeliveryQueueEntity> getWebhookMessageAttemps(
+            @PathParam("externalId") String externalId,
+            @PathParam("messageId") String messageId
+    ) {
+        return  webhookService.listMessageAttempts(externalId, messageId);
     }
 
     @UnitOfWork

@@ -28,6 +28,11 @@ import java.util.Optional;
         query = "select count(m) from WebhookDeliveryQueueEntity m where webhook_message_id = :webhook_message_id and delivery_status = 'FAILED'"
 )
 
+@NamedQuery(
+        name = WebhookDeliveryQueueEntity.LIST_DELIVERY_ATTEMPTS,
+        query = "select wdq from WebhookDeliveryQueueEntity wdq where webhookMessageEntity.webhookEntity.externalId = :webhookId and webhookMessageEntity.externalId = :messageId order by createdDate desc"
+)
+
 @Entity
 @SequenceGenerator(name="webhook_delivery_queue_id_seq", sequenceName = "webhook_delivery_queue_id_seq", allocationSize = 1)
 @Table(name = "webhook_delivery_queue")
@@ -37,6 +42,7 @@ import java.util.Optional;
 public class WebhookDeliveryQueueEntity {
     public static final String NEXT_TO_SEND = "WebhookDeliveryQueue.next_to_send";
     public static final String COUNT_FAILED = "WebhookDeliveryQueue.count_failed";
+    public static final String LIST_DELIVERY_ATTEMPTS = "WebhookDeliveryQueue.list_delivery_attempts";
 
 
     @Id
