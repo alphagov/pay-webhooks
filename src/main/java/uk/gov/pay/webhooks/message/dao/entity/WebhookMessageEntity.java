@@ -77,6 +77,7 @@ public class WebhookMessageEntity {
            SELECT wdq.id
            FROM webhook_delivery_queue wdq
            WHERE wdq.webhook_message_id = id
+           AND wdq.delivery_status != 'PENDING'
            ORDER BY wdq.send_at DESC
            LIMIT 1
            )

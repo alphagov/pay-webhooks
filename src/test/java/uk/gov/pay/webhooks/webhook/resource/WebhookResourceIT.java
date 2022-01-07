@@ -83,7 +83,8 @@ public class WebhookResourceIT {
                 .contentType(JSON)
                 .get("/v1/webhook/%s/messages".formatted(externalId))
                 .then()
-                .statusCode(Response.Status.OK.getStatusCode());
+                .statusCode(Response.Status.OK.getStatusCode())
+                .body("webhook_delivery_queue_entity[0].deliveryStatus", is("FAILED"));
     }
 
     @Test
