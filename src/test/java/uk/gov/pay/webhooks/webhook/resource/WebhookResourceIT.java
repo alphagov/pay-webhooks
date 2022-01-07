@@ -71,7 +71,18 @@ public class WebhookResourceIT {
                 .body("status", is("ACTIVE"))
                 .body("subscriptions", containsInAnyOrder("card_payment_captured"));
     }
-    
+
+    @Test
+    public void shouldReturnMessages() {
+        var externalId = setupWebhookWithMessages();
+        given().port(port)
+                .contentType(JSON)
+                .get("/v1/webhook/%s/messages".formatted(externalId))
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode());
+         
+    }
+
     @Test
     public void notFoundShouldReturn404() {
         given().port(port)
@@ -80,5 +91,22 @@ public class WebhookResourceIT {
                 .then()
                 .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
-    
+
+    private String setupWebhookWithMessages() {
+        var externalId = "awebhookexternalid";
+
+        app.getJdbi().withHandle(h -> h.execute(
+                "INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE')".formatted(externalId)
+        ));
+        app.getJdbi().withHandle(h -> h.execute(
+                "INSERT INTO webhook_messages VALUES (1, 'message-external-id-1', '2022-01-01', 1, '2022-01-01', 1, '{}')".formatted(externalId)
+        ));
+        app.getJdbi().withHandle(h -> h.execute("""
+                        INSERT INTO webhook_delivery_queue VALUES
+                            (1, '2022-01-01', '2022-01-01', '404', 404, 1, 'FAILED'),
+                            (2, '2022-01-02', '2022-01-01', '200', 200, 1, 'SUCCESSFUL')
+                        """
+        ));
+        return externalId;
+    }
 }

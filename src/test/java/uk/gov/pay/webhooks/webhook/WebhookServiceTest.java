@@ -6,6 +6,7 @@ import org.mockito.ArgumentCaptor;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
+import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
 import uk.gov.pay.webhooks.queue.InternalEvent;
 import uk.gov.pay.webhooks.util.IdGenerator;
 import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.when;
 
 class WebhookServiceTest {
     private final WebhookDao webhookDao = mock(WebhookDao.class);
+    private final WebhookMessageDao webhookMessageDao = mock(WebhookMessageDao.class);
     private final EventTypeDao eventTypeDao = mock(EventTypeDao.class);
     private final InstantSource instantSource = InstantSource.fixed(Instant.now());
     private final IdGenerator idGenerator = mock(IdGenerator.class);
@@ -40,7 +42,7 @@ class WebhookServiceTest {
     
     @BeforeEach
     public void setUp() {
-        webhookService = new WebhookService(webhookDao, eventTypeDao, instantSource, idGenerator);
+        webhookService = new WebhookService(webhookDao, eventTypeDao, instantSource, idGenerator, webhookMessageDao);
     }
 
     @Test
@@ -134,4 +136,3 @@ class WebhookServiceTest {
     }
     
 }
-

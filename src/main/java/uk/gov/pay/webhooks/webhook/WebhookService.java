@@ -4,6 +4,8 @@ import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.EventMapper;
+import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
+import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.queue.InternalEvent;
 import uk.gov.pay.webhooks.util.IdGenerator;
 import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
@@ -28,16 +30,18 @@ import static uk.gov.pay.webhooks.webhook.resource.WebhookResponse.FIELD_SUBSCRI
 public class WebhookService {
 
     private final WebhookDao webhookDao;
+    private final WebhookMessageDao webhookMessageDao;
     private final EventTypeDao eventTypeDao;
     private final InstantSource instantSource;
     private final IdGenerator idGenerator;
 
     @Inject
-    public WebhookService(WebhookDao webhookDao, EventTypeDao eventTypeDao, InstantSource instantSource, IdGenerator idGenerator) {
+    public WebhookService(WebhookDao webhookDao, EventTypeDao eventTypeDao, InstantSource instantSource, IdGenerator idGenerator, WebhookMessageDao webhookMessageDao) {
         this.webhookDao = webhookDao;
         this.eventTypeDao = eventTypeDao;
         this.instantSource = instantSource;
         this.idGenerator = idGenerator;
+        this.webhookMessageDao = webhookMessageDao;
     }
 
     public WebhookEntity createWebhook(CreateWebhookRequest createWebhookRequest) {
@@ -66,6 +70,10 @@ public class WebhookService {
         return webhookDao.list(live);
     }
     
+    public List<WebhookMessageEntity> listMessages(String webhookId) {
+        return webhookMessageDao.list(webhookId);
+    }
+
     public Optional<WebhookEntity> regenerateSigningKey(String externalId, String serviceId) {
          return webhookDao.findByExternalId(externalId, serviceId).map(webhookEntity -> { 
           webhookEntity.setSigningKey(idGenerator.newWebhookSigningKey(webhookEntity.isLive()));
