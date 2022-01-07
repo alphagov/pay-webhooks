@@ -16,7 +16,8 @@ public record EventMessage(EventMessageDto eventMessageDto, QueueMessage queueMe
                 eventMessageDto.resourceExternalId(),
                 eventMessageDto.parentResourceExternalId(),
                 eventMessageDto.eventData(),
-                eventMessageDto.eventDate()
+                eventMessageDto.eventDate(),
+                eventMessageDto.resourceType()
                 );
     }
 

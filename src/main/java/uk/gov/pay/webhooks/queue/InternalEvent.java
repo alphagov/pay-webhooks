@@ -2,9 +2,9 @@ package uk.gov.pay.webhooks.queue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import uk.gov.service.payments.commons.api.json.MicrosecondPrecisionDateTimeSerializer;
+import uk.gov.pay.webhooks.util.MicrosecondPrecisionInstantSerializer;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 
 public record InternalEvent(
         String eventType,
@@ -13,5 +13,6 @@ public record InternalEvent(
         String resourceExternalId,
         String parentResourceExternalId,
         JsonNode eventData,
-        @JsonSerialize(using = MicrosecondPrecisionDateTimeSerializer.class) ZonedDateTime eventDate
+        @JsonSerialize(using = MicrosecondPrecisionInstantSerializer.class) Instant eventDate,
+        String resourceType
         ) {}

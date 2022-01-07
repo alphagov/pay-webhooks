@@ -69,15 +69,15 @@ public class WebhookMessageService {
     }
 
     private WebhookMessageEntity buildWebhookMessage(WebhookEntity webhook, InternalEvent event, LedgerTransaction ledgerTransaction) {
-        JsonNode resource = objectMapper.valueToTree(ledgerTransaction); // will probably need some more transformation
+        JsonNode resource = objectMapper.valueToTree(ledgerTransaction); 
 
         var webhookMessageEntity = new WebhookMessageEntity();
         webhookMessageEntity.setExternalId(idGenerator.newExternalId());
         webhookMessageEntity.setCreatedDate(Date.from(instantSource.instant()));
         webhookMessageEntity.setWebhookEntity(webhook);
-        webhookMessageEntity.setEventDate(Date.from(event.eventDate().toInstant()));
+        webhookMessageEntity.setEventDate(Date.from(event.eventDate()));
         webhookMessageEntity.setEventType(eventTypeDao.findByName(EventMapper.getWebhookEventNameFor(event.eventType())).orElseThrow(IllegalArgumentException::new));
-        webhookMessageEntity.setResource(resource);
+        webhookMessageEntity.setResource(objectMapper.valueToTree(WebhookMessage.of(webhookMessageEntity, event, resource)));
         return webhookMessageEntity;
     }
 

@@ -1,6 +1,7 @@
 package uk.gov.pay.webhooks.queue;
 
 import com.amazonaws.services.sqs.AmazonSQS;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,8 @@ import uk.gov.pay.webhooks.queue.sqs.SqsQueueService;
 
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -49,7 +52,7 @@ public class EventQueueIT {
     }
     
     @Test
-    public void shouldConvertValidMessageFromQueueToEventMessage() throws QueueException {
+    public void shouldConvertValidMessageFromQueueToEventMessage() throws QueueException, JsonProcessingException {
         var sqsMessage = """
                 {
                   "Type" : "Notification",
@@ -58,7 +61,7 @@ public class EventQueueIT {
                   "TopicArn" : "card-payment-events-topic",
                   "Timestamp" : "2021-12-16T18:52:27.068Z",
                   "SignatureVersion" : "1",
-                  "Signature" : "qYWtXrARHosfc5wgMSJLKofdn2q+QJIEs+XfpIBCFp94VHOujQBjVRGpQkr8OVF07lONWakkuKvdzcRIwRExtuCNDVyJinJGJgQEAFKpKmnJ9TfBsraTI5cmWAxnHv/wyYkK948QNe3DkdmascRU6ldKSIaZJ2k46cJfjtIkspMZ2tOuen39bd5pASXrGLyi9eq8HsZNY1IhD5OqDBtl+eLZ5DtJNdbroYF6+lg0f9K40fZIiPhFBtJPQoNZjCIwEb3VCG4o+OF7ga1gEOAj0se5BUXiMYWWT2zfusFBoxoecA/nout33sFS4NxGAsoKEkQlqxChSK1Lr/XTvZ77SA==",
+                  "Signature" : "some-signature", 
                   "SigningCertURL" : "https://sns.eu-west-1.amazonaws.com/SimpleNotificationService-signing-cert-uuid.pem",
                   "UnsubscribeURL" : "https://sns.eu-west-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:a-aws-arn"
                 }
@@ -80,5 +83,6 @@ public class EventQueueIT {
 
         List<EventMessage> result = eventQueue.retrieveEvents();
         assertFalse(result.isEmpty());
+        assertThat(result.get(0).eventMessageDto().resourceType(), is("payment"));
     }
 }
