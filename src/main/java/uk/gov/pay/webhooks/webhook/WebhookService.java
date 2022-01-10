@@ -8,6 +8,8 @@ import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.EventMapper;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
+import uk.gov.pay.webhooks.message.resource.WebhookMessageResponse;
+import uk.gov.pay.webhooks.message.resource.WebhookMessageSearchResponse;
 import uk.gov.pay.webhooks.queue.InternalEvent;
 import uk.gov.pay.webhooks.util.IdGenerator;
 import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
@@ -74,8 +76,13 @@ public class WebhookService {
         return webhookDao.list(live);
     }
 
-    public List<WebhookMessageEntity> listMessages(String webhookId) {
-        return webhookMessageDao.list(webhookId);
+    public WebhookMessageSearchResponse listMessages(String webhookId, String status, int page) {
+        var messages = webhookMessageDao.list(webhookId, status, page)
+                .stream()
+                .map(WebhookMessageResponse::from)
+                .toList();
+        var total = webhookMessageDao.count(webhookId, status);
+        return new WebhookMessageSearchResponse(total.intValue(), messages.size(), page, messages);
     }
 
     public List<WebhookDeliveryQueueEntity> listMessageAttempts(String webhookId, String messageId) {

@@ -25,12 +25,22 @@ import java.util.Date;
 
 @NamedQuery(
         name = WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID,
-        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId order by createdDate DESC"
+        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId order by createdDate desc"
 )
 
 @NamedQuery(
         name = WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID_AND_STATUS,
-        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and webhookDeliveryQueueEntity.deliveryStatus = :deliveryStatus order by createdDate DESC"
+        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and webhookDeliveryQueueEntity.deliveryStatus in :deliveryStatuses order by createdDate desc"
+)
+
+@NamedQuery(
+        name = WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID,
+        query = "select count(m) from WebhookMessageEntity m where webhookEntity.externalId = :webhookId"
+)
+
+@NamedQuery(
+        name = WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID_AND_STATUS,
+        query = "select count(m) from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and webhookDeliveryQueueEntity.deliveryStatus in :deliveryStatuses"
 )
 
 @Entity
@@ -43,6 +53,8 @@ public class WebhookMessageEntity {
 
     public static final String MESSAGES_BY_WEBHOOK_ID = "WebhookMessage.messages_by_webhook_id";
     public static final String MESSAGES_BY_WEBHOOK_ID_AND_STATUS = "WebhookMessage.messages_by_webhook_id_and_status";
+    public static final String COUNT_MESSAGES_BY_WEBHOOK_ID = "WebhookMessage.count_messages_by_webhook_id";
+    public static final String COUNT_MESSAGES_BY_WEBHOOK_ID_AND_STATUS = "WebhookMessage.count_messages_by_webhook_id_and_status";
 
     public WebhookMessageEntity() {}
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.dropwizard.hibernate.UnitOfWork;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageResponse;
+import uk.gov.pay.webhooks.message.resource.WebhookMessageSearchResponse;
 import uk.gov.pay.webhooks.validations.WebhookRequestValidator;
 import uk.gov.pay.webhooks.webhook.WebhookService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
@@ -109,11 +110,13 @@ public class WebhookResource {
     @UnitOfWork
     @Path("/{externalId}/messages")
     @GET
-    public List<WebhookMessageResponse> getWebhookMessages(@PathParam("externalId") String externalId) {
-        return  webhookService.listMessages(externalId)
-                .stream()
-                .map(WebhookMessageResponse::from)
-                .toList();
+    public WebhookMessageSearchResponse getWebhookMessages(
+            @PathParam("externalId") String externalId,
+            @QueryParam("page") Integer page,
+            @QueryParam("status") String status
+    ) {
+        var currentPage = (page != null) ? page : 1;
+        return  webhookService.listMessages(externalId, status, currentPage);
     }
 
     @UnitOfWork

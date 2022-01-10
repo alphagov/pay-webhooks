@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.List;
 
 public record WebhookMessageResponse(
+        @JsonProperty("external_id") String externalId,
         @JsonProperty("created_date") @JsonSerialize(using = ApiResponseInstantSerializer.class) Instant createdDate,
         @JsonProperty("event_date") @JsonSerialize(using = ApiResponseInstantSerializer.class) Instant eventDate,
         @JsonProperty("event_type") EventTypeName eventTypeName,
@@ -20,6 +21,7 @@ public record WebhookMessageResponse(
 
     public static WebhookMessageResponse from(WebhookMessageEntity webhookMessageEntity) {
         return new WebhookMessageResponse(
+                webhookMessageEntity.getExternalId(),
                 webhookMessageEntity.getCreatedDate().toInstant(),
                 webhookMessageEntity.getEventDate().toInstant(),
                 webhookMessageEntity.getEventType().getName(),
