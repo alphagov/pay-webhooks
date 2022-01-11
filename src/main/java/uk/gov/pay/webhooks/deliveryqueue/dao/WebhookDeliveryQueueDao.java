@@ -9,6 +9,7 @@ import javax.inject.Inject;
 import javax.persistence.LockModeType;
 import java.time.InstantSource;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEntity> {
@@ -50,5 +51,12 @@ public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEnt
 
     public WebhookDeliveryQueueEntity recordResult(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, String deliveryResult, Integer statusCode, WebhookDeliveryQueueEntity.DeliveryStatus deliveryStatus) {
         return persist(WebhookDeliveryQueueEntity.recordResult(webhookDeliveryQueueEntity, deliveryResult, statusCode, deliveryStatus));
+    }
+
+    public List<WebhookDeliveryQueueEntity> list(String webhookId, String messageId) {
+        return namedTypedQuery(WebhookDeliveryQueueEntity.LIST_DELIVERY_ATTEMPTS)
+                .setParameter("webhookId", webhookId)
+                .setParameter("messageId", messageId)
+                .getResultList();
     }
 }

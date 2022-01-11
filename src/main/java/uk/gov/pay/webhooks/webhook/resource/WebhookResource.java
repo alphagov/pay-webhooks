@@ -2,6 +2,10 @@ package uk.gov.pay.webhooks.webhook.resource;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dropwizard.hibernate.UnitOfWork;
+import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
+import uk.gov.pay.webhooks.message.resource.WebhookDeliveryQueueResponse;
+import uk.gov.pay.webhooks.message.resource.WebhookMessageResponse;
+import uk.gov.pay.webhooks.message.resource.WebhookMessageSearchResponse;
 import uk.gov.pay.webhooks.validations.WebhookRequestValidator;
 import uk.gov.pay.webhooks.webhook.WebhookService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
@@ -23,6 +27,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -103,7 +108,43 @@ public class WebhookResource {
                     .map(WebhookResponse::from)
                     .toList();
     }
-    
+
+    @UnitOfWork
+    @Path("/{externalId}/message")
+    @GET
+    public WebhookMessageSearchResponse getWebhookMessages(
+            @PathParam("externalId") String externalId,
+            @QueryParam("page") Integer page,
+            @Valid @QueryParam("status") WebhookDeliveryQueueEntity.DeliveryStatus status
+    ) {
+        var currentPage = Optional.ofNullable(page)
+                .orElse(1);
+        var deliveryStatus = Optional.ofNullable(status)
+                .map(String::valueOf)
+                .orElse(null);
+        return webhookService.listMessages(externalId, deliveryStatus, currentPage);
+    }
+
+    @UnitOfWork
+    @Path("/{externalId}/message/{messageId}")
+    @GET
+    public WebhookMessageResponse getWebhookMessage(
+            @PathParam("externalId") String externalId,
+            @PathParam("messageId") String messageId
+    ) {
+        return webhookService.getMessage(externalId, messageId);
+    }
+
+    @UnitOfWork
+    @Path("/{externalId}/message/{messageId}/attempt")
+    @GET
+    public List<WebhookDeliveryQueueResponse> getWebhookMessageAttemps(
+            @PathParam("externalId") String externalId,
+            @PathParam("messageId") String messageId
+    ) {
+        return  webhookService.listMessageAttempts(externalId, messageId);
+    }
+
     @UnitOfWork
     @PATCH
     @Path("/{externalId}")

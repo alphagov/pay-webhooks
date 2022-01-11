@@ -1,5 +1,6 @@
 package uk.gov.pay.webhooks.deliveryqueue.dao;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 
 import javax.persistence.Column;
@@ -8,10 +9,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.FetchType;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
@@ -26,6 +28,11 @@ import java.util.Optional;
         query = "select count(m) from WebhookDeliveryQueueEntity m where webhook_message_id = :webhook_message_id and delivery_status = 'FAILED'"
 )
 
+@NamedQuery(
+        name = WebhookDeliveryQueueEntity.LIST_DELIVERY_ATTEMPTS,
+        query = "select wdq from WebhookDeliveryQueueEntity wdq where webhookMessageEntity.webhookEntity.externalId = :webhookId and webhookMessageEntity.externalId = :messageId order by createdDate desc"
+)
+
 @Entity
 @SequenceGenerator(name="webhook_delivery_queue_id_seq", sequenceName = "webhook_delivery_queue_id_seq", allocationSize = 1)
 @Table(name = "webhook_delivery_queue")
@@ -35,10 +42,11 @@ import java.util.Optional;
 public class WebhookDeliveryQueueEntity {
     public static final String NEXT_TO_SEND = "WebhookDeliveryQueue.next_to_send";
     public static final String COUNT_FAILED = "WebhookDeliveryQueue.count_failed";
+    public static final String LIST_DELIVERY_ATTEMPTS = "WebhookDeliveryQueue.list_delivery_attempts";
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "event_types_id_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "webhook_delivery_queue_id_seq")
     private Long id;
 
     @Column(name = "created_date")
@@ -57,6 +65,10 @@ public class WebhookDeliveryQueueEntity {
 
     @Column(name = "send_at")
     private Date sendAt;
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
 
     public enum DeliveryStatus {
         PENDING,
@@ -103,7 +115,8 @@ public class WebhookDeliveryQueueEntity {
         return webhookMessageEntity;
     }
 
-    @ManyToOne
+    @JsonIgnore
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "webhook_message_id", updatable = false)
     private WebhookMessageEntity webhookMessageEntity;
 

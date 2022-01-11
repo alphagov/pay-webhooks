@@ -129,7 +129,7 @@ public class WebhookEntity {
         return subscriptions;
     }
 
-    private void setExternalId(String externalId) {
+    public void setExternalId(String externalId) {
         this.externalId = externalId;
     }
 

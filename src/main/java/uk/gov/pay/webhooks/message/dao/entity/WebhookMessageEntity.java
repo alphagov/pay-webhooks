@@ -2,9 +2,11 @@ package uk.gov.pay.webhooks.message.dao.entity;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vladmihalcea.hibernate.type.json.JsonType;
+import org.hibernate.annotations.JoinFormula;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
@@ -17,7 +19,34 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.NamedQuery;
+import javax.persistence.FetchType;
 import java.util.Date;
+
+@NamedQuery(
+        name = WebhookMessageEntity.MESSAGE_BY_WEBHOOK_ID_AND_MESSAGE_ID,
+        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and externalId = :messageId"
+)
+
+@NamedQuery(
+        name = WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID,
+        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId order by createdDate desc"
+)
+
+@NamedQuery(
+        name = WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID_AND_STATUS,
+        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and webhookDeliveryQueueEntity.deliveryStatus = :deliveryStatus order by createdDate desc"
+)
+
+@NamedQuery(
+        name = WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID,
+        query = "select count(m) from WebhookMessageEntity m where webhookEntity.externalId = :webhookId"
+)
+
+@NamedQuery(
+        name = WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID_AND_STATUS,
+        query = "select count(m) from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and webhookDeliveryQueueEntity.deliveryStatus = :deliveryStatus"
+)
 
 @Entity
 @SequenceGenerator(name="webhook_messages_id_seq", sequenceName = "webhook_messages_id_seq", allocationSize = 1)
@@ -27,10 +56,16 @@ import java.util.Date;
 })
 public class WebhookMessageEntity {
 
+    public static final String MESSAGE_BY_WEBHOOK_ID_AND_MESSAGE_ID = "WebhookMessage.message_by_webhook_id_and_message_id";
+    public static final String MESSAGES_BY_WEBHOOK_ID = "WebhookMessage.messages_by_webhook_id";
+    public static final String MESSAGES_BY_WEBHOOK_ID_AND_STATUS = "WebhookMessage.messages_by_webhook_id_and_status";
+    public static final String COUNT_MESSAGES_BY_WEBHOOK_ID = "WebhookMessage.count_messages_by_webhook_id";
+    public static final String COUNT_MESSAGES_BY_WEBHOOK_ID_AND_STATUS = "WebhookMessage.count_messages_by_webhook_id_and_status";
+
     public WebhookMessageEntity() {}
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "event_types_id_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "webhook_messages_id_seq")
     private Long id;
 
     @Column(name = "external_id")
@@ -53,6 +88,19 @@ public class WebhookMessageEntity {
     @Type(type = "json")
     @Column(name = "resource", columnDefinition = "json")
     private JsonNode resource;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinFormula("""
+           (
+           SELECT wdq.id
+           FROM webhook_delivery_queue wdq
+           WHERE wdq.webhook_message_id = id
+           AND wdq.delivery_status != 'PENDING'
+           ORDER BY wdq.send_at DESC
+           LIMIT 1
+           )
+            """)
+    private WebhookDeliveryQueueEntity webhookDeliveryQueueEntity;
 
     public String getExternalId() {
         return externalId;
@@ -100,5 +148,9 @@ public class WebhookMessageEntity {
 
     public void setResource(JsonNode resource) {
         this.resource = resource;
+    }
+
+    public WebhookDeliveryQueueEntity getWebhookDeliveryQueueEntity() {
+        return webhookDeliveryQueueEntity;
     }
 }
