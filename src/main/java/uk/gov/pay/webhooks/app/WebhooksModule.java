@@ -5,11 +5,14 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.setup.Environment;
 import org.hibernate.SessionFactory;
+import uk.gov.pay.webhooks.message.WebhookMessageSender;
+import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
 import uk.gov.pay.webhooks.util.IdGenerator;
 
 import javax.inject.Singleton;
@@ -51,6 +54,13 @@ public class WebhooksModule extends AbstractModule {
     @Singleton
     public HttpClient httpClient() {
         return HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+    }
+
+    @Provides
+    @Singleton
+    public WebhookMessageSender webhookMessageSender() {
+        return new WebhookMessageSender(httpClient(), new ObjectMapper(),
+                new WebhookMessageSignatureGenerator());
     }
 
     @Provides
