@@ -81,14 +81,14 @@ public class WebhookResourceIT {
         given().port(port)
                 .contentType(JSON)
                 .queryParam("status", "FAILED")
-                .get("/v1/webhook/%s/messages".formatted(externalId))
+                .get("/v1/webhook/%s/message".formatted(externalId))
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("results.latest_attempt[0].status", is("FAILED"));
 
         given().port(port)
                 .contentType(JSON)
-                .get("/v1/webhook/%s/messages".formatted(externalId))
+                .get("/v1/webhook/%s/message".formatted(externalId))
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("count", is(10))
@@ -99,7 +99,7 @@ public class WebhookResourceIT {
         given().port(port)
                 .contentType(JSON)
                 .queryParam("page", 2)
-                .get("/v1/webhook/%s/messages".formatted(externalId))
+                .get("/v1/webhook/%s/message".formatted(externalId))
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("count", is(2))
@@ -116,10 +116,25 @@ public class WebhookResourceIT {
 
         given().port(port)
                 .contentType(JSON)
-                .get("/v1/webhook/%s/messages/%s/attempts".formatted(externalId, messageExternalId))
+                .get("/v1/webhook/%s/message/%s/attempt".formatted(externalId, messageExternalId))
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("size()", is(3));
+    }
+
+    @Test
+    public void shouldReturnMessageDetail() {
+        var externalId = "awebhookexternalid";
+        var messageExternalId = "message-external-id-1";
+        setupWebhookWithMessages(externalId, messageExternalId);
+
+        given().port(port)
+                .contentType(JSON)
+                .get("/v1/webhook/%s/message/%s".formatted(externalId, messageExternalId))
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .body("external_id", is(messageExternalId))
+                .body("latest_attempt.status", is("FAILED"));
     }
 
     @Test

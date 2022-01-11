@@ -109,7 +109,7 @@ public class WebhookResource {
     }
 
     @UnitOfWork
-    @Path("/{externalId}/messages")
+    @Path("/{externalId}/message")
     @GET
     public WebhookMessageSearchResponse getWebhookMessages(
             @PathParam("externalId") String externalId,
@@ -117,11 +117,21 @@ public class WebhookResource {
             @QueryParam("status") String status
     ) {
         var currentPage = (page != null) ? page : 1;
-        return  webhookService.listMessages(externalId, status, currentPage);
+        return webhookService.listMessages(externalId, status, currentPage);
     }
 
     @UnitOfWork
-    @Path("/{externalId}/messages/{messageId}/attempts")
+    @Path("/{externalId}/message/{messageId}")
+    @GET
+    public WebhookMessageResponse getWebhookMessage(
+            @PathParam("externalId") String externalId,
+            @PathParam("messageId") String messageId
+    ) {
+        return webhookService.getMessage(externalId, messageId);
+    }
+
+    @UnitOfWork
+    @Path("/{externalId}/message/{messageId}/attempt")
     @GET
     public List<WebhookDeliveryQueueResponse> getWebhookMessageAttemps(
             @PathParam("externalId") String externalId,

@@ -21,6 +21,13 @@ public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
         return webhookMessage;
     }
 
+    public WebhookMessageEntity get(String webhookId, String messageId) {
+       return namedTypedQuery(WebhookMessageEntity.MESSAGE_BY_WEBHOOK_ID_AND_MESSAGE_ID)
+               .setParameter("webhookId", webhookId)
+               .setParameter("messageId", messageId)
+               .getSingleResult();
+    }
+
     public List<WebhookMessageEntity> list(String webhookId, String deliveryStatus, int page) {
         var query = (deliveryStatus != null) ?
                 namedTypedQuery(WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID_AND_STATUS).setParameter("webhookId", webhookId).setParameter("deliveryStatuses", List.of(deliveryStatus)) :

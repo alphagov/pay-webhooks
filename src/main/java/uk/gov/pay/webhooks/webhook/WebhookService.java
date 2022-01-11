@@ -86,6 +86,11 @@ public class WebhookService {
         return new WebhookMessageSearchResponse(total.intValue(), messages.size(), page, messages);
     }
 
+    public WebhookMessageResponse getMessage(String webhookId, String messageId) {
+        var message = webhookMessageDao.get(webhookId, messageId);
+        return WebhookMessageResponse.from(message);
+    }
+
     public List<WebhookDeliveryQueueResponse> listMessageAttempts(String webhookId, String messageId) {
         return webhookDeliveryQueueDao.list(webhookId, messageId)
                 .stream()
