@@ -29,8 +29,8 @@ public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
     }
 
     public List<WebhookMessageEntity> list(String webhookId, String deliveryStatus, int page) {
-        var query = (deliveryStatus != null) ?
-                namedTypedQuery(WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID_AND_STATUS).setParameter("webhookId", webhookId).setParameter("deliveryStatuses", List.of(deliveryStatus)) :
+        var query = deliveryStatus != null ?
+                namedTypedQuery(WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID_AND_STATUS).setParameter("webhookId", webhookId).setParameter("deliveryStatus", deliveryStatus) :
                 namedTypedQuery(WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID).setParameter("webhookId", webhookId);
         return query.setFirstResult(calculateFirstResult(page))
                 .setMaxResults(WEBHOOK_MESSAGES_PAGE_SIZE)
@@ -38,8 +38,8 @@ public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
     }
 
     public Long count(String webhookId, String deliveryStatus) {
-        var query = (deliveryStatus != null) ?
-                namedQuery(WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID_AND_STATUS).setParameter("webhookId", webhookId).setParameter("deliveryStatuses", List.of(deliveryStatus)) :
+        var query = deliveryStatus != null ?
+                namedQuery(WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID_AND_STATUS).setParameter("webhookId", webhookId).setParameter("deliveryStatus", deliveryStatus) :
                 namedQuery(WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID).setParameter("webhookId", webhookId);
         return (Long) query.getSingleResult();
     }

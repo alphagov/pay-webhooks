@@ -27,6 +27,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -114,10 +115,14 @@ public class WebhookResource {
     public WebhookMessageSearchResponse getWebhookMessages(
             @PathParam("externalId") String externalId,
             @QueryParam("page") Integer page,
-            @QueryParam("status") String status
+            @Valid @QueryParam("status") WebhookDeliveryQueueEntity.DeliveryStatus status
     ) {
-        var currentPage = (page != null) ? page : 1;
-        return webhookService.listMessages(externalId, status, currentPage);
+        var currentPage = Optional.ofNullable(page)
+                .orElse(1);
+        var deliveryStatus = Optional.ofNullable(status)
+                .map(String::valueOf)
+                .orElse(null);
+        return webhookService.listMessages(externalId, deliveryStatus, currentPage);
     }
 
     @UnitOfWork

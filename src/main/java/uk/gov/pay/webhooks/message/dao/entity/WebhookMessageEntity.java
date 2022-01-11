@@ -35,7 +35,7 @@ import java.util.Date;
 
 @NamedQuery(
         name = WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID_AND_STATUS,
-        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and webhookDeliveryQueueEntity.deliveryStatus in :deliveryStatuses order by createdDate desc"
+        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and webhookDeliveryQueueEntity.deliveryStatus = :deliveryStatus order by createdDate desc"
 )
 
 @NamedQuery(
@@ -45,7 +45,7 @@ import java.util.Date;
 
 @NamedQuery(
         name = WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID_AND_STATUS,
-        query = "select count(m) from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and webhookDeliveryQueueEntity.deliveryStatus in :deliveryStatuses"
+        query = "select count(m) from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and webhookDeliveryQueueEntity.deliveryStatus = :deliveryStatus"
 )
 
 @Entity

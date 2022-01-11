@@ -37,12 +37,7 @@ class WebhookMessageDaoTest {
     public void setUp() {
         webhookDao = new WebhookDao(database.getSessionFactory());
         webhookMessageDao = new WebhookMessageDao(database.getSessionFactory());
-        webhookDeliveryQueueDao = new WebhookDeliveryQueueDao(database.getSessionFactory(), new InstantSource() {
-            @Override
-            public Instant instant() {
-                return Instant.now();
-            }
-        });
+        webhookDeliveryQueueDao = new WebhookDeliveryQueueDao(database.getSessionFactory(), InstantSource.fixed(Instant.now()));
     }
 
    @Test
