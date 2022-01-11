@@ -8,6 +8,7 @@ import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.EventMapper;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
+import uk.gov.pay.webhooks.message.resource.WebhookDeliveryQueueResponse;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageResponse;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageSearchResponse;
 import uk.gov.pay.webhooks.queue.InternalEvent;
@@ -85,8 +86,11 @@ public class WebhookService {
         return new WebhookMessageSearchResponse(total.intValue(), messages.size(), page, messages);
     }
 
-    public List<WebhookDeliveryQueueEntity> listMessageAttempts(String webhookId, String messageId) {
-        return webhookDeliveryQueueDao.list(webhookId, messageId);
+    public List<WebhookDeliveryQueueResponse> listMessageAttempts(String webhookId, String messageId) {
+        return webhookDeliveryQueueDao.list(webhookId, messageId)
+                .stream()
+                .map(WebhookDeliveryQueueResponse::from)
+                .toList();
     }
 
     public Optional<WebhookEntity> regenerateSigningKey(String externalId, String serviceId) {

@@ -17,16 +17,17 @@ public record WebhookMessageResponse(
         @JsonProperty("event_date") @JsonSerialize(using = ApiResponseInstantSerializer.class) Instant eventDate,
         @JsonProperty("event_type") EventTypeName eventTypeName,
         @JsonProperty("resource") JsonNode resource,
-        @JsonProperty("webhook_delivery_queue_entity") WebhookDeliveryQueueEntity webhookDeliveryQueueEntity) {
+        @JsonProperty("latest_attempt") WebhookDeliveryQueueResponse webhookDeliveryQueueEntity) {
 
     public static WebhookMessageResponse from(WebhookMessageEntity webhookMessageEntity) {
+        var latestAttempt = (webhookMessageEntity.getWebhookDeliveryQueueEntity() != null) ? WebhookDeliveryQueueResponse.from(webhookMessageEntity.getWebhookDeliveryQueueEntity()) : null;
         return new WebhookMessageResponse(
                 webhookMessageEntity.getExternalId(),
                 webhookMessageEntity.getCreatedDate().toInstant(),
                 webhookMessageEntity.getEventDate().toInstant(),
                 webhookMessageEntity.getEventType().getName(),
                 webhookMessageEntity.getResource(),
-                webhookMessageEntity.getWebhookDeliveryQueueEntity()
+                latestAttempt
         );
     }
 }

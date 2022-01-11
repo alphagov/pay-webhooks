@@ -66,6 +66,10 @@ public class WebhookDeliveryQueueEntity {
     @Column(name = "send_at")
     private Date sendAt;
 
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
     public enum DeliveryStatus {
         PENDING,
         SUCCESSFUL,
