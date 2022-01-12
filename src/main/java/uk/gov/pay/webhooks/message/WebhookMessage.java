@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.queue.InternalEvent;
 import uk.gov.service.payments.commons.api.json.ApiResponseInstantSerializer;
@@ -17,18 +18,18 @@ public record WebhookMessage(String id,
                              String resourceId,
                              Integer apiVersion,
                              String resourceType,
-                             String eventType,
+                             EventTypeName eventTypeName,
                              JsonNode resource) {
 
     public static final Integer API_VERSION = 1;
 
     public static WebhookMessage of(WebhookMessageEntity webhookMessage, InternalEvent event, JsonNode resource) {
         return new WebhookMessage(webhookMessage.getExternalId(),
-                event.eventDate(),
+                webhookMessage.getEventDate().toInstant(),
                 event.resourceExternalId(),
                 API_VERSION,
                 event.resourceType(),
-                event.eventType(),
+                webhookMessage.getEventType().getName(),
                 resource
         );
     }
