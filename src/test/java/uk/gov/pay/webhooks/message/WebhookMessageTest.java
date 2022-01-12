@@ -44,9 +44,11 @@ class WebhookMessageTest {
         webhookMessageEntity.setEventDate(Date.from(instantSource.instant()));
         EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
         webhookMessageEntity.setEventType(eventTypeEntity);
-
-        var internalEvent = new InternalEvent("PAYMENT_CAPTURED", "service-id", true, "resource-external-id", null, instantSource.instant(), "payment");
-        var body = WebhookMessage.of(webhookMessageEntity, internalEvent, objectMapper.readTree(resource));;
+        webhookMessageEntity.setResourceType("payment");
+        webhookMessageEntity.setResourceExternalId("resource-external-id");
+        webhookMessageEntity.setResource(objectMapper.readTree(resource));
+        
+        var body = WebhookMessage.of(webhookMessageEntity);;
         var expectedJson = """
                 {
                  	"id": "externalId",

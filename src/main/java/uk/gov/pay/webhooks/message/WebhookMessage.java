@@ -23,14 +23,14 @@ public record WebhookMessage(String id,
 
     public static final Integer API_VERSION = 1;
 
-    public static WebhookMessage of(WebhookMessageEntity webhookMessage, InternalEvent event, JsonNode resource) {
+    public static WebhookMessage of(WebhookMessageEntity webhookMessage) {
         return new WebhookMessage(webhookMessage.getExternalId(),
                 webhookMessage.getEventDate().toInstant(),
-                event.resourceExternalId(),
+                webhookMessage.getResourceExternalId(),
                 API_VERSION,
-                event.resourceType(),
+                webhookMessage.getResourceType(),
                 webhookMessage.getEventType().getName(),
-                resource
+                webhookMessage.getResource()
         );
     }
 }
