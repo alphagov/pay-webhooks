@@ -77,7 +77,7 @@ public class WebhookMessageService {
         webhookMessageEntity.setWebhookEntity(webhook);
         webhookMessageEntity.setEventDate(Date.from(event.eventDate()));
         webhookMessageEntity.setEventType(eventTypeDao.findByName(EventMapper.getWebhookEventNameFor(event.eventType())).orElseThrow(IllegalArgumentException::new));
-        webhookMessageEntity.setResource(objectMapper.valueToTree(resource));
+        webhookMessageEntity.setResource(objectMapper.valueToTree(resource)); // will probably need some more transformation
         webhookMessageEntity.setResourceExternalId(event.resourceExternalId());
         webhookMessageEntity.setResourceType(event.resourceType());
         return webhookMessageEntity;

@@ -88,7 +88,7 @@ class WebhookMessageSenderTest {
         webhookMessageEntity.setExternalId("externalId");
         webhookMessageEntity.setResourceType("payment");
 
-        given(mockWebhookMessageSignatureGenerator.generate(objectMapper.writeValueAsString(WebhookMessage.of(webhookMessageEntity)), SIGNING_KEY)).willReturn(SIGNATURE);
+        given(mockWebhookMessageSignatureGenerator.generate(objectMapper.writeValueAsString(WebhookMessageBody.from(webhookMessageEntity)), SIGNING_KEY)).willReturn(SIGNATURE);
 
         webhookMessageSender = new WebhookMessageSender(mockHttpClient, objectMapper, mockWebhookMessageSignatureGenerator);
     }
@@ -123,7 +123,7 @@ class WebhookMessageSenderTest {
 
     @Test
     void propagatesInvalidKeyException() throws InvalidKeyException, JsonProcessingException {
-        given(mockWebhookMessageSignatureGenerator.generate(objectMapper.writeValueAsString(WebhookMessage.of(webhookMessageEntity)), SIGNING_KEY)).willThrow(InvalidKeyException.class);
+        given(mockWebhookMessageSignatureGenerator.generate(objectMapper.writeValueAsString(WebhookMessageBody.from(webhookMessageEntity)), SIGNING_KEY)).willThrow(InvalidKeyException.class);
         assertThrows(InvalidKeyException.class, () -> webhookMessageSender.sendWebhookMessage(webhookMessageEntity));
     }
 

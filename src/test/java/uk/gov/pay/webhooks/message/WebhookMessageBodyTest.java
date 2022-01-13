@@ -9,7 +9,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
-import uk.gov.pay.webhooks.queue.InternalEvent;
 
 import java.time.Instant;
 import java.time.InstantSource;
@@ -19,7 +18,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(DropwizardExtensionsSupport.class)
-class WebhookMessageTest {
+class WebhookMessageBodyTest {
         
     private ObjectMapper objectMapper;
     private InstantSource instantSource;
@@ -48,7 +47,7 @@ class WebhookMessageTest {
         webhookMessageEntity.setResourceExternalId("resource-external-id");
         webhookMessageEntity.setResource(objectMapper.readTree(resource));
         
-        var body = WebhookMessage.of(webhookMessageEntity);;
+        var body = WebhookMessageBody.from(webhookMessageEntity);;
         var expectedJson = """
                 {
                  	"id": "externalId",
