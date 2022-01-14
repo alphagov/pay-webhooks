@@ -6,6 +6,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import io.dropwizard.hibernate.HibernateBundle;
@@ -59,7 +60,7 @@ public class WebhooksModule extends AbstractModule {
     @Provides
     @Singleton
     public WebhookMessageSender webhookMessageSender() {
-        return new WebhookMessageSender(httpClient(), new ObjectMapper(),
+        return new WebhookMessageSender(httpClient(), new ObjectMapper().registerModule(new Jdk8Module()),
                 new WebhookMessageSignatureGenerator());
     }
 

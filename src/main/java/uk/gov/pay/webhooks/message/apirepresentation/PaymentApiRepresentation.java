@@ -1,0 +1,68 @@
+package uk.gov.pay.webhooks.message.apirepresentation;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import uk.gov.pay.webhooks.ledger.model.LedgerTransaction;
+import uk.gov.pay.webhooks.ledger.model.SettlementSummary;
+
+import java.util.Map;
+import java.util.Optional;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+public record PaymentApiRepresentation(
+        String paymentId,
+        Long amount,
+        PaymentState state,
+        String returnUrl,
+        String description,
+        String reference,
+        String email,
+        String paymentProvider,
+        String createdDate,
+        String language,
+        boolean delayedCapture,
+        boolean moto,
+        PaymentApiRefundSummary paymentApiRefundSummary,
+        SettlementSummary settlementSummary,
+        PaymentApiCardDetails cardDetails,
+        Long corporateCardSurcharge,
+        Long totalAmount,
+        Map<String, Object> metadata,
+        Long fee,
+        Long netAmount,
+        PaymentApiAuthorisationSummary authorisationSummary
+) {
+
+    public static PaymentApiRepresentation of(LedgerTransaction ledgerTransaction) {
+        var externalChargeState = ExternalChargeState.fromStatusString(ledgerTransaction.getState().getStatus());
+        return new PaymentApiRepresentation(ledgerTransaction.getTransactionId(),
+                ledgerTransaction.getAmount(),
+                new PaymentState(externalChargeState.getStatus(), externalChargeState.isFinished(), externalChargeState.getMessage(), externalChargeState.getCode()),
+                ledgerTransaction.getReturnUrl(),
+                ledgerTransaction.getDescription(),
+                ledgerTransaction.getReference(),
+                ledgerTransaction.getEmail(),
+                ledgerTransaction.getPaymentProvider(),
+                ledgerTransaction.getCreatedDate(),
+                ledgerTransaction.getLanguage().toString(),
+                ledgerTransaction.getDelayedCapture(),
+                ledgerTransaction.isMoto(),
+                Optional.ofNullable(ledgerTransaction.getRefundSummary()).map(rs -> new PaymentApiRefundSummary(rs.getStatus(), rs.getAmountAvailable(), rs.getAmountSubmitted())).orElse(null),
+                ledgerTransaction.getSettlementSummary(),
+                new PaymentApiCardDetails(ledgerTransaction.getCardDetails().getLastDigitsCardNumber(), ledgerTransaction.getCardDetails().getFirstDigitsCardNumber(), ledgerTransaction.getCardDetails().getCardholderName(), ledgerTransaction.getCardDetails().getExpiryDate(),
+                        new PaymentApiAddress(ledgerTransaction.getCardDetails().getBillingAddress().getLine1(), ledgerTransaction.getCardDetails().getBillingAddress().getLine2(), ledgerTransaction.getCardDetails().getBillingAddress().getPostcode(), ledgerTransaction.getCardDetails().getBillingAddress().getCity(), ledgerTransaction.getCardDetails().getBillingAddress().getCountry()),
+                        ledgerTransaction.getCardDetails().getCardBrand(),
+                        ledgerTransaction.getCardDetails().getCardType()),
+                ledgerTransaction.getCorporateCardSurcharge(),
+                ledgerTransaction.getTotalAmount(),
+                ledgerTransaction.getExternalMetaData(),
+                ledgerTransaction.getFee(),
+                ledgerTransaction.getNetAmount(),
+                new PaymentApiAuthorisationSummary(new PaymentApiThreeDSecure(ledgerTransaction.getAuthorisationSummary().getThreeDSecure().isRequired()))
+        );
+    }
+}
