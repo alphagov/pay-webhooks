@@ -20,7 +20,7 @@ public record WebhookMessageBody(String id,
                                  EventTypeName eventTypeName,
                                  JsonNode resource) {
 
-    public static final Integer API_VERSION = 1;
+    public static final int API_VERSION = 1;
 
     public static WebhookMessageBody from(WebhookMessageEntity webhookMessage) {
         return new WebhookMessageBody(webhookMessage.getExternalId(),

@@ -81,7 +81,7 @@ class WebhookMessageSenderTest {
         webhookMessageEntity = new WebhookMessageEntity();
         webhookMessageEntity.setWebhookEntity(webhookEntity);
         webhookMessageEntity.setResource(jsonPayload);
-        webhookMessageEntity.setEventDate(Date.from(Instant.from(Instant.parse("2019-10-01T08:25:24.00Z"))));
+        webhookMessageEntity.setEventDate(Date.from(Instant.parse("2019-10-01T08:25:24.00Z")));
         EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
         webhookMessageEntity.setEventType(eventTypeEntity);
         webhookMessageEntity.setResourceExternalId("foo");

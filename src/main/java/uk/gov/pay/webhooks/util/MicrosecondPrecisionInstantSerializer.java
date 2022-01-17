@@ -17,8 +17,7 @@ public class MicrosecondPrecisionInstantSerializer extends JsonSerializer<Instan
     public static final DateTimeFormatter MICROSECOND_FORMATTER =
             new DateTimeFormatterBuilder()
                     .appendInstant(6)
-                    .toFormatter(Locale.ENGLISH)
-                    .withZone(ZoneOffset.UTC);
+                    .toFormatter(Locale.ENGLISH);
     
     @Override
     public void serialize(Instant value, JsonGenerator gen, SerializerProvider provider) throws IOException {

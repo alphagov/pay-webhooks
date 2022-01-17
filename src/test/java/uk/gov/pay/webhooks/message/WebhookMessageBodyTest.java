@@ -25,9 +25,8 @@ class WebhookMessageBodyTest {
 
     @BeforeEach
     public void setUp() {
-        instantSource = InstantSource.fixed(Instant.from(Date.from(Instant.parse("2019-10-01T08:25:24.00Z")).toInstant()));
+        instantSource = InstantSource.fixed(Instant.parse("2019-10-01T08:25:24.00Z"));
         objectMapper = new ObjectMapper();
-
     }
 
     @Test
