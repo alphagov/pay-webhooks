@@ -58,7 +58,8 @@ public class WebhookMessageService {
         var subscribedWebhooks = webhookService.getWebhooksSubscribedToEvent(event);
 
         if (!subscribedWebhooks.isEmpty()) {
-            LedgerTransaction ledgerTransaction = ledgerService.getTransaction(event.resourceExternalId()).orElseThrow(IllegalArgumentException::new);
+            var resourceExternalId = getResourceIdForEvent(event); 
+            LedgerTransaction ledgerTransaction = ledgerService.getTransaction(resourceExternalId).orElseThrow(IllegalArgumentException::new);
             subscribedWebhooks
                     .stream()
                     .map(webhook -> buildWebhookMessage(webhook, event, ledgerTransaction))
@@ -78,5 +79,10 @@ public class WebhookMessageService {
         webhookMessageEntity.setEventType(eventTypeDao.findByName(EventMapper.getWebhookEventNameFor(event.eventType())).orElseThrow(IllegalArgumentException::new));
         webhookMessageEntity.setResource(resource);
         return webhookMessageEntity;
+    }
+
+    private String getResourceIdForEvent(InternalEvent event) {
+        var isChildEvent = EventMapper.isChildEvent(EventMapper.getWebhookEventNameFor(event.eventType()));
+        return isChildEvent ? event.parentResourceExternalId() : event.resourceExternalId();
     }
 }
