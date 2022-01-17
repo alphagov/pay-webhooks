@@ -11,6 +11,7 @@ public record InternalEvent(
         String serviceId,
         Boolean live,
         String resourceExternalId,
+        String parentResourceExternalId,
         JsonNode eventData,
         @JsonSerialize(using = MicrosecondPrecisionDateTimeSerializer.class) ZonedDateTime eventDate
         ) {}
