@@ -16,8 +16,7 @@ public class PaymentSettlementSummary {
 
     @JsonProperty("settled_date")
     private String settledDate;
-
-    public PaymentSettlementSummary() {}
+    
 
     public PaymentSettlementSummary(String captureSubmitTime, String capturedDate, String settledDate) {
         this.captureSubmitTime = captureSubmitTime;

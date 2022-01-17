@@ -27,9 +27,7 @@ public class PaymentState {
                 node.has("code") ? node.get("code").asText() : null
         );
     }
-
-    public PaymentState() {
-    }
+    
 
     public PaymentState(String status, boolean finished) {
         this(status, finished, null, null);
