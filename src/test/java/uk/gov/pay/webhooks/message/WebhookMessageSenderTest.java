@@ -9,6 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.pay.webhooks.eventtype.EventTypeName;
+import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
@@ -18,6 +20,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.security.InvalidKeyException;
+import java.sql.Date;
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,10 +37,18 @@ import static uk.gov.pay.webhooks.message.WebhookMessageSender.TIMEOUT;
 class WebhookMessageSenderTest {
 
     private static final String PAYLOAD = """
-            {
+        {
+            "id": "externalId",
+            "created_date": "2022-01-12T17:31:06.809Z",
+            "resource_id": "foo",
+            "api_version": 1,
+            "resource_type": null,
+            "event_type_name": "card_payment_captured",
+            "resource": {
                 "json": "and",
                 "the": "argonauts"
             }
+        }
             """;
 
     private static final URI CALLBACK_URL = URI.create("http://www.callbackurl.test/webhook-handler");
@@ -69,8 +81,14 @@ class WebhookMessageSenderTest {
         webhookMessageEntity = new WebhookMessageEntity();
         webhookMessageEntity.setWebhookEntity(webhookEntity);
         webhookMessageEntity.setResource(jsonPayload);
+        webhookMessageEntity.setEventDate(Date.from(Instant.parse("2019-10-01T08:25:24.00Z")));
+        EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
+        webhookMessageEntity.setEventType(eventTypeEntity);
+        webhookMessageEntity.setResourceExternalId("foo");
+        webhookMessageEntity.setExternalId("externalId");
+        webhookMessageEntity.setResourceType("payment");
 
-        given(mockWebhookMessageSignatureGenerator.generate(jsonPayload.toString(), SIGNING_KEY)).willReturn(SIGNATURE);
+        given(mockWebhookMessageSignatureGenerator.generate(objectMapper.writeValueAsString(WebhookMessageBody.from(webhookMessageEntity)), SIGNING_KEY)).willReturn(SIGNATURE);
 
         webhookMessageSender = new WebhookMessageSender(mockHttpClient, objectMapper, mockWebhookMessageSignatureGenerator);
     }
@@ -104,8 +122,8 @@ class WebhookMessageSenderTest {
     }
 
     @Test
-    void propagatesInvalidKeyException() throws InvalidKeyException {
-        given(mockWebhookMessageSignatureGenerator.generate(jsonPayload.toString(), SIGNING_KEY)).willThrow(InvalidKeyException.class);
+    void propagatesInvalidKeyException() throws InvalidKeyException, JsonProcessingException {
+        given(mockWebhookMessageSignatureGenerator.generate(objectMapper.writeValueAsString(WebhookMessageBody.from(webhookMessageEntity)), SIGNING_KEY)).willThrow(InvalidKeyException.class);
         assertThrows(InvalidKeyException.class, () -> webhookMessageSender.sendWebhookMessage(webhookMessageEntity));
     }
 

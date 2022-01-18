@@ -32,7 +32,7 @@ public class WebhookMessageSender {
 
     public HttpResponse<String> sendWebhookMessage(WebhookMessageEntity webhookMessage) throws IOException, InterruptedException, InvalidKeyException {
         URI uri = URI.create(webhookMessage.getWebhookEntity().getCallbackUrl());
-        String body = objectMapper.writeValueAsString(webhookMessage.getResource());
+        String body = objectMapper.writeValueAsString(WebhookMessageBody.from(webhookMessage));
         String signingKey = webhookMessage.getWebhookEntity().getSigningKey();
         String signature = webhookMessageSignatureGenerator.generate(body, signingKey);
 

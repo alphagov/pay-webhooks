@@ -71,6 +71,28 @@ public class WebhookMessageEntity {
     @Column(name = "external_id")
     private String externalId;
 
+    public String getResourceExternalId() {
+        return resourceExternalId;
+    }
+
+    public void setResourceExternalId(String resourceExternalId) {
+        this.resourceExternalId = resourceExternalId;
+    }
+
+    @Column(name = "resource_external_id")
+    private String resourceExternalId;
+
+    public String getResourceType() {
+        return resourceType;
+    }
+
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
+    }
+
+    @Column(name = "resource_type")
+    private String resourceType;
+
     @Column(name = "created_date")
     private Date createdDate;
 
