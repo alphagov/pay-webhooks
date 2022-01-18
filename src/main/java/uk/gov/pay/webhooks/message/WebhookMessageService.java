@@ -69,15 +69,18 @@ public class WebhookMessageService {
     }
 
     private WebhookMessageEntity buildWebhookMessage(WebhookEntity webhook, InternalEvent event, LedgerTransaction ledgerTransaction) {
-        JsonNode resource = objectMapper.valueToTree(APICardPaymentV1.paymentForSearchResultFrom(ledgerTransaction));
-        
+        JsonNode resource = switch (event.resourceType()) {
+            case "payment" -> objectMapper.valueToTree(APICardPaymentV1.paymentForSearchResultFrom(ledgerTransaction));
+//          TODO: Add refund case transformation
+            default -> objectMapper.valueToTree(ledgerTransaction);
+        };
         var webhookMessageEntity = new WebhookMessageEntity();
         webhookMessageEntity.setExternalId(idGenerator.newExternalId());
         webhookMessageEntity.setCreatedDate(Date.from(instantSource.instant()));
         webhookMessageEntity.setWebhookEntity(webhook);
         webhookMessageEntity.setEventDate(Date.from(event.eventDate()));
         webhookMessageEntity.setEventType(eventTypeDao.findByName(EventMapper.getWebhookEventNameFor(event.eventType())).orElseThrow(IllegalArgumentException::new));
-        webhookMessageEntity.setResource(objectMapper.valueToTree(resource)); // will probably need some more transformation
+        webhookMessageEntity.setResource(resource);
         webhookMessageEntity.setResourceExternalId(event.resourceExternalId());
         webhookMessageEntity.setResourceType(event.resourceType());
         return webhookMessageEntity;
