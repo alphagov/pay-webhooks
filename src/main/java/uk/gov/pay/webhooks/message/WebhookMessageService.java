@@ -14,6 +14,7 @@ import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.publicapi.model.Address;
 import uk.gov.pay.webhooks.publicapi.model.AuthorisationSummary;
 import uk.gov.pay.webhooks.publicapi.model.CardDetails;
+import uk.gov.pay.webhooks.publicapi.model.ExternalChargeState;
 import uk.gov.pay.webhooks.publicapi.model.PaymentForSearchResult;
 import uk.gov.pay.webhooks.publicapi.model.PaymentSettlementSummary;
 import uk.gov.pay.webhooks.publicapi.model.PaymentState;
