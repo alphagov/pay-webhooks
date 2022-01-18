@@ -1,20 +1,19 @@
-package uk.gov.pay.webhooks.message;
+package uk.gov.pay.webhooks.publicapi.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import org.junit.jupiter.api.Test;
 import uk.gov.pay.webhooks.ledger.model.LedgerTransaction;
-import uk.gov.pay.webhooks.publicapi.model.PaymentForSearchResult;
-
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class WebhookMessageServiceTest {
+class APICardPaymentV1Test {
+    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new Jdk8Module());
 
     @Test
     void paymentForSearchResultFromSerialisesWebhookMessage() throws JsonProcessingException {
-        
+
         var ledgerTransactionJson = """
                             {
                                  	"amount": 1000,
@@ -55,7 +54,7 @@ class WebhookMessageServiceTest {
                                  	}
                                  }
                 """;
-        
+
         var expectedJson = """
                 {
                 	"amount": 1000,
@@ -98,13 +97,12 @@ class WebhookMessageServiceTest {
                 }
                 """;
 
-        var objectMapper = new ObjectMapper().registerModule(new Jdk8Module());
         LedgerTransaction ledgerTransaction = objectMapper.readValue(ledgerTransactionJson, LedgerTransaction.class);
-        PaymentForSearchResult transformed = WebhookMessageService.paymentForSearchResultFrom(ledgerTransaction);
+        PaymentForSearchResult transformed = APICardPaymentV1.paymentForSearchResultFrom(ledgerTransaction);
         assertEquals(objectMapper.readTree(expectedJson).toString(), objectMapper.valueToTree(transformed).toString());
-    
+
     }
-    
+
     @Test
     void getsErrorCodeFromStatus() throws JsonProcessingException {
         var ledgerTransactionJson = """
@@ -157,11 +155,8 @@ class WebhookMessageServiceTest {
                          }
                 """;
 
-        var objectMapper = new ObjectMapper().registerModule(new Jdk8Module());
         LedgerTransaction ledgerTransaction = objectMapper.readValue(ledgerTransactionJson, LedgerTransaction.class);
-        PaymentForSearchResult transformed = WebhookMessageService.paymentForSearchResultFrom(ledgerTransaction);
+        PaymentForSearchResult transformed = APICardPaymentV1.paymentForSearchResultFrom(ledgerTransaction);
         assertEquals(objectMapper.readTree(expectedState), objectMapper.valueToTree(transformed).get("state"));
     }
-    
-    
 }

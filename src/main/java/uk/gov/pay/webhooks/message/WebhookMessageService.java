@@ -11,26 +11,16 @@ import uk.gov.pay.webhooks.ledger.LedgerService;
 import uk.gov.pay.webhooks.ledger.model.LedgerTransaction;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
-import uk.gov.pay.webhooks.publicapi.model.Address;
-import uk.gov.pay.webhooks.publicapi.model.AuthorisationSummary;
-import uk.gov.pay.webhooks.publicapi.model.CardDetails;
-import uk.gov.pay.webhooks.publicapi.model.ExternalChargeState;
-import uk.gov.pay.webhooks.publicapi.model.PaymentForSearchResult;
-import uk.gov.pay.webhooks.publicapi.model.PaymentSettlementSummary;
-import uk.gov.pay.webhooks.publicapi.model.PaymentState;
-import uk.gov.pay.webhooks.publicapi.model.RefundSummary;
-import uk.gov.pay.webhooks.publicapi.model.ThreeDSecure;
+import uk.gov.pay.webhooks.publicapi.model.APICardPaymentV1;
 import uk.gov.pay.webhooks.queue.InternalEvent;
 import uk.gov.pay.webhooks.util.IdGenerator;
 import uk.gov.pay.webhooks.webhook.WebhookService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
-import uk.gov.service.payments.commons.model.charge.ExternalMetadata;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.time.InstantSource;
 import java.util.Date;
-import java.util.Optional;
 
 public class WebhookMessageService {
 
@@ -79,7 +69,7 @@ public class WebhookMessageService {
     }
 
     private WebhookMessageEntity buildWebhookMessage(WebhookEntity webhook, InternalEvent event, LedgerTransaction ledgerTransaction) {
-        JsonNode resource = objectMapper.valueToTree(paymentForSearchResultFrom(ledgerTransaction));
+        JsonNode resource = objectMapper.valueToTree(APICardPaymentV1.paymentForSearchResultFrom(ledgerTransaction));
         
         var webhookMessageEntity = new WebhookMessageEntity();
         webhookMessageEntity.setExternalId(idGenerator.newExternalId());
