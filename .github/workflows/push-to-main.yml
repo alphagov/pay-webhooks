@@ -1,4 +1,4 @@
-name: Main merge test, build and push
+name: Main merge test and tag
 
 on:
   push:
@@ -11,7 +11,10 @@ jobs:
   test:
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v2
+      - name: Git checkout
+        uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
+        with:
+          fetch-depth: '0'
       - name: Set up JDK 17
         uses: actions/setup-java@v2
         with:
@@ -31,42 +34,28 @@ jobs:
           name: target
           path: target
           retention-days: 5
-  build-and-push:
+  tag-release:
     needs: test
     runs-on: ubuntu-latest
     environment: test
-    permissions:
-      id-token: write
-      contents: read
     steps:
-      - run: sleep 5
-      - name: AWS Assume role
-        env:
-          TEST_AWS_ACCOUNT_ID: ${{ secrets.TEST_AWS_ACCOUNT_ID }}
-          ROLE_NAME: ${{ secrets.ROLE_NAME }}
-        run: |
-          export AWS_ROLE_ARN=arn:aws:iam::${TEST_AWS_ACCOUNT_ID}:role/${ROLE_NAME}
-          export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/awscreds
-          export AWS_DEFAULT_REGION=eu-west-1
-
-          echo AWS_WEB_IDENTITY_TOKEN_FILE=$AWS_WEB_IDENTITY_TOKEN_FILE >> $GITHUB_ENV
-          echo AWS_ROLE_ARN=$AWS_ROLE_ARN >> $GITHUB_ENV
-          echo AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION >> $GITHUB_ENV
-
-          curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
-      - uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
+      - name: Git checkout
+        uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
         with:
           fetch-depth: '0'
-      - name: Download jar
-        uses: actions/download-artifact@v2
-        with:
-          name: target
-          path: target
-      - name: Build and push image
-        env:
-          TEST_AWS_ACCOUNT_ID: ${{ secrets.TEST_AWS_ACCOUNT_ID }}
+      - name: Tag release
         run: |
-          aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin ${TEST_AWS_ACCOUNT_ID}.dkr.ecr.eu-west-1.amazonaws.com
-          docker build -t govukpay/webhooks .
-          docker tag govukpay/webhooks:latest ${TEST_AWS_ACCOUNT_ID}.dkr.ecr.eu-west-1.amazonaws.com/govukpay/webhooks:latest
-          docker push ${TEST_AWS_ACCOUNT_ID}.dkr.ecr.eu-west-1.amazonaws.com/govukpay/webhooks:latest
+          LATEST_RELEASE_NUMBER=$(git describe --abbrev=0 --tags --match "alpha_release-*" | awk -F- '{print $1}' || true)
+          number_regex='^[0-9]+$'
+          if ! [[ ${LATEST_RELEASE_NUMBER} =~ $number_regex ]]; then
+           LATEST_RELEASE_NUMBER=0
+          fi
+          NEW_RELEASE_NUMBER=$((LATEST_RELEASE_NUMBER + 1))
+          TAG_NAME=alpha_release-${NEW_RELEASE_NUMBER}
+          echo "TAG_NAME: ${TAG_NAME}"
+
+          git config user.email payments-team@digital.cabinet-office.gov.uk
+          git config user.name pay-github-actions
+          DATE=$(date +%Y-%m-%d:%H:%M:%S)
+          git tag -a ${TAG_NAME} ${GITHUB_SHA} -m "Release candidate tag created on ${DATE}"
+          git push origin --tags
