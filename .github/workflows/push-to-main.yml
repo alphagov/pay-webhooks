@@ -45,6 +45,7 @@ jobs:
           fetch-depth: '0'
       - name: Tag release
         run: |
+          cd ${GITHUB_WORKSPACE}
           LATEST_RELEASE_NUMBER=$(git describe --abbrev=0 --tags --match "alpha_release-*" | awk -F- '{print $2}' || true)
           number_regex='^[0-9]+$'
           if ! [[ ${LATEST_RELEASE_NUMBER} =~ $number_regex ]]; then
