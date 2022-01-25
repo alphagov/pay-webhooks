@@ -26,7 +26,7 @@ public record PaymentApiRepresentation(
         String language,
         boolean delayedCapture,
         boolean moto,
-        PaymentApiRefundSummary paymentApiRefundSummary,
+        PaymentApiRefundSummary refundSummary,
         SettlementSummary settlementSummary,
         PaymentApiCardDetails cardDetails,
         Long corporateCardSurcharge,
