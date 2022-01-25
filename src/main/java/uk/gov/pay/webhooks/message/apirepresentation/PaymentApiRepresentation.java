@@ -54,7 +54,7 @@ public record PaymentApiRepresentation(
                 Optional.ofNullable(ledgerTransaction.getRefundSummary()).map(rs -> new PaymentApiRefundSummary(rs.getStatus(), rs.getAmountAvailable(), rs.getAmountSubmitted())).orElse(null),
                 ledgerTransaction.getSettlementSummary(),
                 new PaymentApiCardDetails(ledgerTransaction.getCardDetails().getLastDigitsCardNumber(), ledgerTransaction.getCardDetails().getFirstDigitsCardNumber(), ledgerTransaction.getCardDetails().getCardholderName(), ledgerTransaction.getCardDetails().getExpiryDate(),
-                        new PaymentApiAddress(ledgerTransaction.getCardDetails().getBillingAddress().getLine1(), ledgerTransaction.getCardDetails().getBillingAddress().getLine2(), ledgerTransaction.getCardDetails().getBillingAddress().getPostcode(), ledgerTransaction.getCardDetails().getBillingAddress().getCity(), ledgerTransaction.getCardDetails().getBillingAddress().getCountry()),
+                        Optional.ofNullable(ledgerTransaction.getCardDetails().getBillingAddress()).map(ba -> new PaymentApiAddress(ba.getLine1(), ba.getLine2(), ba.getPostcode(), ba.getCity(), ba.getCountry())).orElse(null),
                         ledgerTransaction.getCardDetails().getCardBrand(),
                         ledgerTransaction.getCardDetails().getCardType()),
                 ledgerTransaction.getCorporateCardSurcharge(),
