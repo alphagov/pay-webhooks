@@ -160,8 +160,8 @@ class PaymentApiRepresentationTest {
     }
     
     @Test
-    void payloadWithoutBillingAddressDoesNotThrow() throws JsonProcessingException {
-        var ledgerTransactionJsonWithoutBillingAddress = """
+    void payloadWithoutOptionalFieldsDoesNotThrow() throws JsonProcessingException {
+        var ledgerTransactionJsonWithoutOptionalFields = """
                             {
                                  	"amount": 1000,
                                  	"state": {
@@ -172,18 +172,8 @@ class PaymentApiRepresentationTest {
                                  	"reference": "aReference",
                                  	"language": "en",
                                  	"transaction_id": "3rke415aam1pl1u3hvaljbcll3",
-                                 	"return_url": "https://example.org",
-                                 	"email": "someone@example.org",
                                  	"payment_provider": "sandbox",
                                  	"created_date": "2018-09-22T10:13:16.067Z",
-                                 	"card_details": {
-                                 		"card_type": "debit",
-                                 		"card_brand": "Visa",
-                                 		"expiry_date": "10/24",
-                                 		"cardholder_name": "j.doe@example.org",
-                                 		"last_digits_card_number": "1234",
-                                 		"first_digits_card_number": "123456"
-                                 	},
                                  	"delayed_capture": false,
                                  	"moto": false,
                                  	"authorisation_summary": {
@@ -195,7 +185,7 @@ class PaymentApiRepresentationTest {
                                  }
                 """;
 
-        LedgerTransaction ledgerTransaction = objectMapper.readValue(ledgerTransactionJsonWithoutBillingAddress, LedgerTransaction.class);
+        LedgerTransaction ledgerTransaction = objectMapper.readValue(ledgerTransactionJsonWithoutOptionalFields, LedgerTransaction.class);
         assertDoesNotThrow(() -> PaymentApiRepresentation.of(ledgerTransaction));
         
     }
