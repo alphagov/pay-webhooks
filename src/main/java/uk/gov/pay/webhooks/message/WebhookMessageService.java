@@ -10,6 +10,7 @@ import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.ledger.LedgerService;
 import uk.gov.pay.webhooks.ledger.model.LedgerTransaction;
 import uk.gov.pay.webhooks.message.apirepresentation.PaymentApiRepresentation;
+import uk.gov.pay.webhooks.message.apirepresentation.RefundApiRepresentation;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.queue.InternalEvent;
@@ -71,7 +72,7 @@ public class WebhookMessageService {
     private WebhookMessageEntity buildWebhookMessage(WebhookEntity webhook, InternalEvent event, LedgerTransaction ledgerTransaction) {
         JsonNode resource = switch (event.resourceType()) {
             case "payment" -> objectMapper.valueToTree(PaymentApiRepresentation.of(ledgerTransaction));
-//          TODO: Add refund case transformation
+            case "refund" -> objectMapper.valueToTree(RefundApiRepresentation.of(ledgerTransaction));
             default -> objectMapper.valueToTree(ledgerTransaction);
         };
         var webhookMessageEntity = new WebhookMessageEntity();
