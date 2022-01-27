@@ -105,10 +105,7 @@ class RefundApiRepresentationTest {
                 	"created_date": "2022-01-26T16:52:41.178Z",
                 	"amount": 2000,
                 	"status": "success",
-                	"settlement_summary": {
-                		"capture_submit_time": null,
-                		"captured_date": null
-                	},
+                	"settlement_summary": {},
                 	"payment_id": "789"
                 }
                 """;

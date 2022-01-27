@@ -2,6 +2,7 @@ package uk.gov.pay.webhooks.ledger.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import uk.gov.service.payments.commons.api.json.ApiResponseDateTimeDeserializer;
@@ -10,6 +11,7 @@ import java.time.ZonedDateTime;
 
 import static uk.gov.service.payments.commons.model.ApiResponseDateTimeFormatter.ISO_INSTANT_MILLISECOND_PRECISION;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SettlementSummary {
