@@ -4,8 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import uk.gov.pay.webhooks.ledger.model.LedgerTransaction;
 import uk.gov.pay.webhooks.ledger.model.SettlementSummary;
+import uk.gov.service.payments.commons.model.SupportedLanguage;
 
 import java.util.Map;
 import java.util.Optional;
@@ -23,7 +26,7 @@ public record PaymentApiRepresentation(
         String email,
         String paymentProvider,
         String createdDate,
-        String language,
+        @JsonSerialize(using = ToStringSerializer.class) SupportedLanguage language,
         boolean delayedCapture,
         boolean moto,
         PaymentApiRefundSummary refundSummary,
@@ -48,7 +51,7 @@ public record PaymentApiRepresentation(
                 ledgerTransaction.getEmail(),
                 ledgerTransaction.getPaymentProvider(),
                 ledgerTransaction.getCreatedDate(),
-                ledgerTransaction.getLanguage().toString(),
+                ledgerTransaction.getLanguage(),
                 ledgerTransaction.getDelayedCapture(),
                 ledgerTransaction.isMoto(),
                 Optional.ofNullable(ledgerTransaction.getRefundSummary()).map(rs -> new PaymentApiRefundSummary(rs.getStatus(), rs.getAmountAvailable(), rs.getAmountSubmitted())).orElse(null),
