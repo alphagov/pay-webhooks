@@ -6,8 +6,11 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import uk.gov.pay.webhooks.ledger.model.CardDetails;
 import uk.gov.pay.webhooks.ledger.model.LedgerTransaction;
+import uk.gov.pay.webhooks.ledger.model.RefundSummary;
 import uk.gov.pay.webhooks.ledger.model.SettlementSummary;
+import uk.gov.pay.webhooks.ledger.model.TransactionState;
 import uk.gov.service.payments.commons.model.SupportedLanguage;
 
 import java.util.Map;
@@ -40,11 +43,26 @@ public record PaymentApiRepresentation(
         PaymentApiAuthorisationSummary authorisationSummary
 ) {
 
+    private static PaymentApiRefundSummary ofRefundSummary(RefundSummary rs) {
+        return new PaymentApiRefundSummary(rs.getStatus(), rs.getAmountAvailable(), rs.getAmountSubmitted());
+    }
+    
+    private static PaymentApiCardDetails ofCardDetails(CardDetails cd) {
+        return new PaymentApiCardDetails(cd.getLastDigitsCardNumber(), cd.getFirstDigitsCardNumber(),cd.getCardholderName(), cd.getExpiryDate(),
+                Optional.ofNullable(cd.getBillingAddress()).map(ba -> new PaymentApiAddress(ba.getLine1(), ba.getLine2(), ba.getPostcode(), ba.getCity(), ba.getCountry())).orElse(null),
+                cd.getCardBrand(),
+                cd.getCardType());
+    } 
+    
+    private static PaymentState getPaymentState(TransactionState ts) {
+        var externalChargeState = ExternalChargeState.fromStatusString(ts.getStatus());
+        return new PaymentState(externalChargeState.getStatus(), externalChargeState.isFinished(), externalChargeState.getMessage(), externalChargeState.getCode());
+    }
+   
     public static PaymentApiRepresentation of(LedgerTransaction ledgerTransaction) {
-        var externalChargeState = ExternalChargeState.fromStatusString(ledgerTransaction.getState().getStatus());
         return new PaymentApiRepresentation(ledgerTransaction.getTransactionId(),
                 ledgerTransaction.getAmount(),
-                new PaymentState(externalChargeState.getStatus(), externalChargeState.isFinished(), externalChargeState.getMessage(), externalChargeState.getCode()),
+                getPaymentState(ledgerTransaction.getState()),
                 ledgerTransaction.getReturnUrl(),
                 ledgerTransaction.getDescription(),
                 ledgerTransaction.getReference(),
@@ -54,12 +72,9 @@ public record PaymentApiRepresentation(
                 ledgerTransaction.getLanguage(),
                 ledgerTransaction.getDelayedCapture(),
                 ledgerTransaction.isMoto(),
-                Optional.ofNullable(ledgerTransaction.getRefundSummary()).map(rs -> new PaymentApiRefundSummary(rs.getStatus(), rs.getAmountAvailable(), rs.getAmountSubmitted())).orElse(null),
+                Optional.ofNullable(ledgerTransaction.getRefundSummary()).map(PaymentApiRepresentation::ofRefundSummary).orElse(null),
                 ledgerTransaction.getSettlementSummary(),
-                Optional.ofNullable(ledgerTransaction.getCardDetails()).map(cd -> new PaymentApiCardDetails(cd.getLastDigitsCardNumber(), cd.getFirstDigitsCardNumber(),cd.getCardholderName(), cd.getExpiryDate(),
-                        Optional.ofNullable(ledgerTransaction.getCardDetails().getBillingAddress()).map(ba -> new PaymentApiAddress(ba.getLine1(), ba.getLine2(), ba.getPostcode(), ba.getCity(), ba.getCountry())).orElse(null),
-                        cd.getCardBrand(),
-                        cd.getCardType())).orElse(null),
+                Optional.ofNullable(ledgerTransaction.getCardDetails()).map(PaymentApiRepresentation::ofCardDetails).orElse(null),
                 ledgerTransaction.getCorporateCardSurcharge(),
                 ledgerTransaction.getTotalAmount(),
                 ledgerTransaction.getExternalMetaData(),
