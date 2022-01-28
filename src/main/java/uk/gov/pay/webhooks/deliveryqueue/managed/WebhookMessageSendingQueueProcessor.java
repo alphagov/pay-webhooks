@@ -15,6 +15,7 @@ import uk.gov.pay.webhooks.message.WebhookMessageSender;
 import javax.inject.Inject;
 import java.time.InstantSource;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -73,9 +74,16 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
         ManagedSessionContext.bind(session);
         Transaction transaction = session.beginTransaction();
         try {
-            Optional<WebhookDeliveryQueueEntity> maybeQueueItem = webhookDeliveryQueueDao.nextToSend(Date.from(instantSource.instant()));
-            maybeQueueItem.ifPresent(sendAttempter::attemptSend);
-            transaction.commit();
+            LOGGER.info("Gideon IN TRY" + instantSource.instant());
+            do {
+                    webhookDeliveryQueueDao.nextToSend(Date.from(instantSource.instant())).ifPresent(wdqe -> {
+                    sendAttempter.attemptSend(wdqe);
+                    LOGGER.info("Gideon IN HERE" + instantSource.instant());
+                    transaction.commit();
+                });
+            }
+            while (
+                    webhookDeliveryQueueDao.nextToSend(Date.from(instantSource.instant())).isPresent());
         } catch (Exception e) {
             LOGGER.warn("Unexpected exception when polling queue  %s: ".formatted(e.getMessage()));
             transaction.rollback();
