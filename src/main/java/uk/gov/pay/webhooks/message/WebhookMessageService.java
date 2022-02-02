@@ -22,6 +22,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.time.InstantSource;
 import java.util.Date;
+import java.util.Optional;
 
 public class WebhookMessageService {
 
@@ -64,17 +65,30 @@ public class WebhookMessageService {
             subscribedWebhooks
                     .stream()
                     .map(webhook -> buildWebhookMessage(webhook, event, ledgerTransaction))
+                    .flatMap(Optional::stream)
                     .map(webhookMessageDao::create)
                     .forEach(webhookMessageEntity -> webhookDeliveryQueueDao.enqueueFrom(webhookMessageEntity, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Date.from(instantSource.instant())));
         }
     }
 
-    private WebhookMessageEntity buildWebhookMessage(WebhookEntity webhook, InternalEvent event, LedgerTransaction ledgerTransaction) {
-        JsonNode resource = switch (event.resourceType()) {
-            case "payment" -> objectMapper.valueToTree(PaymentApiRepresentation.of(ledgerTransaction));
-            case "refund" -> objectMapper.valueToTree(RefundApiRepresentation.of(ledgerTransaction));
-            default -> objectMapper.valueToTree(ledgerTransaction);
+    private Optional<WebhookMessageEntity> buildWebhookMessage(WebhookEntity webhook, InternalEvent event, LedgerTransaction ledgerTransaction) {
+        return switch (event.resourceType()) {
+            case "payment" -> {
+                JsonNode resource = objectMapper.valueToTree(PaymentApiRepresentation.of(ledgerTransaction));
+                yield Optional.of(buildWebhookMessageEntity(webhook, event, resource));
+            }
+            case "refund" -> {
+                JsonNode resource = objectMapper.valueToTree(RefundApiRepresentation.of(ledgerTransaction));
+                yield Optional.of(buildWebhookMessageEntity(webhook, event, resource));
+            }
+            default -> {
+                LOGGER.info("Ignoring unsupported resource type %s".formatted(event.resourceType()));
+                yield Optional.empty();
+            }
         };
+    }
+
+    private WebhookMessageEntity buildWebhookMessageEntity(WebhookEntity webhook, InternalEvent event, JsonNode resource) {
         var webhookMessageEntity = new WebhookMessageEntity();
         webhookMessageEntity.setExternalId(idGenerator.newExternalId());
         webhookMessageEntity.setCreatedDate(Date.from(instantSource.instant()));
