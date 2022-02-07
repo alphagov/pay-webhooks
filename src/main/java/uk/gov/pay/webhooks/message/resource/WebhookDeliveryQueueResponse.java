@@ -7,14 +7,13 @@ import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.service.payments.commons.api.json.ApiResponseInstantSerializer;
 
 import java.time.Instant;
-import java.util.Date;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record WebhookDeliveryQueueResponse(@JsonSerialize(using = ApiResponseInstantSerializer.class) Instant createdDate, @JsonSerialize(using = ApiResponseInstantSerializer.class) Instant sendAt, WebhookDeliveryQueueEntity.DeliveryStatus status, Integer statusCode, String result) {
     public static WebhookDeliveryQueueResponse from(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity) {
         return new WebhookDeliveryQueueResponse(
-                webhookDeliveryQueueEntity.getCreatedDate().toInstant(),
-                webhookDeliveryQueueEntity.getSendAt().toInstant(),
+                webhookDeliveryQueueEntity.getCreatedDate(),
+                webhookDeliveryQueueEntity.getSendAt(),
                 webhookDeliveryQueueEntity.getDeliveryStatus(),
                 webhookDeliveryQueueEntity.getStatusCode(),
                 webhookDeliveryQueueEntity.getDeliveryResult()

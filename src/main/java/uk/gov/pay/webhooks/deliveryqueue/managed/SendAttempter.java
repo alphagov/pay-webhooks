@@ -1,6 +1,5 @@
 package uk.gov.pay.webhooks.deliveryqueue.managed;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
@@ -15,7 +14,6 @@ import java.security.InvalidKeyException;
 import java.time.Duration;
 import java.time.InstantSource;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -69,7 +67,7 @@ public class SendAttempter {
 
     private void enqueueRetry(WebhookDeliveryQueueEntity queueItem, Duration nextRetryIn) {
         Optional.ofNullable(nextRetryIn).ifPresent(
-                retryDelay -> webhookDeliveryQueueDao.enqueueFrom(queueItem.getWebhookMessageEntity(), WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Date.from(instantSource.instant().plus(retryDelay)))
+                retryDelay -> webhookDeliveryQueueDao.enqueueFrom(queueItem.getWebhookMessageEntity(), WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant().plus(retryDelay))
         );
     }
 

@@ -16,7 +16,6 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import javax.ws.rs.client.Entity;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,7 +43,7 @@ public class WebhookResourceTest {
     @BeforeEach
     void setup() {
         webhook = new WebhookEntity();
-        webhook.setCreatedDate(Date.from(Instant.now()));
+        webhook.setCreatedDate(Instant.now());
     }
 
     @Test
@@ -171,7 +170,7 @@ public class WebhookResourceTest {
         webhook.setLive(true);
         webhook.setDescription("fooBar");
         webhook.addSubscription(new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED));
-        webhook.setCreatedDate(Date.from(Instant.parse("2007-12-03T10:15:30.00Z")));
+        webhook.setCreatedDate(Instant.parse("2007-12-03T10:15:30.00Z"));
 
         when(webhookService.list(true, existingServiceId)).thenReturn((List.of(webhook, webhook)));
 

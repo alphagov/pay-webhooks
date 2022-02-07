@@ -12,7 +12,6 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import java.time.Instant;
 import java.time.InstantSource;
-import java.util.Date;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -43,12 +42,12 @@ class WebhookDeliveryQueueDaoTest {
     void nextToSendReturnsEnqueuedMessage() {
         WebhookMessageEntity persisted = database.inTransaction(() -> {
             WebhookMessageEntity webhookMessageEntity = new WebhookMessageEntity();
-            webhookMessageEntity.setCreatedDate(Date.from(instantSource.instant()));
+            webhookMessageEntity.setCreatedDate(instantSource.instant());
             return webhookMessageDao.create(webhookMessageEntity);
         });
         database.inTransaction(() -> {
-            webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Date.from(instantSource.instant().minusMillis(1)));
-            assertThat(webhookDeliveryQueueDao.nextToSend(Date.from(instantSource.instant())).get().getWebhookMessageEntity(), is(persisted));
+            webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant().minusMillis(1));
+            assertThat(webhookDeliveryQueueDao.nextToSend(instantSource.instant()).get().getWebhookMessageEntity(), is(persisted));
         });
     }
 
@@ -56,11 +55,11 @@ class WebhookDeliveryQueueDaoTest {
     void recordResultUpdatesAttempt() {
         WebhookMessageEntity persisted = database.inTransaction(() -> {
             WebhookMessageEntity webhookMessageEntity = new WebhookMessageEntity();
-            webhookMessageEntity.setCreatedDate(Date.from(instantSource.instant()));
+            webhookMessageEntity.setCreatedDate(instantSource.instant());
             return webhookMessageDao.create(webhookMessageEntity);
         });
         database.inTransaction(() -> {
-            var enqueued = webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Date.from(instantSource.instant().minusMillis(1)));
+            var enqueued = webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant().minusMillis(1));
             var updated = webhookDeliveryQueueDao.recordResult(enqueued, "200 OK", 200, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL);
             assertThat(updated.getDeliveryStatus(), is(WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL));
             assertThat(updated.getDeliveryResult(), is("200 OK"));
@@ -72,12 +71,12 @@ class WebhookDeliveryQueueDaoTest {
     void countFailed() {
         WebhookMessageEntity persisted = database.inTransaction(() -> {
             WebhookMessageEntity webhookMessageEntity = new WebhookMessageEntity();
-            webhookMessageEntity.setCreatedDate(Date.from(instantSource.instant()));
+            webhookMessageEntity.setCreatedDate(instantSource.instant());
             return webhookMessageDao.create(webhookMessageEntity);
         });
         database.inTransaction(() -> {
-            webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, Date.from(instantSource.instant()));
-            webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, Date.from(instantSource.instant()));
+            webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, instantSource.instant());
+            webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, instantSource.instant());
             assertThat(webhookDeliveryQueueDao.countFailed(persisted), is(2L));
         });
     }

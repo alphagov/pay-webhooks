@@ -35,7 +35,7 @@ public record WebhookResponse(
                 webhookEntity.getDescription(),
                 webhookEntity.getExternalId(),
                 webhookEntity.getStatus(),
-                webhookEntity.getCreatedDate().toInstant(),
+                webhookEntity.getCreatedDate(),
                 webhookEntity.getSubscriptions().stream()
                         .map(EventTypeEntity::getName)
                         .toList()

@@ -21,7 +21,6 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.time.InstantSource;
-import java.util.Date;
 import java.util.Optional;
 
 public class WebhookMessageService {
@@ -67,7 +66,7 @@ public class WebhookMessageService {
                     .map(webhook -> buildWebhookMessage(webhook, event, ledgerTransaction))
                     .flatMap(Optional::stream)
                     .map(webhookMessageDao::create)
-                    .forEach(webhookMessageEntity -> webhookDeliveryQueueDao.enqueueFrom(webhookMessageEntity, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Date.from(instantSource.instant())));
+                    .forEach(webhookMessageEntity -> webhookDeliveryQueueDao.enqueueFrom(webhookMessageEntity, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant()));
         }
     }
 
@@ -91,9 +90,9 @@ public class WebhookMessageService {
     private WebhookMessageEntity buildWebhookMessageEntity(WebhookEntity webhook, InternalEvent event, JsonNode resource) {
         var webhookMessageEntity = new WebhookMessageEntity();
         webhookMessageEntity.setExternalId(idGenerator.newExternalId());
-        webhookMessageEntity.setCreatedDate(Date.from(instantSource.instant()));
+        webhookMessageEntity.setCreatedDate(instantSource.instant());
         webhookMessageEntity.setWebhookEntity(webhook);
-        webhookMessageEntity.setEventDate(Date.from(event.eventDate()));
+        webhookMessageEntity.setEventDate(event.eventDate());
         webhookMessageEntity.setEventType(eventTypeDao.findByName(EventMapper.getWebhookEventNameFor(event.eventType())).orElseThrow(IllegalArgumentException::new));
         webhookMessageEntity.setResource(resource);
         webhookMessageEntity.setResourceExternalId(event.resourceExternalId());

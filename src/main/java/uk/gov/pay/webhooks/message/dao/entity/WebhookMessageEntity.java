@@ -12,16 +12,18 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.NamedQuery;
-import javax.persistence.FetchType;
-import java.util.Date;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 @NamedQuery(
         name = WebhookMessageEntity.MESSAGE_BY_WEBHOOK_ID_AND_MESSAGE_ID,
@@ -94,14 +96,14 @@ public class WebhookMessageEntity {
     private String resourceType;
 
     @Column(name = "created_date")
-    private Date createdDate;
+    private OffsetDateTime createdDate;
 
     @ManyToOne
     @JoinColumn(name = "webhook_id", updatable = false)
     private WebhookEntity webhookEntity;
 
     @Column(name = "event_date")
-    private Date eventDate;
+    private OffsetDateTime eventDate;
 
     @ManyToOne
     @JoinColumn(name = "event_type", updatable = false)
@@ -132,12 +134,12 @@ public class WebhookMessageEntity {
         this.externalId = externalId;
     }
 
-    public Date getCreatedDate() {
-        return createdDate;
+    public Instant getCreatedDate() {
+        return createdDate.toInstant();
     }
 
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
+    public void setCreatedDate(Instant createdDate) {
+        this.createdDate = OffsetDateTime.ofInstant(createdDate, ZoneOffset.UTC);
     }
 
     public WebhookEntity getWebhookEntity() {
@@ -148,12 +150,12 @@ public class WebhookMessageEntity {
         this.webhookEntity = webhookEntity;
     }
 
-    public Date getEventDate() {
-        return eventDate;
+    public Instant getEventDate() {
+        return eventDate.toInstant();
     }
 
-    public void setEventDate(Date eventDate) {
-        this.eventDate = eventDate;
+    public void setEventDate(Instant eventDate) {
+        this.eventDate = OffsetDateTime.ofInstant(eventDate, ZoneOffset.UTC);
     }
 
     public EventTypeEntity getEventType() {

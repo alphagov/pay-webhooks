@@ -7,8 +7,10 @@ import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 
 import javax.inject.Inject;
 import javax.persistence.LockModeType;
+import java.time.Instant;
 import java.time.InstantSource;
-import java.util.Date;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,9 +23,9 @@ public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEnt
         this.instantSource = instantSource;
     }
 
-    public Optional<WebhookDeliveryQueueEntity> nextToSend(Date sendAt) {
+    public Optional<WebhookDeliveryQueueEntity> nextToSend(Instant sendAt) {
         return namedTypedQuery(WebhookDeliveryQueueEntity.NEXT_TO_SEND)
-                .setParameter("send_at", sendAt)
+                .setParameter("send_at", OffsetDateTime.ofInstant(sendAt, ZoneOffset.UTC))
                 .setMaxResults(1)
                 .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                 .setHint(
@@ -35,7 +37,7 @@ public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEnt
                 .findAny();
     }
 
-    public WebhookDeliveryQueueEntity enqueueFrom(WebhookMessageEntity webhookMessageEntity, WebhookDeliveryQueueEntity.DeliveryStatus deliveryStatus, Date sendAt) {
+    public WebhookDeliveryQueueEntity enqueueFrom(WebhookMessageEntity webhookMessageEntity, WebhookDeliveryQueueEntity.DeliveryStatus deliveryStatus, Instant sendAt) {
        return persist(WebhookDeliveryQueueEntity.enqueueFrom(
                 webhookMessageEntity,
                 instantSource.instant(),

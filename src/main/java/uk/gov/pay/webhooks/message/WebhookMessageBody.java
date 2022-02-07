@@ -24,7 +24,7 @@ public record WebhookMessageBody(String id,
 
     public static WebhookMessageBody from(WebhookMessageEntity webhookMessage) {
         return new WebhookMessageBody(webhookMessage.getExternalId(),
-                webhookMessage.getEventDate().toInstant(),
+                webhookMessage.getEventDate(),
                 webhookMessage.getResourceExternalId(),
                 API_VERSION,
                 webhookMessage.getResourceType(),

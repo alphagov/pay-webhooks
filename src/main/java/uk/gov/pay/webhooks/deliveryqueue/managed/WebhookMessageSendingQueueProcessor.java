@@ -14,7 +14,6 @@ import uk.gov.pay.webhooks.message.WebhookMessageSender;
 
 import javax.inject.Inject;
 import java.time.InstantSource;
-import java.util.Date;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -73,7 +72,7 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
         ManagedSessionContext.bind(session);
         Transaction transaction = session.beginTransaction();
         try {
-            Optional<WebhookDeliveryQueueEntity> maybeQueueItem = webhookDeliveryQueueDao.nextToSend(Date.from(instantSource.instant()));
+            Optional<WebhookDeliveryQueueEntity> maybeQueueItem = webhookDeliveryQueueDao.nextToSend(instantSource.instant());
             maybeQueueItem.ifPresent(sendAttempter::attemptSend);
             transaction.commit();
         } catch (Exception e) {

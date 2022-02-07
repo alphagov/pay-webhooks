@@ -18,7 +18,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import java.time.Instant;
-import java.util.Date;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,7 +52,7 @@ public class WebhookEntity {
     private Long id;
     
     @Column(name = "created_date")
-    private Date createdDate;
+    private OffsetDateTime createdDate;
     
     @Column(name = "external_id")
     private String externalId;
@@ -85,18 +86,17 @@ public class WebhookEntity {
         entity.setCallbackUrl(createWebhookRequest.callbackUrl());
         entity.setServiceId(createWebhookRequest.serviceId());
         entity.setLive(createWebhookRequest.live());
-        entity.setCreatedDate(Date.from(createdDate));
+        entity.setCreatedDate(createdDate);
         entity.setStatus(WebhookStatus.ACTIVE);
         entity.setExternalId(externalId);
         entity.setSigningKey(webhookSigningKey);
         return entity;
     }
 
-    public Date getCreatedDate() {
-        return createdDate;
+    public Instant getCreatedDate() {
+        return createdDate.toInstant();
     }
 
-    
     public String getExternalId() {
         return externalId;
     }
@@ -153,8 +153,8 @@ public class WebhookEntity {
         this.description = description;
     }
 
-    public void setCreatedDate(Date instant) {
-        this.createdDate = instant;
+    public void setCreatedDate(Instant instant) {
+        this.createdDate = OffsetDateTime.ofInstant(instant, ZoneOffset.UTC);
     }
     
     public void setSigningKey(String signingKey) {

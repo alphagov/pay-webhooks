@@ -20,7 +20,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.security.InvalidKeyException;
-import java.sql.Date;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -81,7 +80,7 @@ class WebhookMessageSenderTest {
         webhookMessageEntity = new WebhookMessageEntity();
         webhookMessageEntity.setWebhookEntity(webhookEntity);
         webhookMessageEntity.setResource(jsonPayload);
-        webhookMessageEntity.setEventDate(Date.from(Instant.parse("2019-10-01T08:25:24.00Z")));
+        webhookMessageEntity.setEventDate(Instant.parse("2019-10-01T08:25:24.00Z"));
         EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
         webhookMessageEntity.setEventType(eventTypeEntity);
         webhookMessageEntity.setResourceExternalId("foo");

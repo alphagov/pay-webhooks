@@ -16,7 +16,6 @@ import uk.gov.pay.webhooks.webhook.resource.CreateWebhookRequest;
 
 import java.time.Instant;
 import java.time.InstantSource;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
