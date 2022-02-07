@@ -10,7 +10,6 @@ import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import java.time.Instant;
-import java.util.Date;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.any;
@@ -151,18 +150,18 @@ public class WebhookDaoTest {
             WebhookEntity webhookEntityServiceOne = new WebhookEntity();
             webhookEntityServiceOne.setLive(true);
             webhookEntityServiceOne.setServiceId("service-id-1");
-            webhookEntityServiceOne.setCreatedDate(Date.from(Instant.parse("2007-12-03T10:15:30.00Z")));
+            webhookEntityServiceOne.setCreatedDate(Instant.parse("2007-12-03T10:15:30.00Z"));
             webhookDao.create(webhookEntityServiceOne);
 
             WebhookEntity webhookEntityServiceTwo = new WebhookEntity();
             webhookEntityServiceTwo.setLive(true);
             webhookEntityServiceTwo.setServiceId("service-id-newer-created-date");
-            webhookEntityServiceTwo.setCreatedDate(Date.from(Instant.parse("2020-12-03T10:15:30.00Z")));
+            webhookEntityServiceTwo.setCreatedDate(Instant.parse("2020-12-03T10:15:30.00Z"));
             webhookDao.create(webhookEntityServiceTwo);
         });
 
         assertThat(webhookDao.list(true).stream().map(WebhookEntity::getCreatedDate).toList(),
-                contains((Date.from(Instant.parse("2020-12-03T10:15:30.00Z"))),(Date.from(Instant.parse("2007-12-03T10:15:30.00Z")))));
+                contains((Instant.parse("2020-12-03T10:15:30.00Z")),(Instant.parse("2007-12-03T10:15:30.00Z"))));
     }
 
     @Test

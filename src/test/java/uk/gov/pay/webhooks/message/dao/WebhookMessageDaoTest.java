@@ -14,7 +14,6 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import java.time.Instant;
 import java.time.InstantSource;
-import java.util.Date;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -83,14 +82,14 @@ class WebhookMessageDaoTest {
        database.inTransaction(() -> {
            webhookDao.create(webhook);
            webhookMessageDao.create(message);
-           webhookDeliveryQueueDao.enqueueFrom(message, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL, new Date());
+           webhookDeliveryQueueDao.enqueueFrom(message, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL, Instant.now());
 
            for (var i = 0; i < numberOfPendingMessagesToPad; i++) {
                var padMessage = new WebhookMessageEntity();
                padMessage.setWebhookEntity(webhook);
                padMessage.setExternalId("padded-message-%s".formatted(i));
                webhookMessageDao.create(padMessage);
-               webhookDeliveryQueueDao.enqueueFrom(padMessage, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, new Date());
+               webhookDeliveryQueueDao.enqueueFrom(padMessage, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Instant.now());
            }
        });
    }

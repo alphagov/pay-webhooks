@@ -12,7 +12,6 @@ import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 
 import java.time.Instant;
 import java.time.InstantSource;
-import java.util.Date;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -39,7 +38,7 @@ class WebhookMessageBodyTest {
             """;
         var webhookMessageEntity = new WebhookMessageEntity();
         webhookMessageEntity.setExternalId("externalId");
-        webhookMessageEntity.setEventDate(Date.from(instantSource.instant()));
+        webhookMessageEntity.setEventDate(instantSource.instant());
         EventTypeEntity eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
         webhookMessageEntity.setEventType(eventTypeEntity);
         webhookMessageEntity.setResourceType("payment");

@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import uk.gov.service.payments.commons.api.json.ApiResponseDateTimeDeserializer;
+import uk.gov.pay.webhooks.util.InstantDeserializer;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 
 import static uk.gov.service.payments.commons.model.ApiResponseDateTimeFormatter.ISO_INSTANT_MILLISECOND_PRECISION;
 
@@ -16,9 +16,9 @@ import static uk.gov.service.payments.commons.model.ApiResponseDateTimeFormatter
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SettlementSummary {
 
-    @JsonDeserialize(using = ApiResponseDateTimeDeserializer.class)
+    @JsonDeserialize(using = InstantDeserializer.class)
     @JsonProperty("capture_submit_time")
-    private ZonedDateTime captureSubmitTime;
+    private Instant captureSubmitTime;
     @JsonProperty("captured_date")
     private String capturedDate;
 
@@ -26,7 +26,7 @@ public class SettlementSummary {
         return (captureSubmitTime != null) ? ISO_INSTANT_MILLISECOND_PRECISION.format(captureSubmitTime) : null;
     }
 
-    public void setCaptureSubmitTime(ZonedDateTime captureSubmitTime) {
+    public void setCaptureSubmitTime(Instant captureSubmitTime) {
         this.captureSubmitTime = captureSubmitTime;
     }
 

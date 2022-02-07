@@ -5,17 +5,18 @@ import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.FetchType;
 import java.time.Instant;
-import java.util.Date;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 @NamedQuery(
@@ -50,24 +51,24 @@ public class WebhookDeliveryQueueEntity {
     private Long id;
 
     @Column(name = "created_date")
-    private Date createdDate;
+    private OffsetDateTime createdDate;
 
     public WebhookDeliveryQueueEntity() {
     }
 
-    public Date getSendAt() {
-        return sendAt;
+    public Instant getSendAt() {
+        return sendAt.toInstant();
     }
 
-    public void setSendAt(Date sendAt) {
-        this.sendAt = sendAt;
+    public void setSendAt(Instant sendAt) {
+        this.sendAt = OffsetDateTime.ofInstant(sendAt, ZoneOffset.UTC);
     }
 
     @Column(name = "send_at")
-    private Date sendAt;
+    private OffsetDateTime sendAt;
 
-    public Date getCreatedDate() {
-        return createdDate;
+    public Instant getCreatedDate() {
+        return createdDate.toInstant();
     }
 
     public enum DeliveryStatus {
@@ -122,13 +123,13 @@ public class WebhookDeliveryQueueEntity {
 
 
 
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
+    public void setCreatedDate(Instant createdDate) {
+        this.createdDate = OffsetDateTime.ofInstant(createdDate, ZoneOffset.UTC);
     }
 
-    public static WebhookDeliveryQueueEntity enqueueFrom(WebhookMessageEntity webhookMessageEntity, Instant createdInstant, DeliveryStatus deliveryStatus, Date sendAt) {
+    public static WebhookDeliveryQueueEntity enqueueFrom(WebhookMessageEntity webhookMessageEntity, Instant createdInstant, DeliveryStatus deliveryStatus, Instant sendAt) {
         var entity = new WebhookDeliveryQueueEntity();
-        entity.setCreatedDate(Date.from(createdInstant));
+        entity.setCreatedDate(createdInstant);
         entity.setWebhookMessageEntity(webhookMessageEntity);
         entity.setDeliveryStatus(deliveryStatus);
         entity.setSendAt(sendAt);

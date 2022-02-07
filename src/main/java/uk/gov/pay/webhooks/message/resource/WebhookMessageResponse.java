@@ -3,13 +3,11 @@ package uk.gov.pay.webhooks.message.resource;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.service.payments.commons.api.json.ApiResponseInstantSerializer;
 
 import java.time.Instant;
-import java.util.List;
 
 public record WebhookMessageResponse(
         @JsonProperty("external_id") String externalId,
@@ -23,8 +21,8 @@ public record WebhookMessageResponse(
         var latestAttempt = (webhookMessageEntity.getWebhookDeliveryQueueEntity() != null) ? WebhookDeliveryQueueResponse.from(webhookMessageEntity.getWebhookDeliveryQueueEntity()) : null;
         return new WebhookMessageResponse(
                 webhookMessageEntity.getExternalId(),
-                webhookMessageEntity.getCreatedDate().toInstant(),
-                webhookMessageEntity.getEventDate().toInstant(),
+                webhookMessageEntity.getCreatedDate(),
+                webhookMessageEntity.getEventDate(),
                 webhookMessageEntity.getEventType().getName(),
                 webhookMessageEntity.getResource(),
                 latestAttempt
