@@ -175,12 +175,7 @@ class PaymentApiRepresentationTest {
                                  	"payment_provider": "sandbox",
                                  	"created_date": "2018-09-22T10:13:16.067Z",
                                  	"delayed_capture": false,
-                                 	"moto": false,
-                                 	"authorisation_summary": {
-                                 		"three_d_secure": {
-                                 			"required": true,
-                                 			"version": "2.1.0"
-                                 		}
+                                 	"moto": false
                                  	}
                                  }
                 """;
