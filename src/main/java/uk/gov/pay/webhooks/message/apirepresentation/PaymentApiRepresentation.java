@@ -80,7 +80,7 @@ public record PaymentApiRepresentation(
                 ledgerTransaction.getExternalMetaData(),
                 ledgerTransaction.getFee(),
                 ledgerTransaction.getNetAmount(),
-                new PaymentApiAuthorisationSummary(new PaymentApiThreeDSecure(ledgerTransaction.getAuthorisationSummary().getThreeDSecure().isRequired()))
+                Optional.ofNullable(ledgerTransaction.getAuthorisationSummary()).map(as -> new PaymentApiAuthorisationSummary(new PaymentApiThreeDSecure(as.getThreeDSecure().isRequired()))).orElse(null)
         );
     }
 }
