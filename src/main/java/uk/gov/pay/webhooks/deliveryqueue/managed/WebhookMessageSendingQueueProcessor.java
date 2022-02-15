@@ -76,7 +76,7 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
             maybeQueueItem.ifPresent(sendAttempter::attemptSend);
             transaction.commit();
         } catch (Exception e) {
-            LOGGER.warn("Unexpected exception when polling queue  %s: ".formatted(e.getMessage()));
+            LOGGER.error("Unexpected exception when polling queue", e);
             transaction.rollback();
         } finally {
             ManagedSessionContext.unbind(sessionFactory);
