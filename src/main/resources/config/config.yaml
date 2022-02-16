@@ -19,6 +19,11 @@ logging:
       customFields:
         container: "webhooks"
         environment: ${ENVIRONMENT}
+    - type: sentry
+      threshold: ERROR
+      dsn: ${SENTRY_DSN:-https://example.com@dummy/1}
+      environment: ${ENVIRONMENT}
+
 database:
   driverClass: org.postgresql.Driver
   user: ${DB_USER}

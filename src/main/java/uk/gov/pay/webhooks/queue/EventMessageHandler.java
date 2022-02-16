@@ -2,14 +2,13 @@ package uk.gov.pay.webhooks.queue;
 
 import com.google.inject.Inject;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.hibernate.context.internal.ManagedSessionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.message.WebhookMessageService;
 import uk.gov.pay.webhooks.queue.sqs.QueueException;
 
-import java.io.IOException;
+import static net.logstash.logback.argument.StructuredArguments.kv;
 
 public class EventMessageHandler {
 
@@ -31,7 +30,10 @@ public class EventMessageHandler {
             try {
                 processSingleMessage(message);
             } catch (Exception e) {
-                LOGGER.warn("Error during handling the event message with ID %s: %s".formatted(message.queueMessage().messageId(), e.getMessage()));
+                LOGGER.error("Error during handling the event message",
+                        kv("sqs_message_id", message.queueMessage().messageId()),
+                        kv("resource_external_id", message.eventMessageDto().resourceExternalId()),
+                        kv("error", e.getMessage()));
             }
         }
     }
