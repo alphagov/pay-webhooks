@@ -14,6 +14,8 @@ public record WebhookMessageResponse(
         @JsonProperty("created_date") @JsonSerialize(using = ApiResponseInstantSerializer.class) Instant createdDate,
         @JsonProperty("event_date") @JsonSerialize(using = ApiResponseInstantSerializer.class) Instant eventDate,
         @JsonProperty("event_type") EventTypeName eventTypeName,
+        @JsonProperty("resource_id") String resourceId,
+        @JsonProperty("resource_type") String resourceType,
         @JsonProperty("resource") JsonNode resource,
         @JsonProperty("latest_attempt") WebhookDeliveryQueueResponse webhookDeliveryQueueEntity) {
 
@@ -24,6 +26,8 @@ public record WebhookMessageResponse(
                 webhookMessageEntity.getCreatedDate(),
                 webhookMessageEntity.getEventDate(),
                 webhookMessageEntity.getEventType().getName(),
+                webhookMessageEntity.getResourceExternalId(),
+                webhookMessageEntity.getResourceType(),
                 webhookMessageEntity.getResource(),
                 latestAttempt
         );
