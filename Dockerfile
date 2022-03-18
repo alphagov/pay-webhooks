@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17.0.2_8-jre-alpine@sha256:66362a836b1e649e31c68b20f881e5f4f9b86d125aef7da017917040fc39c406
+FROM eclipse-temurin:17.0.2_8-jre-alpine@sha256:f435de9215c5973be91064c23b385f5f87fb0b2791cf026dc6411d9e40482132
 
 RUN ["apk", "--no-cache", "upgrade"]
 
