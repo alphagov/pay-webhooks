@@ -106,7 +106,7 @@ class WebhookServiceTest {
         var webhookNotSubscribedToAnyEvents = new WebhookEntity();
         when(webhookDao.list(live, serviceId))
                 .thenReturn(List.of(webhookSubscribedToCaptureEvent, webhookNotSubscribedToAnyEvents));
-        var event = new InternalEvent("CAPTURE_CONFIRMED", serviceId, live, "resource_id", null, null, instantSource.instant(), "PAYMENT");
+        var event = new InternalEvent("CAPTURE_CONFIRMED", serviceId, live, "resource_id", null, instantSource.instant(), "PAYMENT");
         
         var subscribedWebhooks = webhookService.getWebhooksSubscribedToEvent(event);
         
