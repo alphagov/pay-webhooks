@@ -18,6 +18,5 @@ public record EventMessageDto(@JsonProperty("service_id") String serviceId,
                               @JsonProperty("resource_external_id") String resourceExternalId,
                               @JsonProperty("parent_resource_external_id") String parentResourceExternalId,
                               @JsonProperty("event_type") String eventType,
-                              @JsonProperty("resource_type") String resourceType,
-                              @JsonProperty("event_data") JsonNode eventData
+                              @JsonProperty("resource_type") String resourceType
 ) {}

@@ -12,7 +12,6 @@ public record InternalEvent(
         Boolean live,
         String resourceExternalId,
         String parentResourceExternalId,
-        JsonNode eventData,
         @JsonSerialize(using = MicrosecondPrecisionInstantSerializer.class) Instant eventDate,
         String resourceType
         ) {}
