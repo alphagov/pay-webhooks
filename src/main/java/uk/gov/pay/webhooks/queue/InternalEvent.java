@@ -12,6 +12,6 @@ public record InternalEvent(
         Boolean live,
         String resourceExternalId,
         String parentResourceExternalId,
-        @JsonSerialize(using = MicrosecondPrecisionInstantSerializer.class) Instant eventDate,
+        @JsonSerialize(using = MicrosecondPrecisionInstantSerializer.class) Instant timestamp,
         String resourceType
         ) {}

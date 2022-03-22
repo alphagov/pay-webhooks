@@ -14,7 +14,7 @@ import java.time.Instant;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record EventMessageDto(@JsonProperty("service_id") String serviceId,
                               Boolean live,
-                              @JsonProperty("event_date") @JsonDeserialize(using = InstantDeserializer.class) Instant eventDate,
+                              @JsonProperty("timestamp") @JsonDeserialize(using = InstantDeserializer.class) Instant timestamp,
                               @JsonProperty("resource_external_id") String resourceExternalId,
                               @JsonProperty("parent_resource_external_id") String parentResourceExternalId,
                               @JsonProperty("event_type") String eventType,

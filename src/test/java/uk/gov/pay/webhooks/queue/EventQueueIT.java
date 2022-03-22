@@ -57,7 +57,7 @@ public class EventQueueIT {
                 {
                   "Type" : "Notification",
                   "MessageId" : "04424f78-d540-5eb7-87e1-154d586b6b02",
-                  "Message" : "{\\"sqs_message_id\\":\\"dc142884-1e4b-4e57-be93-111b692a4868\\",\\"service_id\\":\\"some-service-id\\",\\"live\\":false,\\"resource_type\\":\\"payment\\",\\"resource_external_id\\":\\"t8cj9v1lci7da7pbp99qg9olv3\\",\\"parent_resource_external_id\\":null,\\"event_date\\":\\"2019-08-31T14:18:46.446541Z\\",\\"event_type\\":\\"PAYMENT_DETAILS_ENTERED\\",\\"reproject_domain_object\\":false}",
+                  "Message" : "{\\"sqs_message_id\\":\\"dc142884-1e4b-4e57-be93-111b692a4868\\",\\"service_id\\":\\"some-service-id\\",\\"live\\":false,\\"resource_type\\":\\"payment\\",\\"resource_external_id\\":\\"t8cj9v1lci7da7pbp99qg9olv3\\",\\"parent_resource_external_id\\":null,\\"timestamp\\":\\"2019-08-31T14:18:46.446541Z\\",\\"event_type\\":\\"PAYMENT_DETAILS_ENTERED\\",\\"reproject_domain_object\\":false}",
                   "TopicArn" : "card-payment-events-topic",
                   "Timestamp" : "2021-12-16T18:52:27.068Z",
                   "SignatureVersion" : "1",

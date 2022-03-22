@@ -92,7 +92,7 @@ public class WebhookMessageService {
         webhookMessageEntity.setExternalId(idGenerator.newExternalId());
         webhookMessageEntity.setCreatedDate(instantSource.instant());
         webhookMessageEntity.setWebhookEntity(webhook);
-        webhookMessageEntity.setEventDate(event.eventDate());
+        webhookMessageEntity.setEventDate(event.timestamp());
         webhookMessageEntity.setEventType(eventTypeDao.findByName(EventMapper.getWebhookEventNameFor(event.eventType())).orElseThrow(IllegalArgumentException::new));
         webhookMessageEntity.setResource(resource);
         webhookMessageEntity.setResourceExternalId(event.resourceExternalId());
