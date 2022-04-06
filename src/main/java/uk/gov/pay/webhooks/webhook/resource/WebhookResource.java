@@ -2,6 +2,13 @@ package uk.gov.pay.webhooks.webhook.resource;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dropwizard.hibernate.UnitOfWork;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.message.resource.WebhookDeliveryQueueResponse;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageResponse;
@@ -25,7 +32,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
@@ -35,28 +41,47 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Path("/v1/webhook")
 @Consumes(APPLICATION_JSON)
 @Produces(APPLICATION_JSON)
+@Tag(name = "Webhooks")
 public class WebhookResource {
-    
+
     private final WebhookService webhookService;
     private final WebhookRequestValidator webhookRequestValidator;
-    
+
     @Inject
     public WebhookResource(WebhookService webhookService) {
         this.webhookService = webhookService;
-        this.webhookRequestValidator =  new WebhookRequestValidator();
+        this.webhookRequestValidator = new WebhookRequestValidator();
     }
-    
+
     @UnitOfWork
     @POST
+    @Operation(
+            summary = "Create new webhook",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(schema = @Schema(implementation = WebhookResponse.class))),
+                    @ApiResponse(responseCode = "422", description = "Missing required parameters"),
+                    @ApiResponse(responseCode = "400", description = "Invalid payload (ex: non existent event type)")
+            }
+    )
     public WebhookResponse createWebhook(@NotNull @Valid CreateWebhookRequest webhookRequest) {
         WebhookEntity webhookEntity = webhookService.createWebhook(webhookRequest);
         return WebhookResponse.from(webhookEntity);
     }
-    
+
     @UnitOfWork
     @GET
     @Path("/{externalId}")
-    public WebhookResponse getWebhookByExternalId(@PathParam("externalId") @NotNull String externalId,
+    @Operation(
+            summary = "Get webhook by external ID and service ID (query param)",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = WebhookResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "Not found")
+            }
+    )
+    public WebhookResponse getWebhookByExternalId(@Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg")
+                                                  @PathParam("externalId") @NotNull String externalId,
+                                                  @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12")
                                                   @QueryParam("service_id") @NotNull String serviceId) {
         return webhookService
                 .findByExternalId(externalId, serviceId)
@@ -68,7 +93,16 @@ public class WebhookResource {
     @UnitOfWork
     @GET
     @Path("/{externalId}/signing-key")
-    public SigningKeyResponse getSigningKeyByExternalId(@PathParam("externalId") @NotNull String externalId,
+    @Operation(
+            summary = "Get webhook signing key by external ID",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = SigningKeyResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "Not found")
+            }
+    )
+    public SigningKeyResponse getSigningKeyByExternalId(@Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg")
+                                                        @PathParam("externalId") @NotNull String externalId,
+                                                        @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12")
                                                         @QueryParam("service_id") @NotNull String serviceId) {
         return webhookService
                 .findByExternalId(externalId, serviceId)
@@ -76,11 +110,20 @@ public class WebhookResource {
                 .map(SigningKeyResponse::new)
                 .orElseThrow(NotFoundException::new);
     }
-    
+
     @UnitOfWork
     @POST
     @Path("/{externalId}/signing-key")
-    public SigningKeyResponse regenerateSigningKey(@PathParam("externalId") @NotNull String externalId,
+    @Operation(
+            summary = "Regenerate webhook signing key",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = SigningKeyResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "Not found")
+            }
+    )
+    public SigningKeyResponse regenerateSigningKey(@Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg")
+                                                   @PathParam("externalId") @NotNull String externalId,
+                                                   @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12")
                                                    @QueryParam("service_id") @NotNull String serviceId) {
         return webhookService.regenerateSigningKey(externalId, serviceId)
                 .map(WebhookEntity::getSigningKey)
@@ -90,32 +133,48 @@ public class WebhookResource {
 
     @UnitOfWork
     @GET
-    public List<WebhookResponse> getWebhooks(@NotNull @QueryParam("live") Boolean live,
+    @Operation(
+            summary = "List webhooks for a service external ID or all webhooks",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK", content = @Content(array = @ArraySchema(schema = @Schema(implementation = WebhookResponse.class)))),
+                    @ApiResponse(responseCode = "400", description = "For invalid query params")
+            }
+    )
+    public List<WebhookResponse> getWebhooks(@Parameter(example = "true", description = "Set to `true` to return live webhooks for service.")
+                                             @NotNull @QueryParam("live") Boolean live,
+                                             @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12", description = "Service external ID. Required when override_service_id_restriction is not `true`")
                                              @QueryParam("service_id") String service_id,
+                                             @Parameter(example = "true", description = "Set to true to list all webhooks. if 'true', service_id is not permitted")
                                              @QueryParam("override_service_id_restriction") boolean overrideServiceIdRestriction) {
-            if (service_id != null && overrideServiceIdRestriction) {
-                throw new BadRequestException("service_id not permitted when using override_service_id_restriction");
-            }
-            
-            if (service_id == null && !overrideServiceIdRestriction) {
-                throw new BadRequestException("either service_id or override_service_id_restriction query parameter must be provided");
-            }
-            
-            List<WebhookEntity> results = overrideServiceIdRestriction ? webhookService.list(live) : webhookService.list(live, service_id);
+        if (service_id != null && overrideServiceIdRestriction) {
+            throw new BadRequestException("service_id not permitted when using override_service_id_restriction");
+        }
 
-            return results
-                    .stream()
-                    .map(WebhookResponse::from)
-                    .toList();
+        if (service_id == null && !overrideServiceIdRestriction) {
+            throw new BadRequestException("either service_id or override_service_id_restriction query parameter must be provided");
+        }
+
+        List<WebhookEntity> results = overrideServiceIdRestriction ? webhookService.list(live) : webhookService.list(live, service_id);
+
+        return results
+                .stream()
+                .map(WebhookResponse::from)
+                .toList();
     }
 
     @UnitOfWork
     @Path("/{externalId}/message")
     @GET
+    @Operation(
+            summary = "Get webhook messages by webhook external ID",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = WebhookMessageSearchResponse.class)))
+            }
+    )
     public WebhookMessageSearchResponse getWebhookMessages(
-            @PathParam("externalId") String externalId,
-            @QueryParam("page") Integer page,
-            @Valid @QueryParam("status") WebhookDeliveryQueueEntity.DeliveryStatus status
+            @Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("externalId") String externalId,
+            @Parameter(example = "1") @QueryParam("page") Integer page,
+            @Parameter(example = "SUCCESSFUL") @Valid @QueryParam("status") WebhookDeliveryQueueEntity.DeliveryStatus status
     ) {
         var currentPage = Optional.ofNullable(page)
                 .orElse(1);
@@ -128,9 +187,15 @@ public class WebhookResource {
     @UnitOfWork
     @Path("/{externalId}/message/{messageId}")
     @GET
+    @Operation(
+            summary = "Get messages by webhook external ID and message ID",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = WebhookMessageResponse.class)))
+            }
+    )
     public WebhookMessageResponse getWebhookMessage(
-            @PathParam("externalId") String externalId,
-            @PathParam("messageId") String messageId
+            @Schema(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("externalId") String externalId,
+            @Schema(example = "s0wjen129ejalk21nfjkdknf1jejklh") @PathParam("messageId") String messageId
     ) {
         return webhookService.getMessage(externalId, messageId);
     }
@@ -138,23 +203,41 @@ public class WebhookResource {
     @UnitOfWork
     @Path("/{externalId}/message/{messageId}/attempt")
     @GET
+    @Operation(
+            summary = "Get message attempts for webhook external ID and message ID",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK", content = @Content(array = @ArraySchema(schema = @Schema(implementation = WebhookDeliveryQueueResponse.class))))
+            }
+    )
     public List<WebhookDeliveryQueueResponse> getWebhookMessageAttemps(
-            @PathParam("externalId") String externalId,
-            @PathParam("messageId") String messageId
+            @Schema(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("externalId") String externalId,
+            @Schema(example = "s0wjen129ejalk21nfjkdknf1jejklh") @PathParam("messageId") String messageId
     ) {
-        return  webhookService.listMessageAttempts(externalId, messageId);
+        return webhookService.listMessageAttempts(externalId, messageId);
     }
 
     @UnitOfWork
     @PATCH
     @Path("/{externalId}")
-    public WebhookResponse updateWebhook(@PathParam("externalId") @NotNull String externalId, 
-                                  @QueryParam("service_id") @NotNull String serviceId, 
-                                  JsonNode payload) {
+    @Operation(
+            summary = "Update webhook",
+            description = "Allows patching `description, callback_url, status, subscriptions`",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = WebhookResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "Invalid payload")
+            }
+    )
+    public WebhookResponse updateWebhook(@Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("externalId") @NotNull String externalId,
+                                         @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12") @QueryParam("service_id") @NotNull String serviceId,
+                                         @ArraySchema(schema = @Schema(example = "{" +
+                                                 "                            \"path\": \"description\"," +
+                                                 "                            \"op\": \"replace\"," +
+                                                 "                            \"value\": \"new description\"" +
+                                                 "                        }"))
+                                                 JsonNode payload) {
         try {
             webhookRequestValidator.validateJsonPatch(payload);
-        }
-        catch (ValidationException e) {
+        } catch (ValidationException e) {
             throw new BadRequestException(String.join(", ", e.getErrors()));
         }
         List<JsonPatchRequest> patchRequests = StreamSupport.stream(payload.spliterator(), false)
@@ -162,6 +245,6 @@ public class WebhookResource {
                 .toList();
         return WebhookResponse.from(webhookService.update(externalId, serviceId, patchRequests));
     }
-    
+
 
 }
