@@ -1,0 +1,12 @@
+resourceClasses:
+  - uk.gov.pay.webhooks.webhook.resource.WebhookResource
+  - uk.gov.pay.webhooks.healthcheck.HealthCheckResource
+readAllResources: true
+sortOutput: true
+prettyPrint: true
+
+openAPI:
+  info:
+    description: 'Webhooks API'
+    title: 'Webhooks API'
+    version: 'v1.0.0'

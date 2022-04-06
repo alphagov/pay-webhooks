@@ -1,0 +1,536 @@
+openapi: 3.0.1
+info:
+  description: Webhooks API
+  title: Webhooks API
+  version: v1.0.0
+paths:
+  /healthcheck:
+    get:
+      operationId: healthCheck
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+                example:
+                  database:
+                    healthy: true
+                    message: Healthy
+                  ping:
+                    healthy: true
+                    message: Healthy
+                  hibernate:
+                    healthy: true
+                    message: Healthy
+                  deadlocks:
+                    healthy: true
+                    message: Healthy
+          description: OK
+        "503":
+          description: Service unavailable. If any healthchecks fail
+      summary: "Healthcheck endpoint for webhooks. Check database, deadlocks, hibernate\
+        \ and ping"
+      tags:
+      - Other
+  /v1/webhook:
+    get:
+      operationId: getWebhooks
+      parameters:
+      - description: Set to `true` to return live webhooks for service.
+        example: true
+        in: query
+        name: live
+        required: true
+        schema:
+          type: boolean
+      - description: Service external ID. Required when override_service_id_restriction
+          is not `true`
+        example: eo29upsdkjlk3jpwjj2dfn12
+        in: query
+        name: service_id
+        schema:
+          type: string
+      - description: "Set to true to list all webhooks. if 'true', service_id is not\
+          \ permitted"
+        example: true
+        in: query
+        name: override_service_id_restriction
+        schema:
+          type: boolean
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WebhookResponse'
+          description: OK
+        "400":
+          description: For invalid query params
+      summary: List webhooks for a service external ID or all webhooks
+      tags:
+      - Webhooks
+    post:
+      operationId: createWebhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWebhookRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+          description: OK
+        "400":
+          description: "Invalid payload (ex: non existent event type)"
+        "422":
+          description: Missing required parameters
+      summary: Create new webhook
+      tags:
+      - Webhooks
+  /v1/webhook/{externalId}:
+    get:
+      operationId: getWebhookByExternalId
+      parameters:
+      - example: gh0d0923jpsjdf0923jojlsfgkw3seg
+        in: path
+        name: externalId
+        required: true
+        schema:
+          type: string
+      - example: eo29upsdkjlk3jpwjj2dfn12
+        in: query
+        name: service_id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+          description: OK
+        "404":
+          description: Not found
+      summary: Get webhook by external ID and service ID (query param)
+      tags:
+      - Webhooks
+    patch:
+      description: "Allows patching `description, callback_url, status, subscriptions`"
+      operationId: updateWebhook
+      parameters:
+      - example: gh0d0923jpsjdf0923jojlsfgkw3seg
+        in: path
+        name: externalId
+        required: true
+        schema:
+          type: string
+      - example: eo29upsdkjlk3jpwjj2dfn12
+        in: query
+        name: service_id
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/JsonNode'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+          description: OK
+        "400":
+          description: Invalid payload
+      summary: Update webhook
+      tags:
+      - Webhooks
+  /v1/webhook/{externalId}/message:
+    get:
+      operationId: getWebhookMessages
+      parameters:
+      - example: gh0d0923jpsjdf0923jojlsfgkw3seg
+        in: path
+        name: externalId
+        required: true
+        schema:
+          type: string
+      - example: 1
+        in: query
+        name: page
+        schema:
+          type: integer
+          format: int32
+      - example: SUCCESSFUL
+        in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - PENDING
+          - SUCCESSFUL
+          - FAILED
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookMessageSearchResponse'
+          description: OK
+      summary: Get webhook messages by webhook external ID
+      tags:
+      - Webhooks
+  /v1/webhook/{externalId}/message/{messageId}:
+    get:
+      operationId: getWebhookMessage
+      parameters:
+      - in: path
+        name: externalId
+        required: true
+        schema:
+          type: string
+          example: gh0d0923jpsjdf0923jojlsfgkw3seg
+      - in: path
+        name: messageId
+        required: true
+        schema:
+          type: string
+          example: s0wjen129ejalk21nfjkdknf1jejklh
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookMessageResponse'
+          description: OK
+      summary: Get messages by webhook external ID and message ID
+      tags:
+      - Webhooks
+  /v1/webhook/{externalId}/message/{messageId}/attempt:
+    get:
+      operationId: getWebhookMessageAttemps
+      parameters:
+      - in: path
+        name: externalId
+        required: true
+        schema:
+          type: string
+          example: gh0d0923jpsjdf0923jojlsfgkw3seg
+      - in: path
+        name: messageId
+        required: true
+        schema:
+          type: string
+          example: s0wjen129ejalk21nfjkdknf1jejklh
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WebhookDeliveryQueueResponse'
+          description: OK
+      summary: Get message attempts for webhook external ID and message ID
+      tags:
+      - Webhooks
+  /v1/webhook/{externalId}/signing-key:
+    get:
+      operationId: getSigningKeyByExternalId
+      parameters:
+      - example: gh0d0923jpsjdf0923jojlsfgkw3seg
+        in: path
+        name: externalId
+        required: true
+        schema:
+          type: string
+      - example: eo29upsdkjlk3jpwjj2dfn12
+        in: query
+        name: service_id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SigningKeyResponse'
+          description: OK
+        "404":
+          description: Not found
+      summary: Get webhook signing key by external ID
+      tags:
+      - Webhooks
+    post:
+      operationId: regenerateSigningKey
+      parameters:
+      - example: gh0d0923jpsjdf0923jojlsfgkw3seg
+        in: path
+        name: externalId
+        required: true
+        schema:
+          type: string
+      - example: eo29upsdkjlk3jpwjj2dfn12
+        in: query
+        name: service_id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SigningKeyResponse'
+          description: OK
+        "404":
+          description: Not found
+      summary: Regenerate webhook signing key
+      tags:
+      - Webhooks
+components:
+  schemas:
+    CreateWebhookRequest:
+      type: object
+      properties:
+        callback_url:
+          type: string
+          example: https://example.com
+          maxLength: 2048
+          minLength: 0
+        description:
+          type: string
+          example: Webhook description
+        live:
+          type: boolean
+        service_id:
+          type: string
+          example: eo29upsdkjlk3jpwjj2dfn12
+          maxLength: 32
+          minLength: 0
+        subscriptions:
+          type: array
+          items:
+            type: string
+            enum:
+            - card_payment_started
+            - card_payment_succeeded
+            - card_payment_captured
+            - card_payment_refunded
+            example: card_payment_started
+      required:
+      - callback_url
+      - live
+      - service_id
+    JsonNode:
+      type: object
+      example:
+        path: description
+        op: replace
+        value: new description
+    Result:
+      type: object
+      properties:
+        details:
+          type: object
+          additionalProperties:
+            type: object
+        duration:
+          type: integer
+          format: int64
+        error:
+          type: object
+          properties:
+            localizedMessage:
+              type: string
+            message:
+              type: string
+            stackTrace:
+              type: array
+              items:
+                type: object
+                properties:
+                  classLoaderName:
+                    type: string
+                  className:
+                    type: string
+                  fileName:
+                    type: string
+                  lineNumber:
+                    type: integer
+                    format: int32
+                  methodName:
+                    type: string
+                  moduleName:
+                    type: string
+                  moduleVersion:
+                    type: string
+                  nativeMethod:
+                    type: boolean
+            suppressed:
+              type: array
+              items:
+                type: object
+                properties:
+                  localizedMessage:
+                    type: string
+                  message:
+                    type: string
+                  stackTrace:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        classLoaderName:
+                          type: string
+                        className:
+                          type: string
+                        fileName:
+                          type: string
+                        lineNumber:
+                          type: integer
+                          format: int32
+                        methodName:
+                          type: string
+                        moduleName:
+                          type: string
+                        moduleVersion:
+                          type: string
+                        nativeMethod:
+                          type: boolean
+        healthy:
+          type: boolean
+        message:
+          type: string
+        time:
+          type: integer
+          format: int64
+        timestamp:
+          type: string
+    SigningKeyResponse:
+      type: object
+      properties:
+        signing_key:
+          type: string
+          example: webhook_live_d0sjdkwn1edjals029dd91odndi21fn
+    WebhookDeliveryQueueResponse:
+      type: object
+      properties:
+        created_date:
+          type: string
+          format: date-time
+        result:
+          type: string
+          example: 200 OK
+        send_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+          - PENDING
+          - SUCCESSFUL
+          - FAILED
+          example: SUCCESSFUL
+        status_code:
+          type: integer
+          format: int32
+          example: 200
+    WebhookMessageResponse:
+      type: object
+      properties:
+        created_date:
+          type: string
+          format: date-time
+        event_date:
+          type: string
+          format: date-time
+        event_type:
+          type: string
+          enum:
+          - card_payment_started
+          - card_payment_succeeded
+          - card_payment_captured
+          - card_payment_refunded
+          example: card_payment_started
+        external_id:
+          type: string
+          example: s0wjen129ejalk21nfjkdknf1jejklh
+        latest_attempt:
+          $ref: '#/components/schemas/WebhookDeliveryQueueResponse'
+        resource:
+          $ref: '#/components/schemas/JsonNode'
+        resource_id:
+          type: string
+          example: payment-external-id-123
+        resource_type:
+          type: string
+          example: payment
+    WebhookMessageSearchResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+          example: 100
+        page:
+          type: integer
+          format: int32
+          example: 1
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookMessageResponse'
+        total:
+          type: integer
+          format: int32
+          example: 120
+    WebhookResponse:
+      type: object
+      properties:
+        callback_url:
+          type: string
+          example: https://example.com
+        created_date:
+          type: string
+          format: date-time
+        description:
+          type: string
+          example: Webhook description
+        external_id:
+          type: string
+          example: gh0d0923jpsjdf0923jojlsfgkw3seg
+        live:
+          type: boolean
+        service_id:
+          type: string
+          example: eo29upsdkjlk3jpwjj2dfn12
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          example: ACTIVE
+        subscriptions:
+          type: array
+          items:
+            type: string
+            enum:
+            - card_payment_started
+            - card_payment_succeeded
+            - card_payment_captured
+            - card_payment_refunded
+            example: card_payment_started

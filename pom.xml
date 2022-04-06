@@ -20,6 +20,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <pay-java-commons.version>1.0.20220216163841</pay-java-commons.version>
+        <swaggger-version>2.2.0</swaggger-version>
     </properties>
 
     <dependencyManagement>
@@ -217,6 +218,11 @@
             <version>2.1.210</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>${swaggger-version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -312,7 +318,25 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <plugin>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-maven-plugin</artifactId>
+                <version>${swaggger-version}</version>
+                <configuration>
+                    <outputPath>openapi</outputPath>
+                    <outputFileName>webhooks_spec</outputFileName>
+                    <outputFormat>YAML</outputFormat>
+                    <configurationFilePath>${basedir}/src/main/resources/openapi-config.yaml</configurationFilePath>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>resolve</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
         </plugins>
     </build>
