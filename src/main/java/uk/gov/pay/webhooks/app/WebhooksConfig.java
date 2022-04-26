@@ -46,5 +46,21 @@ public class WebhooksConfig extends Configuration {
     public QueueMessageReceiverConfig getQueueMessageReceiverConfig() {
         return queueMessageReceiverConfig;
     }
+    
+    @NotNull
+    @JsonProperty("graphiteHost")
+    private String graphiteHost;
+    
+    public String getGraphiteHost() {
+        return graphiteHost;
+    }
+
+    @NotNull
+    @JsonProperty("graphitePort")
+    private String graphitePort;
+    
+    public String getGraphitePort() {
+        return graphitePort;
+    }
 
 }

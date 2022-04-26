@@ -60,6 +60,9 @@ database:
 
 ledgerBaseURL: ${LEDGER_URL}
 
+graphiteHost: ${METRICS_HOST:-localhost}
+graphitePort: ${METRICS_PORT:-8092}
+
 sqsConfig:
   nonStandardServiceEndpoint: ${AWS_SQS_NON_STANDARD_SERVICE_ENDPOINT:-false}
   endpoint: ${AWS_SQS_ENDPOINT:-}
