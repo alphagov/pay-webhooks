@@ -507,6 +507,7 @@ components:
         created_date:
           type: string
           format: date-time
+          example: 2022-04-05T17:07:15.281Z
         description:
           type: string
           example: Webhook description
