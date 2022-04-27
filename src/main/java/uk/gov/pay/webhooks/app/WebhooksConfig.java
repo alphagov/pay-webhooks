@@ -45,6 +45,14 @@ public class WebhooksConfig extends Configuration {
 
     public QueueMessageReceiverConfig getQueueMessageReceiverConfig() {
         return queueMessageReceiverConfig;
+    }    
+    
+    @NotNull
+    @JsonProperty("webhookMessageSendingQueueProcessorConfig")
+    private WebhookMessageSendingQueueProcessorConfig webhookMessageSendingQueueProcessorConfig;
+
+    public WebhookMessageSendingQueueProcessorConfig getWebhookMessageSendingQueueProcessorConfig() {
+        return webhookMessageSendingQueueProcessorConfig;
     }
     
     @NotNull

@@ -8,6 +8,8 @@ import org.hibernate.Transaction;
 import org.hibernate.context.internal.ManagedSessionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.pay.webhooks.app.WebhookMessageSendingQueueProcessorConfig;
+import uk.gov.pay.webhooks.app.WebhooksConfig;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.message.WebhookMessageSender;
@@ -26,17 +28,24 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
     private final SessionFactory sessionFactory;
     private final ScheduledExecutorService scheduledExecutorService;
     private final SendAttempter sendAttempter;
+    private final WebhookMessageSendingQueueProcessorConfig config;
     
     @Inject
-    public WebhookMessageSendingQueueProcessor(Environment environment, WebhookDeliveryQueueDao webhookDeliveryQueueDao, InstantSource instantSource, SessionFactory sessionFactory, WebhookMessageSender webhookMessageSender) {
+    public WebhookMessageSendingQueueProcessor(Environment environment,
+                                               WebhookDeliveryQueueDao webhookDeliveryQueueDao,
+                                               InstantSource instantSource,
+                                               SessionFactory sessionFactory,
+                                               WebhookMessageSender webhookMessageSender,
+                                               WebhooksConfig configuration) {
         this.webhookDeliveryQueueDao = webhookDeliveryQueueDao;
         this.instantSource = instantSource;
         this.sessionFactory = sessionFactory;
+        this.config = configuration.getWebhookMessageSendingQueueProcessorConfig();
 
         scheduledExecutorService = environment
                 .lifecycle()
                 .scheduledExecutorService("retries")
-                .threads(1)
+                .threads(config.getNumberOfThreads())
                 .build();
 
         sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, webhookMessageSender);
@@ -46,9 +55,9 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
     public void start() {
         scheduledExecutorService.scheduleWithFixedDelay(
                 this::processQueue,
-                30,
-                1,
-                TimeUnit.SECONDS
+                config.getInitialDelayInMilliseconds(),
+                config.getThreadDelayInMilliseconds(), 
+                TimeUnit.MILLISECONDS
         );
     }
 
