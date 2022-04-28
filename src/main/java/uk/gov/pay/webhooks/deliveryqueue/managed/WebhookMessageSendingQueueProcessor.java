@@ -48,7 +48,7 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
                 .threads(config.getNumberOfThreads())
                 .build();
 
-        sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, webhookMessageSender);
+        sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, webhookMessageSender, environment);
     }
 
     @Override

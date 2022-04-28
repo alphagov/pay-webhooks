@@ -1,10 +1,13 @@
 package uk.gov.pay.webhooks.deliveryqueue.dao;
 
+import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.testing.junit5.DAOTestExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
@@ -18,6 +21,8 @@ import static org.hamcrest.Matchers.is;
 
 
 @ExtendWith(DropwizardExtensionsSupport.class)
+@ExtendWith(MockitoExtension.class)
+
 class WebhookDeliveryQueueDaoTest {
 
     public DAOTestExtension database = DAOTestExtension.newBuilder()
@@ -30,6 +35,9 @@ class WebhookDeliveryQueueDaoTest {
     private WebhookDeliveryQueueDao webhookDeliveryQueueDao;
     private InstantSource instantSource;
     private WebhookMessageDao webhookMessageDao;
+    
+    @Mock
+    MetricRegistry mockMetricRegistry;
 
     @BeforeEach
     void setUp() {
@@ -60,7 +68,7 @@ class WebhookDeliveryQueueDaoTest {
         });
         database.inTransaction(() -> {
             var enqueued = webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant().minusMillis(1));
-            var updated = webhookDeliveryQueueDao.recordResult(enqueued, "200 OK", 200, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL);
+            var updated = webhookDeliveryQueueDao.recordResult(enqueued, "200 OK", 200, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL, mockMetricRegistry);
             assertThat(updated.getDeliveryStatus(), is(WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL));
             assertThat(updated.getDeliveryResult(), is("200 OK"));
             assertThat(updated.getStatusCode(), is(200));
