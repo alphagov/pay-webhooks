@@ -20,5 +20,11 @@ public class DatabaseTestHelper {
                 "TRUNCATE TABLE webhooks CASCADE; "
         ).execute());
     }
-    
+
+    public void createWebhook() {
+        jdbi.withHandle(h -> h.createUpdate(
+                "INSERT INTO webhooks (created_date, external_id, signing_key, service_id, live, callback_url, status) VALUES ('2011-01-01 00:00:00+09', 'foo', 'bar', 1, true, 'http://example.com', 'ACTIVE')"
+        ).execute());
+    }
+
 }
