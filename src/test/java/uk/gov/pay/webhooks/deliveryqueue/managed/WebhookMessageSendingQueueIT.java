@@ -21,8 +21,10 @@ class WebhookMessageSendingQueueIT {
     }
 
     @Test
-    void processQueueShouldProcessMultipleItems () {
+    void processQueueShouldProcessMultipleItems () throws InterruptedException {
         dbHelper.createWebhook();
-        
+        dbHelper.createMessage();
+        dbHelper.addMessageToQueue();
+        Thread.sleep(10000);
     }
 }
