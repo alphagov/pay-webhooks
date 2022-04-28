@@ -63,35 +63,37 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
 
     public void processQueue() {
         try {
-            Optional<String> deliveryAttempt;
+            Session session = sessionFactory.openSession();
+            ManagedSessionContext.bind(session);
+            Optional<WebhookDeliveryQueueEntity> nextToSend;
             do {
-                 deliveryAttempt = Optional.empty();
-            } while (!deliveryAttempt.isEmpty());
+                 nextToSend = attemptSendIfAvailable(session);
+            } while (nextToSend.isPresent());
         } catch (Exception e) {
             LOGGER.warn("Failed to poll queue %s".formatted(e.getMessage()));
             e.printStackTrace();
-        }
+        } 
     }
-    
+
+    private Optional<WebhookDeliveryQueueEntity> attemptSendIfAvailable(Session session) {
+        Transaction transaction = session.beginTransaction();
+        try {
+            webhookDeliveryQueueDao.nextToSend(instantSource.instant()).ifPresent(queueItem -> {
+                sendAttempter.attemptSend(queueItem);
+                transaction.commit();
+            });
+        } catch (Exception e) {
+            LOGGER.error("Unexpected exception when attempting to send", e);
+            transaction.rollback();
+        } finally {
+            ManagedSessionContext.unbind(sessionFactory);
+        }
+        return webhookDeliveryQueueDao.nextToSend(instantSource.instant());
+    }
 
     @Override
     public void stop() {
         scheduledExecutorService.shutdown();
     }
-
-    private void pollQueue() {
-        Session session = sessionFactory.openSession();
-        ManagedSessionContext.bind(session);
-        Transaction transaction = session.beginTransaction();
-        try {
-            Optional<WebhookDeliveryQueueEntity> maybeQueueItem = webhookDeliveryQueueDao.nextToSend(instantSource.instant());
-            maybeQueueItem.ifPresent(sendAttempter::attemptSend);
-            transaction.commit();
-        } catch (Exception e) {
-            LOGGER.error("Unexpected exception when polling queue", e);
-            transaction.rollback();
-        } finally {
-            ManagedSessionContext.unbind(sessionFactory);
-        }
-    }
+    
 }
