@@ -77,8 +77,10 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
 
     private Optional<WebhookDeliveryQueueEntity> attemptSendIfAvailable(Session session) {
         Transaction transaction = session.beginTransaction();
+        Optional<WebhookDeliveryQueueEntity> nextToSend = Optional.empty();
         try {
-            webhookDeliveryQueueDao.nextToSend(instantSource.instant()).ifPresent(queueItem -> {
+            nextToSend = webhookDeliveryQueueDao.nextToSend(instantSource.instant());
+            nextToSend.ifPresent(queueItem -> {
                 sendAttempter.attemptSend(queueItem);
                 transaction.commit();
             });
@@ -88,7 +90,7 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
         } finally {
             ManagedSessionContext.unbind(sessionFactory);
         }
-        return webhookDeliveryQueueDao.nextToSend(instantSource.instant());
+        return nextToSend;
     }
 
     @Override
