@@ -63,7 +63,10 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
 
     public void processQueue() {
         try {
-            pollQueue();
+            Optional<String> deliveryAttempt;
+            do {
+                 deliveryAttempt = Optional.empty();
+            } while (!deliveryAttempt.isEmpty());
         } catch (Exception e) {
             LOGGER.warn("Failed to poll queue %s".formatted(e.getMessage()));
             e.printStackTrace();
