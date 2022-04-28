@@ -62,6 +62,7 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
     }
 
     public void processQueue() {
+        LOGGER.info("Webhook message sending queue processor polling");
         try {
             Session session = sessionFactory.openSession();
             ManagedSessionContext.bind(session);
@@ -80,10 +81,10 @@ public class WebhookMessageSendingQueueProcessor implements Managed {
         Optional<WebhookDeliveryQueueEntity> nextToSend = Optional.empty();
         try {
             nextToSend = webhookDeliveryQueueDao.nextToSend(instantSource.instant());
-            nextToSend.ifPresent(queueItem -> {
+            nextToSend.ifPresentOrElse(queueItem -> {
                 sendAttempter.attemptSend(queueItem);
                 transaction.commit();
-            });
+            }, () -> LOGGER.info("Nothing found to send from queue"));
         } catch (Exception e) {
             LOGGER.error("Unexpected exception when attempting to send", e);
             transaction.rollback();
