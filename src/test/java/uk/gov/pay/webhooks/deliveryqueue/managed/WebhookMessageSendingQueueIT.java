@@ -25,6 +25,11 @@ class WebhookMessageSendingQueueIT {
         dbHelper.createWebhook();
         dbHelper.createMessage();
         dbHelper.addMessageToQueue();
+//        Delay to allow the queue processor to run
         Thread.sleep(10000);
+//        TODO: investigate why we get error: uk.gov.pay.webhooks.deliveryqueue.managed.WebhookMessageSendingQueueProcessor: Unexpected exception when attempting to send
+//         org.hibernate.HibernateException: No session currently bound to execution context
+        
+        
     }
 }
