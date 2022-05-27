@@ -1,5 +1,3 @@
---liquibase formatted sql
-
 CREATE INDEX IF NOT EXISTS webhook_delivery_queue_created_date_idx ON webhook_delivery_queue(created_date);
 CREATE INDEX IF NOT EXISTS webhook_delivery_queue_message_id_idx ON webhook_delivery_queue(webhook_message_id);
 CREATE INDEX IF NOT EXISTS webhook_delivery_queue_send_at_idx ON webhook_delivery_queue(send_at);
