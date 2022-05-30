@@ -90,6 +90,17 @@ public class WebhookDeliveryQueueEntity {
     @Column(name = "delivery_status")
     private String deliveryStatus;
 
+    @Column(name = "delivery_response_time")
+    private Long deliveryResponseTime;
+
+    public Long getDeliveryResponseTime() {
+        return deliveryResponseTime;
+    }
+
+    public void setDeliveryResponseTime(Long deliveryResponseTime) {
+        this.deliveryResponseTime = deliveryResponseTime;
+    }
+
     public String getDeliveryResult() {
         return deliveryResult;
     }
@@ -136,10 +147,11 @@ public class WebhookDeliveryQueueEntity {
         return entity;
     }
 
-    public static WebhookDeliveryQueueEntity recordResult(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, String deliveryResult, Integer statusCode, DeliveryStatus deliveryStatus) {
+    public static WebhookDeliveryQueueEntity recordResult(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, String deliveryResult, Long deliveryResponseTime, Integer statusCode, DeliveryStatus deliveryStatus) {
         var entity = webhookDeliveryQueueEntity;
         entity.setDeliveryResult(deliveryResult);
         entity.setDeliveryStatus(deliveryStatus);
+        entity.setDeliveryResponseTime(deliveryResponseTime);
         Optional.ofNullable(statusCode).ifPresent(entity::setStatusCode);
         return entity;
     }

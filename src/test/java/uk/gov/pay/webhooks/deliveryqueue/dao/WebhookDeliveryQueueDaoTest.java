@@ -68,7 +68,7 @@ class WebhookDeliveryQueueDaoTest {
         });
         database.inTransaction(() -> {
             var enqueued = webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant().minusMillis(1));
-            var updated = webhookDeliveryQueueDao.recordResult(enqueued, "200 OK", 200, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL, mockMetricRegistry);
+            var updated = webhookDeliveryQueueDao.recordResult(enqueued, "200 OK",  50L,200, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL, mockMetricRegistry);
             assertThat(updated.getDeliveryStatus(), is(WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL));
             assertThat(updated.getDeliveryResult(), is("200 OK"));
             assertThat(updated.getStatusCode(), is(200));
