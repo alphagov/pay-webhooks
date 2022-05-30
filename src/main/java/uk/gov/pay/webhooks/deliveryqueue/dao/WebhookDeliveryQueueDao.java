@@ -55,9 +55,9 @@ public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEnt
                 .getSingleResult();
     }
 
-    public WebhookDeliveryQueueEntity recordResult(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, String deliveryResult, Integer statusCode, WebhookDeliveryQueueEntity.DeliveryStatus deliveryStatus, MetricRegistry metricRegistry) {
+    public WebhookDeliveryQueueEntity recordResult(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, String deliveryResult, Long deliveryResponseTime, Integer statusCode, WebhookDeliveryQueueEntity.DeliveryStatus deliveryStatus, MetricRegistry metricRegistry) {
         metricRegistry.counter("delivery-status.%s".formatted(deliveryStatus.name()));
-        return persist(WebhookDeliveryQueueEntity.recordResult(webhookDeliveryQueueEntity, deliveryResult, statusCode, deliveryStatus));
+        return persist(WebhookDeliveryQueueEntity.recordResult(webhookDeliveryQueueEntity, deliveryResult, deliveryResponseTime, statusCode, deliveryStatus));
     }
 
     public List<WebhookDeliveryQueueEntity> list(String webhookId, String messageId) {
