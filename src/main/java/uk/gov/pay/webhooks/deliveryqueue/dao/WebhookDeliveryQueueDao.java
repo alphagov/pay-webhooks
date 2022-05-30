@@ -24,6 +24,10 @@ public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEnt
         this.instantSource = instantSource;
     }
 
+    public Optional<WebhookDeliveryQueueEntity> nextToSend() {
+        return nextToSend(instantSource.instant());
+    }
+
     public Optional<WebhookDeliveryQueueEntity> nextToSend(Instant sendAt) {
         return namedTypedQuery(WebhookDeliveryQueueEntity.NEXT_TO_SEND)
                 .setParameter("send_at", OffsetDateTime.ofInstant(sendAt, ZoneOffset.UTC))

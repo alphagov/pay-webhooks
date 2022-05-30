@@ -2,93 +2,43 @@ package uk.gov.pay.webhooks.deliveryqueue.managed;
 
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import org.hibernate.context.internal.ManagedSessionContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.app.WebhookMessageSendingQueueProcessorConfig;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
-import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
-import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
-import uk.gov.pay.webhooks.message.WebhookMessageSender;
 
 import javax.inject.Inject;
-import java.time.InstantSource;
-import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class WebhookMessageSendingQueueProcessor implements Managed {
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebhookMessageSendingQueueProcessor.class);
-
-    private WebhookDeliveryQueueDao webhookDeliveryQueueDao;
-    private final InstantSource instantSource;
-    private final SessionFactory sessionFactory;
     private final ScheduledExecutorService scheduledExecutorService;
-    private final SendAttempter sendAttempter;
     private final WebhookMessageSendingQueueProcessorConfig config;
+
+    private final WebhookMessagePollingService webhookMessagePollingService;
     
     @Inject
-    public WebhookMessageSendingQueueProcessor(Environment environment,
-                                               WebhookDeliveryQueueDao webhookDeliveryQueueDao,
-                                               InstantSource instantSource,
-                                               SessionFactory sessionFactory,
-                                               WebhookMessageSender webhookMessageSender,
-                                               WebhooksConfig configuration) {
-        this.webhookDeliveryQueueDao = webhookDeliveryQueueDao;
-        this.instantSource = instantSource;
-        this.sessionFactory = sessionFactory;
+    public WebhookMessageSendingQueueProcessor(Environment environment, WebhooksConfig configuration, WebhookMessagePollingService webhookMessagePollingService) {
         this.config = configuration.getWebhookMessageSendingQueueProcessorConfig();
+        this.webhookMessagePollingService = webhookMessagePollingService;
 
         scheduledExecutorService = environment
                 .lifecycle()
-                .scheduledExecutorService("retries")
+                .scheduledExecutorService("webhook-message-sending-queue-process")
                 .threads(config.getNumberOfThreads())
                 .build();
-
-        sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, webhookMessageSender, environment);
     }
 
     @Override
     public void start() {
         scheduledExecutorService.scheduleWithFixedDelay(
-                this::processQueue,
+                webhookMessagePollingService::pollWebhookMessageQueue,
                 config.getInitialDelayInMilliseconds(),
                 config.getThreadDelayInMilliseconds(), 
                 TimeUnit.MILLISECONDS
         );
     }
 
-    public void processQueue() {
-        try {
-            pollQueue();
-        } catch (Exception e) {
-            LOGGER.warn("Failed to poll queue %s".formatted(e.getMessage()));
-            e.printStackTrace();
-        }
-    }
-    
-
     @Override
     public void stop() {
         scheduledExecutorService.shutdown();
-    }
-
-    private void pollQueue() {
-        Session session = sessionFactory.openSession();
-        ManagedSessionContext.bind(session);
-        Transaction transaction = session.beginTransaction();
-        try {
-            Optional<WebhookDeliveryQueueEntity> maybeQueueItem = webhookDeliveryQueueDao.nextToSend(instantSource.instant());
-            maybeQueueItem.ifPresent(sendAttempter::attemptSend);
-            transaction.commit();
-        } catch (Exception e) {
-            LOGGER.error("Unexpected exception when polling queue", e);
-            transaction.rollback();
-        } finally {
-            ManagedSessionContext.unbind(sessionFactory);
-        }
     }
 }
