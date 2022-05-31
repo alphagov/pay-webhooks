@@ -14,6 +14,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -90,7 +91,7 @@ public class WebhookDeliveryQueueEntity {
     @Column(name = "delivery_status")
     private String deliveryStatus;
 
-    @Column(name = "delivery_response_time")
+   @Transient 
     private Long deliveryResponseTime;
 
     public Long getDeliveryResponseTime() {
