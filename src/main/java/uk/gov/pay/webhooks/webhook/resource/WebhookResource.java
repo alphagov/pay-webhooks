@@ -71,7 +71,7 @@ public class WebhookResource {
 
     @UnitOfWork
     @GET
-    @Path("/{externalId}")
+    @Path("/{webhookExternalId}")
     @Operation(
             summary = "Get webhook by external ID and service ID (query param)",
             responses = {
@@ -80,7 +80,7 @@ public class WebhookResource {
             }
     )
     public WebhookResponse getWebhookByExternalId(@Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg")
-                                                  @PathParam("externalId") @NotNull String externalId,
+                                                  @PathParam("webhookExternalId") @NotNull String externalId,
                                                   @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12")
                                                   @QueryParam("service_id") @NotNull String serviceId) {
         return webhookService
@@ -92,7 +92,7 @@ public class WebhookResource {
 
     @UnitOfWork
     @GET
-    @Path("/{externalId}/signing-key")
+    @Path("/{webhookExternalId}/signing-key")
     @Operation(
             summary = "Get webhook signing key by external ID",
             responses = {
@@ -101,7 +101,7 @@ public class WebhookResource {
             }
     )
     public SigningKeyResponse getSigningKeyByExternalId(@Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg")
-                                                        @PathParam("externalId") @NotNull String externalId,
+                                                        @PathParam("webhookExternalId") @NotNull String externalId,
                                                         @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12")
                                                         @QueryParam("service_id") @NotNull String serviceId) {
         return webhookService
@@ -113,7 +113,7 @@ public class WebhookResource {
 
     @UnitOfWork
     @POST
-    @Path("/{externalId}/signing-key")
+    @Path("/{webhookExternalId}/signing-key")
     @Operation(
             summary = "Regenerate webhook signing key",
             responses = {
@@ -122,7 +122,7 @@ public class WebhookResource {
             }
     )
     public SigningKeyResponse regenerateSigningKey(@Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg")
-                                                   @PathParam("externalId") @NotNull String externalId,
+                                                   @PathParam("webhookExternalId") @NotNull String externalId,
                                                    @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12")
                                                    @QueryParam("service_id") @NotNull String serviceId) {
         return webhookService.regenerateSigningKey(externalId, serviceId)
@@ -163,7 +163,7 @@ public class WebhookResource {
     }
 
     @UnitOfWork
-    @Path("/{externalId}/message")
+    @Path("/{webhookExternalId}/message")
     @GET
     @Operation(
             summary = "Get webhook messages by webhook external ID",
@@ -172,7 +172,7 @@ public class WebhookResource {
             }
     )
     public WebhookMessageSearchResponse getWebhookMessages(
-            @Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("externalId") String externalId,
+            @Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("webhookExternalId") String externalId,
             @Parameter(example = "1") @QueryParam("page") Integer page,
             @Parameter(example = "SUCCESSFUL") @Valid @QueryParam("status") WebhookDeliveryQueueEntity.DeliveryStatus status
     ) {
@@ -185,7 +185,7 @@ public class WebhookResource {
     }
 
     @UnitOfWork
-    @Path("/{externalId}/message/{messageId}")
+    @Path("/{webhookExternalId}/message/{webhookMessageExternalId}")
     @GET
     @Operation(
             summary = "Get messages by webhook external ID and message ID",
@@ -194,14 +194,14 @@ public class WebhookResource {
             }
     )
     public WebhookMessageResponse getWebhookMessage(
-            @Schema(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("externalId") String externalId,
-            @Schema(example = "s0wjen129ejalk21nfjkdknf1jejklh") @PathParam("messageId") String messageId
+            @Schema(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("webhookExternalId") String externalId,
+            @Schema(example = "s0wjen129ejalk21nfjkdknf1jejklh") @PathParam("webhookMessageExternalId") String messageId
     ) {
         return webhookService.getMessage(externalId, messageId);
     }
 
     @UnitOfWork
-    @Path("/{externalId}/message/{messageId}/attempt")
+    @Path("/{webhookExternalId}/message/{webhookMessageExternalId}/attempt")
     @GET
     @Operation(
             summary = "Get message attempts for webhook external ID and message ID",
@@ -210,15 +210,15 @@ public class WebhookResource {
             }
     )
     public List<WebhookDeliveryQueueResponse> getWebhookMessageAttemps(
-            @Schema(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("externalId") String externalId,
-            @Schema(example = "s0wjen129ejalk21nfjkdknf1jejklh") @PathParam("messageId") String messageId
+            @Schema(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("webhookExternalId") String externalId,
+            @Schema(example = "s0wjen129ejalk21nfjkdknf1jejklh") @PathParam("webhookMessageExternalId") String messageId
     ) {
         return webhookService.listMessageAttempts(externalId, messageId);
     }
 
     @UnitOfWork
     @PATCH
-    @Path("/{externalId}")
+    @Path("/{webhookExternalId}")
     @Operation(
             summary = "Update webhook",
             description = "Allows patching `description, callback_url, status, subscriptions`",
@@ -227,7 +227,7 @@ public class WebhookResource {
                     @ApiResponse(responseCode = "400", description = "Invalid payload")
             }
     )
-    public WebhookResponse updateWebhook(@Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("externalId") @NotNull String externalId,
+    public WebhookResponse updateWebhook(@Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("webhookExternalId") @NotNull String externalId,
                                          @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12") @QueryParam("service_id") @NotNull String serviceId,
                                          @ArraySchema(schema = @Schema(example = "{" +
                                                  "                            \"path\": \"description\"," +
@@ -245,6 +245,4 @@ public class WebhookResource {
                 .toList();
         return WebhookResponse.from(webhookService.update(externalId, serviceId, patchRequests));
     }
-
-
 }

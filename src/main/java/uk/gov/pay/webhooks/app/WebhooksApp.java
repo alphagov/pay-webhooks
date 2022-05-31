@@ -13,6 +13,8 @@ import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import uk.gov.pay.webhooks.app.filters.LoggingMDCRequestFilter;
+import uk.gov.pay.webhooks.app.filters.LoggingMDCResponseFilter;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.deliveryqueue.managed.WebhookMessageSendingQueueProcessor;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
@@ -25,9 +27,13 @@ import uk.gov.pay.webhooks.webhook.resource.WebhookResource;
 import uk.gov.service.payments.commons.utils.healthchecks.DatabaseHealthCheck;
 import uk.gov.service.payments.commons.utils.metrics.DatabaseMetricsService;
 import uk.gov.service.payments.logging.GovUkPayDropwizardRequestJsonLogLayoutFactory;
+import uk.gov.service.payments.logging.LoggingFilter;
 import uk.gov.service.payments.logging.LogstashConsoleAppenderFactory;
 
 import java.util.concurrent.TimeUnit;
+
+import static java.util.EnumSet.of;
+import static javax.servlet.DispatcherType.REQUEST;
 
 public class WebhooksApp extends Application<WebhooksConfig> {
     public static void main(String[] args) throws Exception {
@@ -54,6 +60,11 @@ public class WebhooksApp extends Application<WebhooksConfig> {
                     Environment environment) {
         final Injector injector = Guice.createInjector(new WebhooksModule(configuration, environment, hibernate));
 
+        environment.servlets().addFilter("LoggingFilter", new LoggingFilter())
+                .addMappingForUrlPatterns(of(REQUEST), true, "/v1/*");
+        environment.jersey().register(injector.getInstance(LoggingMDCRequestFilter.class));
+        environment.jersey().register(injector.getInstance(LoggingMDCResponseFilter.class));
+
         environment.healthChecks().register("ping", new Ping());
         environment.healthChecks().register("database", new DatabaseHealthCheck(configuration.getDataSourceFactory()));
         environment.jersey().register(injector.getInstance(HealthCheckResource.class));
@@ -61,8 +72,8 @@ public class WebhooksApp extends Application<WebhooksConfig> {
 
         if (configuration.getQueueMessageReceiverConfig().isBackgroundProcessingEnabled()) {
             environment.lifecycle().manage(injector.getInstance(QueueMessageReceiver.class));
+            environment.lifecycle().manage(injector.getInstance(WebhookMessageSendingQueueProcessor.class));
         }
-        environment.lifecycle().manage(injector.getInstance(WebhookMessageSendingQueueProcessor.class));
         initialiseMetrics(configuration, environment);
     }
 
