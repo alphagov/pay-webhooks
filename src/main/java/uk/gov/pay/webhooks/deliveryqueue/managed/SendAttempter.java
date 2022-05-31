@@ -2,6 +2,7 @@ package uk.gov.pay.webhooks.deliveryqueue.managed;
 
 import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.setup.Environment;
+import net.logstash.logback.marker.Markers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
@@ -21,12 +22,18 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static uk.gov.pay.webhooks.app.WebhooksKeys.ERROR_MESSAGE;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.STATE_TRANSITION_TO_STATE;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_CALLBACK_URL;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_RETRY_COUNT;
+import static uk.gov.service.payments.logging.LoggingKeys.HTTP_STATUS;
+
 public class SendAttempter {
     private static final Logger LOGGER = LoggerFactory.getLogger(SendAttempter.class);
     private final MetricRegistry metricRegistry;
-    private WebhookDeliveryQueueDao webhookDeliveryQueueDao;
-    private InstantSource instantSource;
-    private WebhookMessageSender webhookMessageSender;
+    private final WebhookDeliveryQueueDao webhookDeliveryQueueDao;
+    private final InstantSource instantSource;
+    private final WebhookMessageSender webhookMessageSender;
 
     @Inject
     public SendAttempter(WebhookDeliveryQueueDao webhookDeliveryQueueDao,
@@ -43,39 +50,70 @@ public class SendAttempter {
         var retryCount = webhookDeliveryQueueDao.countFailed(queueItem.getWebhookMessageEntity());
 
         try {
-            LOGGER.info("Attempting to send Webhook ID %s to %s".formatted(queueItem.getWebhookMessageEntity().getExternalId(), queueItem.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl()));
+            LOGGER.info(
+                    Markers.append(WEBHOOK_CALLBACK_URL, queueItem.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl())
+                            .and(Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount)),
+                    "Sending webhook message"
+            );
             var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity());
 
             var statusCode = response.statusCode();
             if (statusCode >= 200 && statusCode <= 299) {
-                LOGGER.info("Message attempt succeeded with %s".formatted(statusCode));
+                // @TODO(sfount): add response_time in PR to record and persist that information
+                LOGGER.info(
+                        Markers.append(HTTP_STATUS, statusCode)
+                                .and(Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount))
+                                .and(Markers.append(STATE_TRANSITION_TO_STATE, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL)),
+                        "Webhook message sent"
+                );
                 webhookDeliveryQueueDao.recordResult(queueItem, getReasonFromStatusCode(statusCode), statusCode, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL, metricRegistry);
             } else {
-                LOGGER.info("Message attempt failed with %s".formatted(statusCode));
+                LOGGER.info(
+                        Markers.append(HTTP_STATUS, statusCode)
+                                .and(Markers.append(STATE_TRANSITION_TO_STATE, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED)),
+                        "Webhook message failed to send"
+                );
                 webhookDeliveryQueueDao.recordResult(queueItem, getReasonFromStatusCode(statusCode), statusCode, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, metricRegistry);
                 enqueueRetry(queueItem, nextRetryIn(retryCount));
             }
         } catch (HttpTimeoutException e) {
-            LOGGER.info("HTTP timeout exception %s".formatted(e.toString()));
-            webhookDeliveryQueueDao.recordResult(queueItem, "HTTP Timeout after 5 seconds", null, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, metricRegistry);
+            LOGGER.info(
+                    Markers.append(ERROR_MESSAGE, e.getMessage())
+                            .and(Markers.append(STATE_TRANSITION_TO_STATE, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED)),
+                    "Webhook message timed out"
+            );
+            webhookDeliveryQueueDao.recordResult(queueItem, "HTTP Timeout", null, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, metricRegistry);
             enqueueRetry(queueItem, nextRetryIn(retryCount));
         } catch (IOException | InterruptedException | InvalidKeyException e) {
-            LOGGER.warn("Exception %s attempting to send webhook message ID: %s".formatted(e.getMessage(), queueItem.getWebhookMessageEntity().getExternalId()));
+            LOGGER.warn(
+                    Markers.append(ERROR_MESSAGE, e.getMessage())
+                    .and(Markers.append(STATE_TRANSITION_TO_STATE, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED)),
+                    "Webhook message failed with exception"
+            );
             webhookDeliveryQueueDao.recordResult(queueItem, e.getMessage(), null, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, metricRegistry);
             enqueueRetry(queueItem, nextRetryIn(retryCount));
         } catch (Exception e) {
             // handle all exceptions at this level to make sure that the retry mechanism is allowed to work as designed
             // allowing errors passed this point (not guaranteeing an update) would allow perpetual failures 
-            LOGGER.warn("Unexpected exception %s attempting to send webhook message ID: %s".formatted(e.getMessage(), queueItem.getWebhookMessageEntity().getExternalId()));
+            LOGGER.warn(
+                    Markers.append(ERROR_MESSAGE, e.getMessage())
+                            .and(Markers.append(STATE_TRANSITION_TO_STATE, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED)),
+                    "Webhook message failed for unknown reason"
+            );
             webhookDeliveryQueueDao.recordResult(queueItem, "Unknown error", null, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, metricRegistry);
             enqueueRetry(queueItem, nextRetryIn(retryCount));
         }
     }
 
     private void enqueueRetry(WebhookDeliveryQueueEntity queueItem, Duration nextRetryIn) {
-        Optional.ofNullable(nextRetryIn).ifPresent(
-                retryDelay -> webhookDeliveryQueueDao.enqueueFrom(queueItem.getWebhookMessageEntity(), WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant().plus(retryDelay))
-        );
+        Optional.ofNullable(nextRetryIn).ifPresent(retryDelay -> {
+            var retryDate = instantSource.instant().plus(retryDelay);
+            LOGGER.info(
+                    Markers.append(STATE_TRANSITION_TO_STATE, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING),
+                    "Scheduling webhook message retry"
+            );
+            webhookDeliveryQueueDao.enqueueFrom(queueItem.getWebhookMessageEntity(), WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, retryDate);
+        });
     }
 
     private Duration nextRetryIn(Long retryCount) {
