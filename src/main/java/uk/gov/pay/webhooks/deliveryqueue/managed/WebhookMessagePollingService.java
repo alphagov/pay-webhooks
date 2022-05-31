@@ -4,7 +4,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.context.internal.ManagedSessionContext;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
-import uk.gov.pay.webhooks.message.WebhookMessageSender;
 
 import javax.inject.Inject;
 import java.util.Optional;
@@ -26,8 +25,6 @@ public class WebhookMessagePollingService {
     public void pollWebhookMessageQueue() {
         Optional<WebhookDeliveryQueueEntity> attemptCursor;
 
-        // setup a batch id - this will ideally be put on the MDC and logged (maybe as correlation ID?) in all further
-        // actions
         do {
             attemptCursor = sendIfAvailable();
         } while(attemptCursor.isPresent());
@@ -35,19 +32,23 @@ public class WebhookMessagePollingService {
 
     private Optional<WebhookDeliveryQueueEntity> sendIfAvailable() {
         var session = sessionFactory.openSession();
-        ManagedSessionContext.bind(session);
-        var transaction = session.beginTransaction();
+
         try {
-            return webhookDeliveryQueueDao.nextToSend()
-                    .map(webhookDeliveryQueueEntity -> {
-                        sendAttempter.attemptSend(webhookDeliveryQueueEntity);
-                        transaction.commit();
-                        return webhookDeliveryQueueEntity;
-                    });
-        } catch (Exception e) {
-           transaction.rollback();
-           return Optional.empty();
+            ManagedSessionContext.bind(session);
+            var transaction = session.beginTransaction();
+            try {
+                return webhookDeliveryQueueDao.nextToSend()
+                        .map(webhookDeliveryQueueEntity -> {
+                            sendAttempter.attemptSend(webhookDeliveryQueueEntity);
+                            transaction.commit();
+                            return webhookDeliveryQueueEntity;
+                        });
+            } catch (Exception e) {
+                transaction.rollback();
+                return Optional.empty();
+            }
         } finally {
+            session.close();
             ManagedSessionContext.unbind(sessionFactory);
         }
     }

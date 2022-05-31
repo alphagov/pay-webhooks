@@ -44,14 +44,17 @@ public class EventMessageHandler {
         var transaction = session.beginTransaction();
 
         try {
+            try {
             webhookMessageService.handleInternalEvent(message.toInternalEvent());
             transaction.commit();
             eventQueue.markMessageAsProcessed(message);
-        } catch (Exception e) {
-            LOGGER.warn("Event message with ID %s scheduled for retry: %s".formatted(message.queueMessage().messageId(), e.getMessage()));
-            transaction.rollback();
-            eventQueue.scheduleMessageForRetry(message);
+            } catch (Exception e) {
+                LOGGER.warn("Event message with ID %s scheduled for retry: %s".formatted(message.queueMessage().messageId(), e.getMessage()));
+                transaction.rollback();
+                eventQueue.scheduleMessageForRetry(message);
+            }
         } finally {
+            session.close();
             ManagedSessionContext.unbind(sessionFactory);
         }
     }
