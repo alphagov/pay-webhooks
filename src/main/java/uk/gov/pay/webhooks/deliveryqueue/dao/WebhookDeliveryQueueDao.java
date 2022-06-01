@@ -8,6 +8,7 @@ import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 
 import javax.inject.Inject;
 import javax.persistence.LockModeType;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.InstantSource;
 import java.time.OffsetDateTime;
@@ -55,7 +56,7 @@ public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEnt
                 .getSingleResult();
     }
 
-    public WebhookDeliveryQueueEntity recordResult(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, String deliveryResult, Long deliveryResponseTime, Integer statusCode, WebhookDeliveryQueueEntity.DeliveryStatus deliveryStatus, MetricRegistry metricRegistry) {
+    public WebhookDeliveryQueueEntity recordResult(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, String deliveryResult, Duration deliveryResponseTime, Integer statusCode, WebhookDeliveryQueueEntity.DeliveryStatus deliveryStatus, MetricRegistry metricRegistry) {
         metricRegistry.counter("delivery-status.%s".formatted(deliveryStatus.name()));
         return persist(WebhookDeliveryQueueEntity.recordResult(webhookDeliveryQueueEntity, deliveryResult, deliveryResponseTime, statusCode, deliveryStatus));
     }

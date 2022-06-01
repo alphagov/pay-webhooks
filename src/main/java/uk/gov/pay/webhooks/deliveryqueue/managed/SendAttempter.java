@@ -47,7 +47,7 @@ public class SendAttempter {
         try {
             LOGGER.info("Attempting to send Webhook ID %s to %s".formatted(queueItem.getWebhookMessageEntity().getExternalId(), queueItem.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl()));
             var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity());
-            var responseTime = Duration.between(start, instantSource.instant()).toMillis();
+            var responseTime = Duration.between(start, instantSource.instant());
 
             var statusCode = response.statusCode();
             if (statusCode >= 200 && statusCode <= 299) {
@@ -59,17 +59,17 @@ public class SendAttempter {
                 enqueueRetry(queueItem, nextRetryIn(retryCount));
             }
         } catch (HttpTimeoutException e) {
-            var responseTime = Duration.between(start, instantSource.instant()).toMillis();
+            var responseTime = Duration.between(start, instantSource.instant());
             LOGGER.info("HTTP timeout exception %s".formatted(e.toString()));
-            webhookDeliveryQueueDao.recordResult(queueItem, "HTTP Timeout after %d milliseconds".formatted(responseTime), responseTime, null, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, metricRegistry);
+            webhookDeliveryQueueDao.recordResult(queueItem, "HTTP Timeout", responseTime, null, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, metricRegistry);
             enqueueRetry(queueItem, nextRetryIn(retryCount));
         } catch (IOException | InterruptedException | InvalidKeyException e) {
-            var responseTime = Duration.between(start, instantSource.instant()).toMillis();
+            var responseTime = Duration.between(start, instantSource.instant());
             LOGGER.warn("Exception %s attempting to send webhook message ID: %s".formatted(e.getMessage(), queueItem.getWebhookMessageEntity().getExternalId()));
             webhookDeliveryQueueDao.recordResult(queueItem, e.getMessage(), responseTime, null, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, metricRegistry);
             enqueueRetry(queueItem, nextRetryIn(retryCount));
         } catch (Exception e) {
-            var responseTime = Duration.between(start, instantSource.instant()).toMillis();
+            var responseTime = Duration.between(start, instantSource.instant());
             // handle all exceptions at this level to make sure that the retry mechanism is allowed to work as designed
             // allowing errors passed this point (not guaranteeing an update) would allow perpetual failures 
             LOGGER.warn("Unexpected exception %s attempting to send webhook message ID: %s".formatted(e.getMessage(), queueItem.getWebhookMessageEntity().getExternalId()));

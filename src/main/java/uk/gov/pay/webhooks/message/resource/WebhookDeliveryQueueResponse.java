@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.service.payments.commons.api.json.ApiResponseInstantSerializer;
 
+import java.time.Duration;
 import java.time.Instant;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -21,7 +22,7 @@ public record WebhookDeliveryQueueResponse(@Schema(example = "\"2022-04-05T21:37
                 webhookDeliveryQueueEntity.getCreatedDate(),
                 webhookDeliveryQueueEntity.getSendAt(),
                 webhookDeliveryQueueEntity.getDeliveryStatus(),
-                webhookDeliveryQueueEntity.getDeliveryResponseTime(),
+                webhookDeliveryQueueEntity.getDeliveryResponseTime().map(Duration::toMillis).orElse(null),
                 webhookDeliveryQueueEntity.getStatusCode(),
                 webhookDeliveryQueueEntity.getDeliveryResult()
         );
