@@ -70,13 +70,8 @@ public class WebhooksModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public WebhookMessagePollingService webhookMessagePollingService() {
-        var dao = new WebhookDeliveryQueueDao(hibernate.getSessionFactory(), instantSource());
-        return new UnitOfWorkAwareProxyFactory(hibernate).create(
-                WebhookMessagePollingService.class,
-                new Class[] { WebhookDeliveryQueueDao.class, SendAttempter.class },
-                new Object[] { dao, new SendAttempter(dao, instantSource(), webhookMessageSender(), environment) }
-        );
+    public UnitOfWorkAwareProxyFactory unitOfWorkAwareProxyFactory() {
+        return new UnitOfWorkAwareProxyFactory(hibernate);
     }
 
     @Provides

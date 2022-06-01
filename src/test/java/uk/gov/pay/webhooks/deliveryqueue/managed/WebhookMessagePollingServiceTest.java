@@ -28,8 +28,10 @@ import java.security.InvalidKeyException;
 import java.time.Instant;
 import java.time.InstantSource;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -38,7 +40,7 @@ import static org.mockito.Mockito.*;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class WebhookMessagePollingServiceTest {
 
-    public DAOTestExtension database = DAOTestExtension.newBuilder()
+    private final DAOTestExtension database = DAOTestExtension.newBuilder()
             .addEntityClass(EventTypeEntity.class)
             .addEntityClass(WebhookMessageEntity.class)
             .addEntityClass(WebhookEntity.class)
@@ -56,13 +58,13 @@ class WebhookMessagePollingServiceTest {
     private HttpResponse response;
 
     @BeforeEach
-    public void setUp() throws IOException, InvalidKeyException, InterruptedException {
+    void setUp() throws IOException, InvalidKeyException, InterruptedException {
         var environment = mock(Environment.class);
 
         when(environment.metrics()).thenReturn(mock(MetricRegistry.class));
         when(response.statusCode()).thenReturn(200);
         webhookMessageSenderMock = mock(WebhookMessageSender.class);
-        when(webhookMessageSenderMock.sendWebhookMessage(any())).thenReturn(response);
+        when(webhookMessageSenderMock.sendWebhookMessage(any(WebhookMessageEntity.class))).thenReturn(response);
         instantSource = InstantSource.fixed(Instant.now());
         webhookMessageDao = new WebhookMessageDao(database.getSessionFactory());
         webhookDao = new WebhookDao(database.getSessionFactory());
@@ -91,7 +93,7 @@ class WebhookMessagePollingServiceTest {
             webhookMessagePollingService.pollWebhookMessageQueue();
             try {
                 verify(webhookMessageSenderMock).sendWebhookMessage(argThat((webhookMessage -> webhookMessage.getExternalId().equals("first-external-id"))));
-            } catch (IOException | InvalidKeyException | InterruptedException ignored) { }
+            } catch (IOException | InvalidKeyException | InterruptedException ignored) { fail(); }
         });
     }
 
@@ -104,7 +106,7 @@ class WebhookMessagePollingServiceTest {
             var captor = ArgumentCaptor.forClass(WebhookMessageEntity.class);
             try {
             verify(webhookMessageSenderMock, times(2)).sendWebhookMessage(captor.capture());
-            } catch (IOException | InvalidKeyException | InterruptedException ignored) { }
+            } catch (IOException | InvalidKeyException | InterruptedException ignored) { fail(); }
             assertEquals("first-external-id", captor.getAllValues().get(0).getExternalId());
             assertEquals("second-external-id", captor.getAllValues().get(1).getExternalId());
         });
@@ -119,7 +121,7 @@ class WebhookMessagePollingServiceTest {
             webhookMessagePollingService.pollWebhookMessageQueue();
             try {
             verify(webhookMessageSenderMock).sendWebhookMessage(argThat((webhookMessage -> webhookMessage.getExternalId().equals("first-external-id"))));
-            } catch (IOException | InvalidKeyException | InterruptedException ignored) { }
+            } catch (IOException | InvalidKeyException | InterruptedException ignored) { fail(); }
             webhookMessagePollingService.pollWebhookMessageQueue();
             verifyNoMoreInteractions(webhookMessageSenderMock);
         });
@@ -129,19 +131,17 @@ class WebhookMessagePollingServiceTest {
         WebhookEntity webhookEntity = new WebhookEntity();
 
         database.inTransaction(() -> {
-            webhookEntity.setCallbackUrl("http://a-callback-url.com");
+            webhookEntity.setCallbackUrl("https://a-callback-url.test");
             webhookEntity.setServiceId("a-service-id");
             webhookEntity.setLive(false);
 
             webhookDao.create(webhookEntity);
         });
 
-        for (int i = 0; i < messageIds.size(); i++) {
-            int finalI = i;
-
+        IntStream.range(0, messageIds.size()).forEach(i -> {
             var message = database.inTransaction(() -> {
                 WebhookMessageEntity webhookMessageEntity = new WebhookMessageEntity();
-                var id = messageIds.get(finalI);
+                var id = messageIds.get(i);
                 webhookMessageEntity.setExternalId(id);
                 webhookMessageEntity.setWebhookEntity(webhookEntity);
                 webhookMessageEntity.setCreatedDate(instantSource.instant());
@@ -149,8 +149,8 @@ class WebhookMessagePollingServiceTest {
                 return webhookMessageDao.create(webhookMessageEntity);
             });
             database.inTransaction(() -> {
-                webhookDeliveryQueueDao.enqueueFrom(message, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant().minusMillis((messageIds.size() - finalI) * 10L));
+                webhookDeliveryQueueDao.enqueueFrom(message, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant().minusMillis((messageIds.size() - i) * 10L));
             });
-        }
+        });
     }
 }
