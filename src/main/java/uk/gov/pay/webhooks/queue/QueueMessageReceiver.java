@@ -1,12 +1,14 @@
 package uk.gov.pay.webhooks.queue;
 
 import com.google.inject.Inject;
+import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.app.QueueMessageReceiverConfig;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
+import uk.gov.pay.webhooks.message.WebhookMessageService;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -26,10 +28,16 @@ public class QueueMessageReceiver implements Managed {
     public QueueMessageReceiver(
             Environment environment,
             WebhooksConfig configuration,
-            EventMessageHandler eventMessageHandler) {
-        this.eventMessageHandler = eventMessageHandler;
+            UnitOfWorkAwareProxyFactory unitOfWorkAwareProxyFactory,
+            EventQueue eventQueue,
+            WebhookMessageService webhookMessageService) {
         this.config = configuration.getQueueMessageReceiverConfig();
         this.queueReadScheduleNumberOfThreads = config.getNumberOfThreads();
+        this.eventMessageHandler = unitOfWorkAwareProxyFactory.create(
+                EventMessageHandler.class,
+                new Class[] { EventQueue.class, WebhookMessageService.class },
+                new Object[] { eventQueue, webhookMessageService }
+        );
 
         scheduledExecutorService = environment
                 .lifecycle()
