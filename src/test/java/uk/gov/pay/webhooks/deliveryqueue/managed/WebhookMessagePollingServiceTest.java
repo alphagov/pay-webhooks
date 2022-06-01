@@ -1,6 +1,7 @@
 package uk.gov.pay.webhooks.deliveryqueue.managed;
 
 import com.codahale.metrics.MetricRegistry;
+import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.testing.junit5.DAOTestExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
@@ -66,45 +67,62 @@ class WebhookMessagePollingServiceTest {
         webhookMessageDao = new WebhookMessageDao(database.getSessionFactory());
         webhookDao = new WebhookDao(database.getSessionFactory());
         webhookDeliveryQueueDao = new WebhookDeliveryQueueDao(database.getSessionFactory(), instantSource);
-
         sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, webhookMessageSenderMock, environment);
-        webhookMessagePollingService = new WebhookMessagePollingService(webhookDeliveryQueueDao, sendAttempter, database.getSessionFactory());
+        webhookMessagePollingService = new UnitOfWorkAwareProxyFactory("default", database.getSessionFactory())
+                .create(
+                        WebhookMessagePollingService.class,
+                        new Class[] { WebhookDeliveryQueueDao.class, SendAttempter.class },
+                        new Object[] { webhookDeliveryQueueDao, sendAttempter }
+                );
     }
 
     @Test
     public void shouldPollWithNoActionsOnEmptyQueue() {
-       webhookMessagePollingService.pollWebhookMessageQueue();
-       verifyNoInteractions(webhookMessageSenderMock);
+        database.inTransaction(() -> {
+            webhookMessagePollingService.pollWebhookMessageQueue();
+            verifyNoInteractions(webhookMessageSenderMock);
+        });
     }
 
     @Test
-    public void shouldEmitSingleValidQueueItem() throws IOException, InvalidKeyException, InterruptedException {
+    public void shouldEmitSingleValidQueueItem() {
         setupOrderedDeliveryQueueWith(List.of("first-external-id"));
-        webhookMessagePollingService.pollWebhookMessageQueue();
-        verify(webhookMessageSenderMock).sendWebhookMessage(argThat((webhookMessage -> webhookMessage.getExternalId().equals("first-external-id"))));
+        database.inTransaction(() -> {
+            webhookMessagePollingService.pollWebhookMessageQueue();
+            try {
+                verify(webhookMessageSenderMock).sendWebhookMessage(argThat((webhookMessage -> webhookMessage.getExternalId().equals("first-external-id"))));
+            } catch (IOException | InvalidKeyException | InterruptedException ignored) { }
+        });
     }
 
     @Test
-    public void shouldEmitMultipleValidQueueItemsInOnePoll() throws IOException, InvalidKeyException, InterruptedException {
+    public void shouldEmitMultipleValidQueueItemsInOnePoll() {
         setupOrderedDeliveryQueueWith(List.of("first-external-id", "second-external-id"));
-        webhookMessagePollingService.pollWebhookMessageQueue();
+        database.inTransaction(() -> {
+            webhookMessagePollingService.pollWebhookMessageQueue();
 
-        var captor = ArgumentCaptor.forClass(WebhookMessageEntity.class);
-        verify(webhookMessageSenderMock, times(2)).sendWebhookMessage(captor.capture());
-        assertEquals("first-external-id", captor.getAllValues().get(0).getExternalId());
-        assertEquals("second-external-id", captor.getAllValues().get(1).getExternalId());
+            var captor = ArgumentCaptor.forClass(WebhookMessageEntity.class);
+            try {
+            verify(webhookMessageSenderMock, times(2)).sendWebhookMessage(captor.capture());
+            } catch (IOException | InvalidKeyException | InterruptedException ignored) { }
+            assertEquals("first-external-id", captor.getAllValues().get(0).getExternalId());
+            assertEquals("second-external-id", captor.getAllValues().get(1).getExternalId());
+        });
     }
 
     @Test
-    public void shouldAppropriatelyHandleFailedEmitAndNotTryAgainImmediately() throws IOException, InvalidKeyException, InterruptedException {
+    public void shouldAppropriatelyHandleFailedEmitAndNotTryAgainImmediately() {
         when(response.statusCode()).thenReturn(500);
-
         setupOrderedDeliveryQueueWith(List.of("first-external-id"));
-        webhookMessagePollingService.pollWebhookMessageQueue();
-        verify(webhookMessageSenderMock).sendWebhookMessage(argThat((webhookMessage -> webhookMessage.getExternalId().equals("first-external-id"))));
 
-        webhookMessagePollingService.pollWebhookMessageQueue();
-        verifyNoMoreInteractions(webhookMessageSenderMock);
+        database.inTransaction(() -> {
+            webhookMessagePollingService.pollWebhookMessageQueue();
+            try {
+            verify(webhookMessageSenderMock).sendWebhookMessage(argThat((webhookMessage -> webhookMessage.getExternalId().equals("first-external-id"))));
+            } catch (IOException | InvalidKeyException | InterruptedException ignored) { }
+            webhookMessagePollingService.pollWebhookMessageQueue();
+            verifyNoMoreInteractions(webhookMessageSenderMock);
+        });
     }
 
     private void setupOrderedDeliveryQueueWith(List<String> messageIds) {

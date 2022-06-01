@@ -10,8 +10,12 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import io.dropwizard.hibernate.HibernateBundle;
+import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.setup.Environment;
 import org.hibernate.SessionFactory;
+import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
+import uk.gov.pay.webhooks.deliveryqueue.managed.SendAttempter;
+import uk.gov.pay.webhooks.deliveryqueue.managed.WebhookMessagePollingService;
 import uk.gov.pay.webhooks.message.WebhookMessageSender;
 import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
 import uk.gov.pay.webhooks.util.IdGenerator;
@@ -62,6 +66,17 @@ public class WebhooksModule extends AbstractModule {
     public WebhookMessageSender webhookMessageSender() {
         return new WebhookMessageSender(httpClient(), new ObjectMapper().registerModule(new Jdk8Module()),
                 new WebhookMessageSignatureGenerator());
+    }
+
+    @Provides
+    @Singleton
+    public WebhookMessagePollingService webhookMessagePollingService() {
+        var dao = new WebhookDeliveryQueueDao(hibernate.getSessionFactory(), instantSource());
+        return new UnitOfWorkAwareProxyFactory(hibernate).create(
+                WebhookMessagePollingService.class,
+                new Class[] { WebhookDeliveryQueueDao.class, SendAttempter.class },
+                new Object[] { dao, new SendAttempter(dao, instantSource(), webhookMessageSender(), environment) }
+        );
     }
 
     @Provides
