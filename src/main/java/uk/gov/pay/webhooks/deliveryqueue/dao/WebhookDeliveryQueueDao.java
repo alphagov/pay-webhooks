@@ -17,11 +17,14 @@ import java.util.Optional;
 
 public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEntity> {
     public final InstantSource instantSource;
-
     @Inject
     public WebhookDeliveryQueueDao(SessionFactory sessionFactory, InstantSource instantSource) {
         super(sessionFactory);
         this.instantSource = instantSource;
+    }
+
+    public Optional<WebhookDeliveryQueueEntity> nextToSend() {
+        return nextToSend(instantSource.instant());
     }
 
     public Optional<WebhookDeliveryQueueEntity> nextToSend(Instant sendAt) {
