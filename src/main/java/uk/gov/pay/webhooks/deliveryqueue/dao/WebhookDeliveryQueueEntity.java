@@ -14,6 +14,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -90,6 +91,18 @@ public class WebhookDeliveryQueueEntity {
     @Column(name = "delivery_status")
     private String deliveryStatus;
 
+    @Column(name = "delivery_response_time_in_millis")
+    private Long deliveryResponseTime;
+
+    public Optional<Duration> getDeliveryResponseTime() {
+        return Optional.ofNullable(this.deliveryResponseTime)
+                .map(Duration::ofMillis);
+    }
+
+    public void setDeliveryResponseTime(Duration deliveryResponseTime) {
+        this.deliveryResponseTime = deliveryResponseTime.toMillis();
+    }
+
     public String getDeliveryResult() {
         return deliveryResult;
     }
@@ -136,10 +149,11 @@ public class WebhookDeliveryQueueEntity {
         return entity;
     }
 
-    public static WebhookDeliveryQueueEntity recordResult(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, String deliveryResult, Integer statusCode, DeliveryStatus deliveryStatus) {
+    public static WebhookDeliveryQueueEntity recordResult(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, String deliveryResult, Duration deliveryResponseTime, Integer statusCode, DeliveryStatus deliveryStatus) {
         var entity = webhookDeliveryQueueEntity;
         entity.setDeliveryResult(deliveryResult);
         entity.setDeliveryStatus(deliveryStatus);
+        entity.setDeliveryResponseTime(deliveryResponseTime);
         Optional.ofNullable(statusCode).ifPresent(entity::setStatusCode);
         return entity;
     }
