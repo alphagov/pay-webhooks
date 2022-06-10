@@ -29,6 +29,7 @@ import static uk.gov.pay.webhooks.app.WebhooksKeys.STATE_TRANSITION_TO_STATE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_CALLBACK_URL;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_CALLBACK_URL_DOMAIN;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_RETRY_COUNT;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_TIME_TO_EMIT;
 import static uk.gov.service.payments.logging.LoggingKeys.HTTP_STATUS;
 import static uk.gov.service.payments.logging.LoggingKeys.RESPONSE_TIME;
 
@@ -61,11 +62,11 @@ public class SendAttempter {
             LOGGER.info(
                     Markers.append(WEBHOOK_CALLBACK_URL, queueItem.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl())
                             .and(Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount))
-                            .and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, uri.getHost())),
+                            .and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, uri.getHost()))
+                            .and(Markers.append(WEBHOOK_MESSAGE_TIME_TO_EMIT, Duration.between(queueItem.getCreatedDate(), instantSource.instant()).toMillis())),
                     "Sending webhook message"
             ); 
             var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity());
-            var responseTime = Duration.between(start, instantSource.instant());
 
             var statusCode = response.statusCode();
             if (statusCode >= 200 && statusCode <= 299) {
