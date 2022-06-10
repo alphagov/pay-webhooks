@@ -13,4 +13,5 @@ public final class WebhooksKeys {
     public static final String ERROR_MESSAGE = "error_message";
     public static final String WEBHOOK_MESSAGE_RETRY_COUNT = "retry_count";
     public static final String STATE_TRANSITION_TO_STATE = "to_state";
+    public static final String WEBHOOK_CALLBACK_URL_DOMAIN = "domain";
 }
