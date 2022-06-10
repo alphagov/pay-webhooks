@@ -101,7 +101,7 @@ public class SendAttempter {
                 Markers.append(HTTP_STATUS, statusCode)
                         .and(Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount))
                         .and(Markers.append(STATE_TRANSITION_TO_STATE, status))
-                        .and(Markers.append(RESPONSE_TIME, responseTime)),
+                        .and(Markers.append(RESPONSE_TIME, responseTime.toMillis())),
                 "Sending webhook message finished"
         ); 
         webhookDeliveryQueueDao.recordResult(webhookDeliveryQueueEntity, reason, responseTime, statusCode, status, metricRegistry);
