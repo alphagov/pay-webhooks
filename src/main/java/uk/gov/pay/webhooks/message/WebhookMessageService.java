@@ -2,8 +2,10 @@ package uk.gov.pay.webhooks.message;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.logstash.logback.marker.Markers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
@@ -22,6 +24,11 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.time.InstantSource;
 import java.util.Optional;
+
+import static uk.gov.pay.webhooks.app.WebhooksKeys.STATE_TRANSITION_TO_STATE;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_EXTERNAL_ID;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_EVENT_INTERNAL_TYPE;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_EXTERNAL_ID;
 
 public class WebhookMessageService {
 
@@ -59,14 +66,26 @@ public class WebhookMessageService {
         var subscribedWebhooks = webhookService.getWebhooksSubscribedToEvent(event);
 
         if (!subscribedWebhooks.isEmpty()) {
-            var resourceExternalId = getResourceIdForEvent(event); 
+            var resourceExternalId = getResourceIdForEvent(event);
+            LOGGER.info(
+                    Markers.append(WEBHOOK_MESSAGE_EVENT_INTERNAL_TYPE, event.eventType()),
+                    "Got subscribed webhook endpoints"
+            );
             LedgerTransaction ledgerTransaction = ledgerService.getTransaction(resourceExternalId).orElseThrow(IllegalArgumentException::new);
-            subscribedWebhooks
-                    .stream()
-                    .map(webhook -> buildWebhookMessage(webhook, event, ledgerTransaction))
-                    .flatMap(Optional::stream)
-                    .map(webhookMessageDao::create)
-                    .forEach(webhookMessageEntity -> webhookDeliveryQueueDao.enqueueFrom(webhookMessageEntity, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant()));
+
+            for (WebhookEntity webhook : subscribedWebhooks) {
+               buildWebhookMessage(webhook, event, ledgerTransaction)
+                       .ifPresent(message -> {
+                           var entity = webhookMessageDao.create(message);
+                           webhookDeliveryQueueDao.enqueueFrom(entity, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant());
+                           LOGGER.info(
+                                   Markers.append(WEBHOOK_MESSAGE_EXTERNAL_ID, entity.getExternalId())
+                                           .and(Markers.append(WEBHOOK_EXTERNAL_ID, entity.getWebhookEntity().getExternalId()))
+                                           .and(Markers.append(STATE_TRANSITION_TO_STATE, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING)),
+                                   "Persisted and queued webhook message to send"
+                           );
+                       });
+            }
         }
     }
 

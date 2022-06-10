@@ -6,12 +6,16 @@ import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import uk.gov.pay.webhooks.app.QueueMessageReceiverConfig;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
 import uk.gov.pay.webhooks.message.WebhookMessageService;
 
+import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import static uk.gov.pay.webhooks.app.WebhooksKeys.JOB_BATCH_ID;
 
 public class QueueMessageReceiver implements Managed {
 
@@ -62,11 +66,13 @@ public class QueueMessageReceiver implements Managed {
     }
 
     private void receive() {
-        LOGGER.info("Queue message receiver thread polling queue");
         try {
+            MDC.put(JOB_BATCH_ID, UUID.randomUUID().toString());
             eventMessageHandler.handle();
         } catch (Exception e) {
             LOGGER.error("Queue message receiver thread exception", e);
+        } finally {
+            MDC.remove(JOB_BATCH_ID);
         }
     }
 
