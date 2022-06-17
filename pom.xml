@@ -20,7 +20,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <pay-java-commons.version>1.0.20220614101041</pay-java-commons.version>
-        <swaggger-version>2.2.0</swaggger-version>
+        <swaggger-version>2.2.1</swaggger-version>
     </properties>
 
     <dependencyManagement>
