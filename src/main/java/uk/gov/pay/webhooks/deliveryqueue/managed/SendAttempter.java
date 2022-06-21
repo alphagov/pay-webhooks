@@ -28,8 +28,9 @@ import static uk.gov.pay.webhooks.app.WebhooksKeys.ERROR_MESSAGE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.STATE_TRANSITION_TO_STATE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_CALLBACK_URL;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_CALLBACK_URL_DOMAIN;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_ATTEMPT_RESPONSE_REASON;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_RETRY_COUNT;
-import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_TIME_TO_EMIT;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_TIME_TO_EMIT_IN_MILLIS;
 import static uk.gov.service.payments.logging.LoggingKeys.HTTP_STATUS;
 import static uk.gov.service.payments.logging.LoggingKeys.RESPONSE_TIME;
 
@@ -63,7 +64,7 @@ public class SendAttempter {
                     Markers.append(WEBHOOK_CALLBACK_URL, queueItem.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl())
                             .and(Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount))
                             .and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, uri.getHost()))
-                            .and(Markers.append(WEBHOOK_MESSAGE_TIME_TO_EMIT, Duration.between(queueItem.getCreatedDate(), instantSource.instant()).toMillis())),
+                            .and(Markers.append(WEBHOOK_MESSAGE_TIME_TO_EMIT_IN_MILLIS, Duration.between(queueItem.getCreatedDate(), instantSource.instant()).toMillis())),
                     "Sending webhook message"
             ); 
             var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity());
@@ -101,7 +102,8 @@ public class SendAttempter {
                 Markers.append(HTTP_STATUS, statusCode)
                         .and(Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount))
                         .and(Markers.append(STATE_TRANSITION_TO_STATE, status))
-                        .and(Markers.append(RESPONSE_TIME, responseTime.toMillis())),
+                        .and(Markers.append(RESPONSE_TIME, responseTime.toMillis()))
+                        .and(Markers.append(WEBHOOK_MESSAGE_ATTEMPT_RESPONSE_REASON, reason)),
                 "Sending webhook message finished"
         ); 
         webhookDeliveryQueueDao.recordResult(webhookDeliveryQueueEntity, reason, responseTime, statusCode, status, metricRegistry);
