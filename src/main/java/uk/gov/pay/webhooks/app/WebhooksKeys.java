@@ -16,5 +16,6 @@ public final class WebhooksKeys {
     public static final String WEBHOOK_CALLBACK_URL_DOMAIN = "domain";
     public static final String SQS_MESSAGE_ID = "sqs_message_id";
     public static final String WEBHOOK_MESSAGE_EVENT_INTERNAL_TYPE = "internal_event_type";
-    public static final String WEBHOOK_MESSAGE_TIME_TO_EMIT = "time_to_send";
+    public static final String WEBHOOK_MESSAGE_TIME_TO_EMIT_IN_MILLIS = "time_to_send_in_millis";
+    public static final String WEBHOOK_MESSAGE_ATTEMPT_RESPONSE_REASON = "reason";
 }
