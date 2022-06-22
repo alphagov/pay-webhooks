@@ -57,6 +57,10 @@ public class EventQueue {
             //               to see if this should be unpacked here or if something can be optimised with the publish
             SNSMessageDto snsMessageDto = objectMapper.readValue(queueMessage.messageBody(), SNSMessageDto.class);
             EventMessageDto eventMessageDto = objectMapper.readValue(snsMessageDto.Message(), EventMessageDto.class);
+            if (eventMessageDto.live() == null || eventMessageDto.serviceId() == null) {
+                LOGGER.warn("Unable to process events without `service_id` or `live` properties");
+                return null;
+            }
             return EventMessage.of(eventMessageDto, queueMessage);
         } catch (IOException e) {
             LOGGER.warn(

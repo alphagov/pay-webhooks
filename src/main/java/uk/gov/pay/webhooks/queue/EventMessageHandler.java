@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static net.logstash.logback.argument.StructuredArguments.kv;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.ERROR;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.ERROR_MESSAGE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.JOB_BATCH_ID;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.RESOURCE_IS_LIVE;
@@ -64,8 +65,9 @@ public class EventMessageHandler {
             webhookMessageService.handleInternalEvent(event);
             eventQueue.markMessageAsProcessed(message);
         } catch (Exception e) {
-            LOGGER.error(
-                    Markers.append(ERROR_MESSAGE, e.getMessage()),
+            LOGGER.warn(
+                    Markers.append(ERROR_MESSAGE, e.getMessage())
+                            .and(Markers.append(ERROR, e)),
                     "Event message scheduled for retry"
             );
             eventQueue.scheduleMessageForRetry(message);
