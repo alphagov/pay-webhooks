@@ -1,6 +1,5 @@
 package uk.gov.pay.webhooks.queue;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import uk.gov.pay.webhooks.util.MicrosecondPrecisionInstantSerializer;
 

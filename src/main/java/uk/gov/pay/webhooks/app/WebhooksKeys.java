@@ -10,6 +10,7 @@ public final class WebhooksKeys {
     public static final String WEBHOOK_MESSAGE_RESOURCE_EXTERNAL_ID = "resource_external_id";
     public static final String RESOURCE_IS_LIVE = "is_live";
     public static final String JOB_BATCH_ID = "job_id";
+    public static final String ERROR = "error";
     public static final String ERROR_MESSAGE = "error_message";
     public static final String WEBHOOK_MESSAGE_RETRY_COUNT = "retry_count";
     public static final String STATE_TRANSITION_TO_STATE = "to_state";
