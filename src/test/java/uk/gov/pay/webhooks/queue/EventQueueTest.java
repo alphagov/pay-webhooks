@@ -5,6 +5,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.text.StringEscapeUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,24 +57,49 @@ class EventQueueTest {
         Logger root = (Logger) LoggerFactory.getLogger(EventQueue.class);
         root.addAppender(mockAppender);
 
-        var sqsMessageWithMissingServiceId = """
-                {
-                  "Message" : "{\\"sqs_message_id\\":\\"dc142884-1e4b-4e57-be93-111b692a4868\\",\\"live\\":false,\\"resource_type\\":\\"payment\\",\\"resource_external_id\\":\\"t8cj9v1lci7da7pbp99qg9olv3\\",\\"parent_resource_external_id\\":null,\\"timestamp\\":\\"2019-08-31T14:18:46.446541Z\\",\\"event_type\\":\\"PAYMENT_DETAILS_ENTERED\\",\\"reproject_domain_object\\":false}"
-                }
-                """;
-        var sqsMessageWithMissingLiveProperty = """
-                {
-                  "Message" : "{\\"sqs_message_id\\":\\"dc142884-1e4b-4e57-be93-111b692a4868\\",\\"service_id\\":\\"some-service-id\\",\\"resource_type\\":\\"payment\\",\\"resource_external_id\\":\\"t8cj9v1lci7da7pbp99qg9olv3\\",\\"parent_resource_external_id\\":null,\\"timestamp\\":\\"2019-08-31T14:18:46.446541Z\\",\\"event_type\\":\\"PAYMENT_DETAILS_ENTERED\\",\\"reproject_domain_object\\":false}"
-                }
-                """;
-        var sqsMessageWithValidProperties = """
-                {
-                  "Message" : "{\\"sqs_message_id\\":\\"dc142884-1e4b-4e57-be93-111b692a4868\\",\\"service_id\\":\\"some-service-id\\",\\"live\\":false,\\"resource_type\\":\\"payment\\",\\"resource_external_id\\":\\"t8cj9v1lci7da7pbp99qg9olv3\\",\\"parent_resource_external_id\\":null,\\"timestamp\\":\\"2019-08-31T14:18:46.446541Z\\",\\"event_type\\":\\"PAYMENT_DETAILS_ENTERED\\",\\"reproject_domain_object\\":false}"
-                }
-                """;
-        var queueMessageWithMissingServiceId = new QueueMessage("message-id-missing-service-id", "some-receipt-handle", sqsMessageWithMissingServiceId);
-        var queueMessageWithMissingLiveProperty = new QueueMessage("message-id-missing-live-property", "some-receipt-handle", sqsMessageWithMissingLiveProperty);
-        var queueMessageWithValidProperties = new QueueMessage("message-id-valid-properties", "some-receipt-handle", sqsMessageWithValidProperties);
+        var sqsMessageWithMissingServiceIdEnclosedMessage = """ 
+        {
+          "sqs_message_id": "dc142884-1e4b-4e57-be93-111b692a4868",
+          "live": false,
+          "resource_type": "payment",
+          "resource_external_id": "t8cj9v1lci7da7pbp99qg9olv3",
+          "parent_resource_external_id": null,
+          "timestamp": "2019-08-31T14:18:46.446541Z",
+          "event_type": "PAYMENT_DETAILS_ENTERED",
+          "reproject_domain_object": false
+        }
+        """;
+
+        var sqsMessageWithMissingLivePropertyEnclosedMessage = """
+        {
+          "sqs_message_id": "dc142884-1e4b-4e57-be93-111b692a4868",
+          "service_id": "a-valid-service-id",
+          "resource_type": "payment",
+          "resource_external_id": "t8cj9v1lci7da7pbp99qg9olv3",
+          "parent_resource_external_id": null,
+          "timestamp": "2019-08-31T14:18:46.446541Z",
+          "event_type": "PAYMENT_DETAILS_ENTERED",
+          "reproject_domain_object": false
+        }
+        """;
+
+        var sqsMessageWithValidPropertiesEnclosedMessage = """
+        {
+          "sqs_message_id": "dc142884-1e4b-4e57-be93-111b692a4868",
+          "service_id": "a-valid-service-id",
+          "live": false,
+          "resource_type": "payment",
+          "resource_external_id": "t8cj9v1lci7da7pbp99qg9olv3",
+          "parent_resource_external_id": null,
+          "timestamp": "2019-08-31T14:18:46.446541Z",
+          "event_type": "PAYMENT_DETAILS_ENTERED",
+          "reproject_domain_object": false
+        }
+        """;
+
+        var queueMessageWithMissingServiceId = new QueueMessage("message-id-missing-service-id", "some-receipt-handle", sqsMessageJson(sqsMessageWithMissingServiceIdEnclosedMessage));
+        var queueMessageWithMissingLiveProperty = new QueueMessage("message-id-missing-live-property", "some-receipt-handle", sqsMessageJson(sqsMessageWithMissingLivePropertyEnclosedMessage));
+        var queueMessageWithValidProperties = new QueueMessage("message-id-valid-properties", "some-receipt-handle", sqsMessageJson(sqsMessageWithValidPropertiesEnclosedMessage));
         when(sqsQueueService.receiveMessages("sqs://queue-url.test", "All")).thenReturn(List.of(queueMessageWithMissingServiceId, queueMessageWithMissingLiveProperty, queueMessageWithValidProperties));
 
         var results = eventQueue.retrieveEvents();
@@ -84,6 +110,14 @@ class EventQueueTest {
         assertThat(logs.get(1).getMessage(), containsString("Unable to process events without `service_id` or `live` properties"));
         assertThat(results.size(), is(1));
         assertThat(results.get(0).queueMessage().messageId(), is("message-id-valid-properties"));
+    }
+
+    private String sqsMessageJson(String jsonMessageEnclosedBody) {
+        return """
+        {
+            "Message": "%s"
+        }
+        """.formatted(StringEscapeUtils.escapeJson(jsonMessageEnclosedBody));
     }
 
 }
