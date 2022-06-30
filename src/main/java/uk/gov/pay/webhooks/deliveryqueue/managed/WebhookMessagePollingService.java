@@ -11,7 +11,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static uk.gov.pay.webhooks.app.WebhooksKeys.JOB_BATCH_ID;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.RESOURCE_IS_LIVE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_EXTERNAL_ID;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_EVENT_TYPE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_EXTERNAL_ID;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_RESOURCE_EXTERNAL_ID;
 import static uk.gov.service.payments.logging.LoggingKeys.MDC_REQUEST_ID_KEY;
@@ -42,15 +44,19 @@ public class WebhookMessagePollingService {
 
         var sendAttempt = webhookDeliveryQueueDao.nextToSend()
                 .map(webhookDeliveryQueueEntity -> {
-                    MDC.put(WEBHOOK_EXTERNAL_ID, webhookDeliveryQueueEntity.getWebhookMessageEntity().getWebhookEntity().getExternalId());
-                    MDC.put(WEBHOOK_MESSAGE_RESOURCE_EXTERNAL_ID, webhookDeliveryQueueEntity.getWebhookMessageEntity().getResourceExternalId());
-                    MDC.put(WEBHOOK_MESSAGE_EXTERNAL_ID, webhookDeliveryQueueEntity.getWebhookMessageEntity().getExternalId());
+                    var webhookMessage = webhookDeliveryQueueEntity.getWebhookMessageEntity();
+                    var webhook = webhookMessage.getWebhookEntity();
+                    MDC.put(WEBHOOK_EXTERNAL_ID, webhookMessage.getExternalId());
+                    MDC.put(WEBHOOK_MESSAGE_RESOURCE_EXTERNAL_ID, webhookMessage.getResourceExternalId());
+                    MDC.put(WEBHOOK_MESSAGE_EXTERNAL_ID, webhookMessage.getExternalId());
+                    MDC.put(WEBHOOK_MESSAGE_EVENT_TYPE, webhookMessage.getEventType().getName().getName());
+                    MDC.put(RESOURCE_IS_LIVE, String.valueOf(webhook.isLive()));
 
                     sendAttempter.attemptSend(webhookDeliveryQueueEntity);
                     return webhookDeliveryQueueEntity;
                 });
 
-        List.of(MDC_REQUEST_ID_KEY, WEBHOOK_EXTERNAL_ID, WEBHOOK_MESSAGE_RESOURCE_EXTERNAL_ID).forEach(MDC::remove);
+        List.of(MDC_REQUEST_ID_KEY, WEBHOOK_EXTERNAL_ID, WEBHOOK_MESSAGE_RESOURCE_EXTERNAL_ID, WEBHOOK_MESSAGE_EVENT_TYPE, RESOURCE_IS_LIVE).forEach(MDC::remove);
         return sendAttempt;
     }
 }

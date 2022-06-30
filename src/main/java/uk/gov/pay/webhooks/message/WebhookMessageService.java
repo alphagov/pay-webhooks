@@ -28,6 +28,7 @@ import java.util.Optional;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.STATE_TRANSITION_TO_STATE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_EXTERNAL_ID;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_EVENT_INTERNAL_TYPE;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_EVENT_TYPE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_EXTERNAL_ID;
 
 public class WebhookMessageService {
@@ -81,7 +82,8 @@ public class WebhookMessageService {
                            LOGGER.info(
                                    Markers.append(WEBHOOK_MESSAGE_EXTERNAL_ID, entity.getExternalId())
                                            .and(Markers.append(WEBHOOK_EXTERNAL_ID, entity.getWebhookEntity().getExternalId()))
-                                           .and(Markers.append(STATE_TRANSITION_TO_STATE, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING)),
+                                           .and(Markers.append(STATE_TRANSITION_TO_STATE, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING))
+                                           .and(Markers.append(WEBHOOK_MESSAGE_EVENT_TYPE, entity.getEventType().getName().getName())),
                                    "Persisted and queued webhook message to send"
                            );
                        });
