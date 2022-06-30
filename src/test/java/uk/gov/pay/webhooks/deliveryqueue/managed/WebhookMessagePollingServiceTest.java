@@ -15,6 +15,8 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
+import uk.gov.pay.webhooks.eventtype.EventTypeName;
+import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.WebhookMessageSender;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
@@ -45,12 +47,14 @@ class WebhookMessagePollingServiceTest {
             .addEntityClass(WebhookMessageEntity.class)
             .addEntityClass(WebhookEntity.class)
             .addEntityClass(WebhookDeliveryQueueEntity.class)
+            .addEntityClass(EventTypeEntity.class)
             .build();
 
     private InstantSource instantSource;
     private WebhookDeliveryQueueDao webhookDeliveryQueueDao;
     private WebhookMessageDao webhookMessageDao;
     private WebhookDao webhookDao;
+    private EventTypeDao eventTypeDao;
     private WebhookMessagePollingService webhookMessagePollingService;
     private WebhookMessageSender webhookMessageSenderMock;
     private SendAttempter sendAttempter;
@@ -68,6 +72,7 @@ class WebhookMessagePollingServiceTest {
         instantSource = InstantSource.fixed(Instant.now());
         webhookMessageDao = new WebhookMessageDao(database.getSessionFactory());
         webhookDao = new WebhookDao(database.getSessionFactory());
+        eventTypeDao = new EventTypeDao(database.getSessionFactory());
         webhookDeliveryQueueDao = new WebhookDeliveryQueueDao(database.getSessionFactory(), instantSource);
         sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, webhookMessageSenderMock, environment);
         webhookMessagePollingService = new UnitOfWorkAwareProxyFactory("default", database.getSessionFactory())
@@ -136,6 +141,9 @@ class WebhookMessagePollingServiceTest {
             webhookEntity.setLive(false);
 
             webhookDao.create(webhookEntity);
+
+            var eventTypeEntity = new EventTypeEntity(EventTypeName.CARD_PAYMENT_STARTED);
+            database.getSessionFactory().getCurrentSession().persist(eventTypeEntity);
         });
 
         IntStream.range(0, messageIds.size()).forEach(i -> {
@@ -144,6 +152,7 @@ class WebhookMessagePollingServiceTest {
                 var id = messageIds.get(i);
                 webhookMessageEntity.setExternalId(id);
                 webhookMessageEntity.setWebhookEntity(webhookEntity);
+                webhookMessageEntity.setEventType(eventTypeDao.findByName(EventTypeName.CARD_PAYMENT_STARTED).get());
                 webhookMessageEntity.setCreatedDate(instantSource.instant());
 
                 return webhookMessageDao.create(webhookMessageEntity);
