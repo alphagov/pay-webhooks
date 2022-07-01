@@ -46,7 +46,7 @@ public class WebhookMessagePollingService {
                 .map(webhookDeliveryQueueEntity -> {
                     var webhookMessage = webhookDeliveryQueueEntity.getWebhookMessageEntity();
                     var webhook = webhookMessage.getWebhookEntity();
-                    MDC.put(WEBHOOK_EXTERNAL_ID, webhookMessage.getExternalId());
+                    MDC.put(WEBHOOK_EXTERNAL_ID, webhook.getExternalId());
                     MDC.put(WEBHOOK_MESSAGE_RESOURCE_EXTERNAL_ID, webhookMessage.getResourceExternalId());
                     MDC.put(WEBHOOK_MESSAGE_EXTERNAL_ID, webhookMessage.getExternalId());
                     MDC.put(WEBHOOK_MESSAGE_EVENT_TYPE, webhookMessage.getEventType().getName().getName());
