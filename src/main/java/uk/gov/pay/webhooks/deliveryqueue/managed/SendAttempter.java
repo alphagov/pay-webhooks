@@ -114,9 +114,11 @@ public class SendAttempter {
     }
 
     private void enqueueRetry(WebhookDeliveryQueueEntity queueItem, Duration nextRetryIn) {
-        Optional.ofNullable(nextRetryIn).ifPresent(retryDelay -> {
+        Optional.ofNullable(nextRetryIn).ifPresentOrElse(retryDelay -> {
             LOGGER.info("Scheduling webhook message for retry");
             webhookDeliveryQueueDao.enqueueFrom(queueItem.getWebhookMessageEntity(), WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant().plus(retryDelay));
+        }, () -> {
+            LOGGER.warn("Webhook message terminally failed to deliver");
         });
     }
 
