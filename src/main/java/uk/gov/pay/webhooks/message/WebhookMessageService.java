@@ -92,7 +92,7 @@ public class WebhookMessageService {
     }
 
     private Optional<WebhookMessageEntity> buildWebhookMessage(WebhookEntity webhook, InternalEvent event, LedgerTransaction ledgerTransaction) {
-        return switch (event.resourceType()) {
+        return switch (getResourceTypeForEvent(event)) {
             case "payment" -> {
                 JsonNode resource = objectMapper.valueToTree(PaymentApiRepresentation.of(ledgerTransaction));
                 yield Optional.of(buildWebhookMessageEntity(webhook, event, resource));
@@ -124,5 +124,12 @@ public class WebhookMessageService {
     private String getResourceIdForEvent(InternalEvent event) {
         var isChildEvent = EventMapper.isChildEvent(EventMapper.getWebhookEventNameFor(event.eventType()));
         return isChildEvent ? event.parentResourceExternalId() : event.resourceExternalId();
+    }
+
+    private String getResourceTypeForEvent(InternalEvent event) {
+        var isChildEvent = EventMapper.isChildEvent(EventMapper.getWebhookEventNameFor(event.eventType()));
+        // @TODO(sfount) ideally we would have an enum specifying valid results for these, the event would fail to process if we didn't recognise the type
+        //               we shouldn't rely on strings in the code as it will be hard to check interdependencies (similar to buildWebhookMessage)
+        return isChildEvent && event.eventType().equals("refund") ? "payment" : event.eventType();
     }
 }
