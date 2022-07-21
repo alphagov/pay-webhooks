@@ -19,7 +19,7 @@
         <mainClass>uk.gov.pay.webhooks.app.WebhooksApp</mainClass>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <pay-java-commons.version>1.0.20220708104007</pay-java-commons.version>
+        <pay-java-commons.version>1.0.20220720153401</pay-java-commons.version>
         <swaggger-version>2.2.1</swaggger-version>
     </properties>
 
