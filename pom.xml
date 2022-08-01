@@ -17,10 +17,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <mainClass>uk.gov.pay.webhooks.app.WebhooksApp</mainClass>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
         <pay-java-commons.version>1.0.20220726103109</pay-java-commons.version>
-        <swaggger-version>2.2.2</swaggger-version>
+        <swagger-version>2.2.2</swagger-version>
     </properties>
 
     <dependencyManagement>
@@ -236,7 +234,7 @@
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-annotations</artifactId>
-            <version>${swaggger-version}</version>
+            <version>${swagger-version}</version>
         </dependency>
     </dependencies>
 
@@ -336,7 +334,7 @@
             <plugin>
                 <groupId>io.swagger.core.v3</groupId>
                 <artifactId>swagger-maven-plugin</artifactId>
-                <version>${swaggger-version}</version>
+                <version>${swagger-version}</version>
                 <configuration>
                     <outputPath>openapi</outputPath>
                     <outputFileName>webhooks_spec</outputFileName>
