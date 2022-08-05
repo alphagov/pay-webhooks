@@ -6,6 +6,8 @@ import io.dropwizard.db.DataSourceFactory;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.Set;
 
 public class WebhooksConfig extends Configuration {
     @Valid
@@ -70,5 +72,12 @@ public class WebhooksConfig extends Configuration {
     public String getGraphitePort() {
         return graphitePort;
     }
+   
+    // do we want to validate that no domains here are a top level domain (i.e com) - should webhooks start or should this 
+    // be considered invalid configuration
+    private Set<String> liveDataAllowHosts;
 
+    public Set<String> getLiveDataAllowHosts() {
+        return liveDataAllowHosts;
+    }
 }

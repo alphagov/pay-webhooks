@@ -83,3 +83,5 @@ webhookMessageSendingQueueProcessorConfig:
   numberOfThreads: ${WEBHOOK_MESSAGE_SENDING_QUEUE_NUMBER_OF_THREADS:-1}
   initialDelayInMilliseconds: ${WEBHOOK_MESSAGE_SENDING_QUEUE_INITIAL_DELAY_IN_MILLISECONDS:-30000}
   threadDelayInMilliseconds: ${WEBHOOK_MESSAGE_SENDING_QUEUE_THREAD_DELAY_IN_MILLISECONDS:-1000}
+
+liveDataAllowDomains: ["gov.uk"]

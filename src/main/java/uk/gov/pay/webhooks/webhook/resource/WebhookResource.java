@@ -32,6 +32,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
@@ -48,9 +50,9 @@ public class WebhookResource {
     private final WebhookRequestValidator webhookRequestValidator;
 
     @Inject
-    public WebhookResource(WebhookService webhookService) {
+    public WebhookResource(WebhookService webhookService, WebhookRequestValidator webhookRequestValidator) {
         this.webhookService = webhookService;
-        this.webhookRequestValidator = new WebhookRequestValidator();
+        this.webhookRequestValidator = webhookRequestValidator;
     }
 
     @UnitOfWork
@@ -64,8 +66,18 @@ public class WebhookResource {
                     @ApiResponse(responseCode = "400", description = "Invalid payload (ex: non existent event type)")
             }
     )
-    public WebhookResponse createWebhook(@NotNull @Valid CreateWebhookRequest webhookRequest) {
+    public WebhookResponse createWebhook(@NotNull @Valid CreateWebhookRequest webhookRequest) throws MalformedURLException {
         WebhookEntity webhookEntity = webhookService.createWebhook(webhookRequest);
+        
+        // Theory
+        // 1. implement basic url allow list validation for live data, call validation here
+        // (?) do we want an exception mapper + exception to send specific error_identifiers to the frontend
+        // (?) have to consider how this fits into update
+        // 2. write up unit/ integration tests 
+        // 3. consider using a @CustomValidation annotation for the create request POJO if we can work out injecting config/ helper into the validator
+        if (webhookEntity.isLive()) {
+            webhookRequestValidator.validateUrlIsInLiveDomains(webhookEntity.getCallbackUrl());
+        }
         return WebhookResponse.from(webhookEntity);
     }
 
