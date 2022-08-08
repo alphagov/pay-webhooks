@@ -1,12 +1,11 @@
 package uk.gov.pay.webhooks.validations;
 
 import com.google.common.net.InternetDomainName;
-import org.eclipse.persistence.queries.Call;
+import org.apache.commons.lang3.StringUtils;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Optional;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toUnmodifiableSet;
@@ -33,27 +32,29 @@ public class CallbackUrlService {
             throw new CallbackUrlMalformedException("Callback URL is not a valid URL");
         }
 
-        if (url.getHost().isEmpty()) {
+        if (StringUtils.isEmpty(url.getHost())) {
             throw new CallbackUrlMalformedException("Callback URL must contain a host");
         }
 
-        if (!url.getProtocol().equals("https")) {
+        if (!"https".equals(url.getProtocol())) {
             throw new CallbackUrlProtocolNotSupported("Callback URL must use HTTPS protocol");
+        }
+
+        if (!InternetDomainName.isValid(url.getHost())) {
+            throw new CallbackUrlMalformedException("Callback URL host must be a domain name");
         }
 
         return url;
     }
 
     private void validateUrlIsInLiveDomains(URL callbackUrl) {
-        if (InternetDomainName.isValid(callbackUrl.getHost())) {
-            var domain = InternetDomainName.from(callbackUrl.getHost());
-            while (domain.hasParent()) {
-                if (allowedDomains.contains(domain)) {
-                    return;
-                }
-                domain = domain.parent();
+        var domain = InternetDomainName.from(callbackUrl.getHost());
+        while (domain.hasParent()) {
+            if (allowedDomains.contains(domain)) {
+                return;
             }
+            domain = domain.parent();
         }
-        throw new DomainNotOnAllowListException(callbackUrl.getHost() + " is not in the allow list");
+        throw new CallbackUrlDomainNotOnAllowListException(callbackUrl.getHost() + " is not in the allow list");
     }
 }

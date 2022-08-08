@@ -81,7 +81,7 @@ class CallbackUrlServiceTest {
     public void callbackUrlWithDomainNotInAllowListShouldThrowException() {
         when(webhooksConfig.getLiveDataAllowHosts()).thenReturn(Set.of("gov.uk"));
         callbackUrlService = new CallbackUrlService(webhooksConfig);
-        assertThrows(DomainNotOnAllowListException.class,
+        assertThrows(CallbackUrlDomainNotOnAllowListException.class,
                 () -> callbackUrlService.validateCallbackUrl("https://www.url.service.test/is/not/in/list", true));
     }
 
@@ -89,7 +89,7 @@ class CallbackUrlServiceTest {
     public void callbackUrlWithDomainWhereBeginningIsInAllowListShouldThrowException() {
         when(webhooksConfig.getLiveDataAllowHosts()).thenReturn(Set.of("gov.uk"));
         callbackUrlService = new CallbackUrlService(webhooksConfig);
-        assertThrows(DomainNotOnAllowListException.class,
+        assertThrows(CallbackUrlDomainNotOnAllowListException.class,
                 () -> callbackUrlService.validateCallbackUrl("https://gov.uk.test/is/not/in/list", true));
     }
 
@@ -97,7 +97,7 @@ class CallbackUrlServiceTest {
     public void callbackUrlWithIdnDomainWherePunycodeEquivalentInAllowListShouldThrowException() {
         when(webhooksConfig.getLiveDataAllowHosts()).thenReturn(Set.of("xn--io0a7i.test"));
         callbackUrlService = new CallbackUrlService(webhooksConfig);
-        assertThrows(DomainNotOnAllowListException.class,
+        assertThrows(CallbackUrlDomainNotOnAllowListException.class,
                 () -> callbackUrlService.validateCallbackUrl("https://网络.test/is/not/in/list", true));
     }
 
@@ -105,7 +105,7 @@ class CallbackUrlServiceTest {
     public void callbackUrlWithIPunycodeDomainWhereIdnEquivalentInAllowListShouldThrowException() {
         when(webhooksConfig.getLiveDataAllowHosts()).thenReturn(Set.of("网络.test"));
         callbackUrlService = new CallbackUrlService(webhooksConfig);
-        assertThrows(DomainNotOnAllowListException.class,
+        assertThrows(CallbackUrlDomainNotOnAllowListException.class,
                 () -> callbackUrlService.validateCallbackUrl("https://xn--io0a7i.test/is/not/in/list", true));
     }
 
@@ -113,7 +113,7 @@ class CallbackUrlServiceTest {
     public void callbackUrlWithSinglePartDomainWithExactDomainInAllowListShouldThrowException() {
         when(webhooksConfig.getLiveDataAllowHosts()).thenReturn(Set.of("test"));
         callbackUrlService = new CallbackUrlService(webhooksConfig);
-        assertThrows(DomainNotOnAllowListException.class,
+        assertThrows(CallbackUrlDomainNotOnAllowListException.class,
                 () -> callbackUrlService.validateCallbackUrl("https://test/is/not/in/list", true));
     }
 
@@ -121,7 +121,7 @@ class CallbackUrlServiceTest {
     public void callbackUrlWithIpv4AddressShouldThrowException() {
         when(webhooksConfig.getLiveDataAllowHosts()).thenReturn(Set.of("gov.uk"));
         callbackUrlService = new CallbackUrlService(webhooksConfig);
-        assertThrows(DomainNotOnAllowListException.class,
+        assertThrows(CallbackUrlMalformedException.class,
                 () -> callbackUrlService.validateCallbackUrl("https://203.0.113.1/is/not/in/list", true));
     }
 
@@ -129,7 +129,7 @@ class CallbackUrlServiceTest {
     public void callbackUrlWithIpv6AddressShouldThrowException() {
         when(webhooksConfig.getLiveDataAllowHosts()).thenReturn(Set.of("gov.uk"));
         callbackUrlService = new CallbackUrlService(webhooksConfig);
-        assertThrows(DomainNotOnAllowListException.class,
+        assertThrows(CallbackUrlMalformedException.class,
                 () -> callbackUrlService.validateCallbackUrl("https://[2001:0db8:85a3:0000:0000:8a2e:0370:7334]/is/not/in/list", true));
     }
 
@@ -148,6 +148,14 @@ class CallbackUrlServiceTest {
         callbackUrlService = new CallbackUrlService(webhooksConfig);
         assertThrows(CallbackUrlProtocolNotSupported.class,
                 () -> callbackUrlService.validateCallbackUrl(protocol + "://gov.uk", true));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "https", "hTtPs", "HTTPS"})
+    public void callbackUrlWithValidProtocolIsCaseInsensitive(String protocol) {
+        when(webhooksConfig.getLiveDataAllowHosts()).thenReturn(Set.of("gov.uk"));
+        callbackUrlService = new CallbackUrlService(webhooksConfig);
+        assertDoesNotThrow(() -> callbackUrlService.validateCallbackUrl(protocol + "://gov.uk", true));
     }
 
     @Test
