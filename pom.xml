@@ -17,10 +17,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <mainClass>uk.gov.pay.webhooks.app.WebhooksApp</mainClass>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <pay-java-commons.version>1.0.20220726103109</pay-java-commons.version>
-        <swaggger-version>2.2.2</swaggger-version>
+        <pay-java-commons.version>1.0.20220802100205</pay-java-commons.version>
+        <swagger-version>2.2.2</swagger-version>
         <pact.version>3.6.15</pact.version>
         <PACT_BROKER_URL/>
         <PACT_BROKER_USERNAME/>
@@ -31,6 +29,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava-bom</artifactId>
+                <version>31.1-jre</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
             <dependency>
                 <groupId>io.dropwizard</groupId>
                 <artifactId>dropwizard-bom</artifactId>
@@ -62,7 +67,7 @@
             <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-java-sdk-bom</artifactId>
-                <version>1.12.271</version>
+                <version>1.12.273</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -142,6 +147,10 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-graphite</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
         </dependency>
 
         <!-- Main dependencies that need explicit versions -->
@@ -242,7 +251,7 @@
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-annotations</artifactId>
-            <version>${swaggger-version}</version>
+            <version>${swagger-version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.service.payments</groupId>
@@ -370,7 +379,7 @@
             <plugin>
                 <groupId>io.swagger.core.v3</groupId>
                 <artifactId>swagger-maven-plugin</artifactId>
-                <version>${swaggger-version}</version>
+                <version>${swagger-version}</version>
                 <configuration>
                     <outputPath>openapi</outputPath>
                     <outputFileName>webhooks_spec</outputFileName>

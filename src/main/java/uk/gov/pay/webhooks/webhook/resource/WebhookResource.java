@@ -32,6 +32,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
@@ -48,9 +49,9 @@ public class WebhookResource {
     private final WebhookRequestValidator webhookRequestValidator;
 
     @Inject
-    public WebhookResource(WebhookService webhookService) {
+    public WebhookResource(WebhookService webhookService, WebhookRequestValidator webhookRequestValidator) {
         this.webhookService = webhookService;
-        this.webhookRequestValidator = new WebhookRequestValidator();
+        this.webhookRequestValidator = webhookRequestValidator;
     }
 
     @UnitOfWork
@@ -64,7 +65,7 @@ public class WebhookResource {
                     @ApiResponse(responseCode = "400", description = "Invalid payload (ex: non existent event type)")
             }
     )
-    public WebhookResponse createWebhook(@NotNull @Valid CreateWebhookRequest webhookRequest) {
+    public WebhookResponse createWebhook(@NotNull @Valid CreateWebhookRequest webhookRequest) throws MalformedURLException {
         WebhookEntity webhookEntity = webhookService.createWebhook(webhookRequest);
         return WebhookResponse.from(webhookEntity);
     }
