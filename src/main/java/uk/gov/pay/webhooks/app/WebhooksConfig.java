@@ -6,6 +6,8 @@ import io.dropwizard.db.DataSourceFactory;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.Set;
 
 public class WebhooksConfig extends Configuration {
     @Valid
@@ -70,5 +72,10 @@ public class WebhooksConfig extends Configuration {
     public String getGraphitePort() {
         return graphitePort;
     }
+   
+    private Set<String> liveDataAllowHosts;
 
+    public Set<String> getLiveDataAllowHosts() {
+        return liveDataAllowHosts;
+    }
 }
