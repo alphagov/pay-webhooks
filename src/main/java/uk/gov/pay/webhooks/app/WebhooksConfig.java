@@ -73,8 +73,6 @@ public class WebhooksConfig extends Configuration {
         return graphitePort;
     }
    
-    // do we want to validate that no domains here are a top level domain (i.e com) - should webhooks start or should this 
-    // be considered invalid configuration
     private Set<String> liveDataAllowHosts;
 
     public Set<String> getLiveDataAllowHosts() {
