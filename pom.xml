@@ -19,6 +19,12 @@
         <mainClass>uk.gov.pay.webhooks.app.WebhooksApp</mainClass>
         <pay-java-commons.version>1.0.20220808113926</pay-java-commons.version>
         <swagger-version>2.2.2</swagger-version>
+        <pact.version>3.6.15</pact.version>
+        <PACT_BROKER_URL/>
+        <PACT_BROKER_USERNAME/>
+        <PACT_BROKER_PASSWORD/>
+        <PACT_CONSUMER_VERSION/>
+        <PACT_CONSUMER_TAG/>
     </properties>
 
     <dependencyManagement>
@@ -247,10 +253,38 @@
             <artifactId>swagger-annotations</artifactId>
             <version>${swagger-version}</version>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.service.payments</groupId>
+            <artifactId>testing</artifactId>
+            <version>${pay-java-commons.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>au.com.dius</groupId>
+            <artifactId>pact-jvm-consumer-junit_2.12</artifactId>
+            <version>${pact.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>au.com.dius</groupId>
+                <artifactId>pact-jvm-provider-maven_2.12</artifactId>
+                <version>${pact.version}</version>
+                <configuration>
+                    <pactDirectory>target/pacts</pactDirectory>
+                    <pactBrokerUrl>${PACT_BROKER_URL}</pactBrokerUrl>
+                    <pactBrokerUsername>${PACT_BROKER_USERNAME}</pactBrokerUsername>
+                    <pactBrokerPassword>${PACT_BROKER_PASSWORD}</pactBrokerPassword>
+                    <projectVersion>${PACT_CONSUMER_VERSION}</projectVersion>
+                    <tags>
+                        <tag>${PACT_CONSUMER_TAG}</tag>
+                    </tags>
+                    <trimSnapshot>true</trimSnapshot>
+                </configuration>
+            </plugin>
             <plugin>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.3.0</version>

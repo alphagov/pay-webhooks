@@ -9,14 +9,21 @@ on:
 
 permissions:
   contents: read
+
+concurrency: webhooks-post-merge
+
 jobs:
-  test:
+  pr:
+    uses: ./.github/workflows/pr.yml
+
+  publish-webhooks-consumer-contract-tests:
+    needs: pr
     runs-on: ubuntu-18.04
+
+    name: Publish and tag webhooks consumer pact
     steps:
       - name: Git checkout
         uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
-        with:
-          fetch-depth: '0'
       - name: Set up JDK 17
         uses: actions/setup-java@2c7a4878f5d120bd643426d54ae1209b29cc01a3
         with:
@@ -28,16 +35,32 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-      - name: Run tests
-        run: mvn clean verify
-      - name: Upload jar
-        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
+      - name: Cache pacts directory
+        uses: actions/cache@0865c47f36e68161719c5b124609996bb5c40129
         with:
-          name: target
-          path: target
-          retention-days: 5
+          path: target/pacts
+          key: ${{ runner.os }}-build-id-${{ github.head_ref }}-${{ github.sha }}-pacts
+      - name: Publish and tag webhooks consumer pact
+        run: |
+          mvn pact:publish -DPACT_BROKER_URL=https://pay-pact-broker.cloudapps.digital \
+          -DPACT_BROKER_USERNAME=${{ secrets.pact_broker_username }} \
+          -DPACT_BROKER_PASSWORD=${{ secrets.pact_broker_password }} -DPACT_CONSUMER_TAG=master \
+          -DPACT_CONSUMER_VERSION=${{ github.sha }}
+
+  ledger-provider-contract-tests:
+    needs: publish-webhooks-consumer-contract-tests
+    uses: alphagov/pay-ledger/.github/workflows/_run-pact-provider-tests.yml@master
+    with:
+      consumer: webhooks
+      consumer_tag: master
+    secrets:
+      pact_broker_username: ${{ secrets.pact_broker_username }}
+      pact_broker_password: ${{ secrets.pact_broker_password }}
+
   tag-release:
-    needs: test
+    needs:
+      - pr
+      - ledger-provider-contract-tests
     permissions:
       contents: write
     runs-on: ubuntu-latest
