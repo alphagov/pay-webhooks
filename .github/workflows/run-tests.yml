@@ -1,4 +1,4 @@
-name: Pull request checks
+name: Github Actions Tests
 
 on:
   workflow_call:
@@ -33,9 +33,3 @@ jobs:
           key: ${{ runner.os }}-build-id-${{ github.head_ref }}-${{ github.sha }}-pacts
       - name: Run tests
         run: mvn clean verify
-      - name: Upload jar
-        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
-        with:
-          name: target
-          path: target
-          retention-days: 5
