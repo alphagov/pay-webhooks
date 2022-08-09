@@ -31,15 +31,7 @@ public class WebhookResourceIT {
 
     @Test
     public void shouldCreateAndRetrieveAWebhook() {
-        var json = """
-                {
-                  "service_id": "test_service_id",
-                  "live": false,
-                  "callback_url": "https://example.com",
-                  "description": "description",
-                  "subscriptions": ["card_payment_captured"]
-                }
-                """;
+        var json = createWebhookRequestBody("https://example.com", false);
 
         var response = given().port(port)
                 .contentType(JSON)
@@ -70,6 +62,34 @@ public class WebhookResourceIT {
                 .body("description", is("description"))
                 .body("status", is("ACTIVE"))
                 .body("subscriptions", containsInAnyOrder("card_payment_captured"));
+    }
+
+    @Test
+    public void shouldCreateRejectWebhookForKnownErrorIdentifiers() {
+        given()
+                .port(port)
+                .contentType(JSON)
+                .body(createWebhookRequestBody("http://gov.uk", true))
+                .post("/v1/webhook")
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
+                .body("error_identifier", is("callback_url_protocol_not_supported"));
+        given()
+                .port(port)
+                .contentType(JSON)
+                .body(createWebhookRequestBody("http:/0/gov.uk", true))
+                .post("/v1/webhook")
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
+                .body("error_identifier", is("callback_url_malformed"));
+        given()
+                .port(port)
+                .contentType(JSON)
+                .body(createWebhookRequestBody("https://gov.anotherdomain.com", true))
+                .post("/v1/webhook")
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
+                .body("error_identifier", is("callback_url_not_on_allow_list"));
     }
 
     @Test
@@ -147,6 +167,18 @@ public class WebhookResourceIT {
                 .get("/v1/webhook/not-real-external-id?service_id=not-real-service-id")
                 .then()
                 .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+    }
+
+    private String createWebhookRequestBody(String callbackUrl, Boolean isLive) {
+       return """
+                {
+                  "service_id": "test_service_id",
+                  "live": %s,
+                  "callback_url": "%s",
+                  "description": "description",
+                  "subscriptions": ["card_payment_captured"]
+                }
+                """.formatted(isLive, callbackUrl);
     }
 
     private String setupWebhookWithMessages(String externalId, String messageExternalId) {

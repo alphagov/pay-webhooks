@@ -161,6 +161,43 @@ public class WebhookUpdateIT {
                 .then()
                 .statusCode(200)
                 .body("subscriptions", containsInAnyOrder("card_payment_captured"));
+    }
 
+    @Test
+    public void shouldRejectCallbackUrlUpdateWithAppropriateErrorIdentifier() throws JsonProcessingException {
+        var json = """
+                {
+                  "service_id": "test_service_id",
+                  "live": true,
+                  "callback_url": "https://gov.uk",
+                  "description": "original description",
+                  "subscriptions": ["card_payment_captured"]
+                }
+                """;
+
+        var response = given().port(port)
+                .contentType(JSON)
+                .body(json)
+                .post("/v1/webhook")
+                .then()
+                .extract()
+                .as(Map.class);
+
+        var payload = singletonList(Map.of(
+                "path", "callback_url",
+                "op", "replace",
+                "value", "https://notgov.uk"));
+
+        var externalId = response.get("external_id");
+        var serviceId = response.get("service_id");
+
+        var mapper = new ObjectMapper();
+        given().port(port)
+                .contentType(JSON)
+                .body(mapper.writeValueAsString(payload))
+                .patch(format("/v1/webhook/%s?service_id=%s", externalId, serviceId))
+                .then()
+                .statusCode(400)
+                .body("error_identifier", is("callback_url_not_on_allow_list"));
     }
 }
