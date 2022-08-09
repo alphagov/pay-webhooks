@@ -34,7 +34,7 @@ public class WebhookResourceIT {
         var json = """
                 {
                   "service_id": "test_service_id",
-                  "live": true,
+                  "live": false,
                   "callback_url": "https://example.com",
                   "description": "description",
                   "subscriptions": ["card_payment_captured"]
@@ -48,7 +48,7 @@ public class WebhookResourceIT {
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("service_id", is("test_service_id"))
-                .body("live", is(true))
+                .body("live", is(false))
                 .body("callback_url", is("https://example.com"))
                 .body("description", is("description"))
                 .body("status", is("ACTIVE"))
@@ -65,7 +65,7 @@ public class WebhookResourceIT {
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("service_id", is("test_service_id"))
-                .body("live", is(true))
+                .body("live", is(false))
                 .body("callback_url", is("https://example.com"))
                 .body("description", is("description"))
                 .body("status", is("ACTIVE"))

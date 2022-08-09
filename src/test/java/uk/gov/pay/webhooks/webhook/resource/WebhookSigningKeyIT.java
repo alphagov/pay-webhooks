@@ -36,7 +36,7 @@ public class WebhookSigningKeyIT {
         var json = """
                 {
                   "service_id": "test_service_id",
-                  "live": true,
+                  "live": false,
                   "callback_url": "https://example.com",
                   "description": "description",
                   "subscriptions": ["card_payment_captured"]

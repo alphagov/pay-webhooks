@@ -23,6 +23,8 @@ import uk.gov.pay.webhooks.healthcheck.Ping;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.queue.QueueMessageReceiver;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
+import uk.gov.pay.webhooks.webhook.exception.ValidationExceptionMapper;
+import uk.gov.pay.webhooks.webhook.exception.WebhookExceptionMapper;
 import uk.gov.pay.webhooks.webhook.resource.WebhookResource;
 import uk.gov.service.payments.commons.utils.healthchecks.DatabaseHealthCheck;
 import uk.gov.service.payments.commons.utils.metrics.DatabaseMetricsService;
@@ -69,6 +71,9 @@ public class WebhooksApp extends Application<WebhooksConfig> {
         environment.healthChecks().register("database", new DatabaseHealthCheck(configuration.getDataSourceFactory()));
         environment.jersey().register(injector.getInstance(HealthCheckResource.class));
         environment.jersey().register(injector.getInstance(WebhookResource.class));
+
+        environment.jersey().register(new ValidationExceptionMapper());
+        environment.jersey().register(new WebhookExceptionMapper());
 
         if (configuration.getQueueMessageReceiverConfig().isBackgroundProcessingEnabled()) {
             environment.lifecycle().manage(injector.getInstance(QueueMessageReceiver.class));

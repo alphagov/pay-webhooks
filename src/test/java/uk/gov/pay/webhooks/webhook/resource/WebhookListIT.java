@@ -36,7 +36,7 @@ public class WebhookListIT {
         var json = """
                 {
                   "service_id": "test_service_id",
-                  "live": true,
+                  "live": false,
                   "callback_url": "https://example.com",
                   "description": "description",
                   "subscriptions": ["card_payment_captured"]
@@ -56,7 +56,7 @@ public class WebhookListIT {
 
         var listResponse = given().port(port)
                 .contentType(JSON)
-                .get("/v1/webhook?service_id=test_service_id&live=true".formatted(externalId, serviceId))
+                .get("/v1/webhook?service_id=test_service_id&live=false".formatted(externalId, serviceId))
                 .then()
                 .extract().as(List.class);
             assertThat(listResponse.size(),is(equalTo(1)));
@@ -69,7 +69,7 @@ public class WebhookListIT {
         var serviceOne = """
                 {
                   "service_id": "service_one",
-                  "live": true,
+                  "live": false,
                   "callback_url": "https://example.com",
                   "description": "description",
                   "subscriptions": ["card_payment_captured"]
@@ -79,7 +79,7 @@ public class WebhookListIT {
         var serviceTwo = """
                 {
                   "service_id": "service_two",
-                  "live": true,
+                  "live": false,
                   "callback_url": "https://example.com",
                   "description": "description",
                   "subscriptions": ["card_payment_captured"]
@@ -95,7 +95,7 @@ public class WebhookListIT {
         
         var jsonNodeResponse = given().port(port)
                 .contentType(JSON)
-                .get("/v1/webhook?override_service_id_restriction=true&live=true")
+                .get("/v1/webhook?override_service_id_restriction=true&live=false")
                 .then()
                 .extract().as(JsonNode.class);
         

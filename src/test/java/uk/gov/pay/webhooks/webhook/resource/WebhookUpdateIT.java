@@ -35,7 +35,7 @@ public class WebhookUpdateIT {
         var json = """
                 {
                   "service_id": "test_service_id",
-                  "live": true,
+                  "live": false,
                   "callback_url": "https://example.com",
                   "description": "original description",
                   "subscriptions": ["card_payment_captured"]
@@ -59,7 +59,7 @@ public class WebhookUpdateIT {
                         {
                             "path": "callback_url",
                             "op": "replace",
-                            "value": "http://example.org"
+                            "value": "https://example.org"
                         }
                     ]
                 """;
@@ -73,7 +73,7 @@ public class WebhookUpdateIT {
                 .then()
                 .statusCode(200)
                 .body("description", is("new description"))
-                .body("callback_url", is("http://example.org"));
+                .body("callback_url", is("https://example.org"));
 
         given().port(port)
                 .contentType(JSON)
@@ -81,7 +81,7 @@ public class WebhookUpdateIT {
                 .then()
                 .statusCode(200)
                 .body("description", is("new description"))
-                .body("callback_url", is("http://example.org"));
+                .body("callback_url", is("https://example.org"));
     }
 
     @Test
@@ -89,7 +89,7 @@ public class WebhookUpdateIT {
         var json = """
                 {
                   "service_id": "test_service_id",
-                  "live": true,
+                  "live": false,
                   "callback_url": "https://example.com",
                   "description": "original description",
                   "subscriptions": ["card_payment_captured"]
@@ -128,7 +128,7 @@ public class WebhookUpdateIT {
         var json = """
                 {
                   "service_id": "test_service_id",
-                  "live": true,
+                  "live": false,
                   "callback_url": "https://example.com",
                   "description": "original description",
                   "subscriptions": []
