@@ -19,7 +19,7 @@
         <mainClass>uk.gov.pay.webhooks.app.WebhooksApp</mainClass>
         <pay-java-commons.version>1.0.20220808113926</pay-java-commons.version>
         <swagger-version>2.2.2</swagger-version>
-        <pact.version>3.6.15</pact.version>
+        <pact.version>4.3.13</pact.version>
         <PACT_BROKER_URL/>
         <PACT_BROKER_USERNAME/>
         <PACT_BROKER_PASSWORD/>
@@ -260,8 +260,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>au.com.dius</groupId>
-            <artifactId>pact-jvm-consumer-junit_2.12</artifactId>
+            <groupId>au.com.dius.pact.consumer</groupId>
+            <artifactId>junit</artifactId>
             <version>${pact.version}</version>
             <scope>test</scope>
         </dependency>
@@ -270,8 +270,8 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>au.com.dius</groupId>
-                <artifactId>pact-jvm-provider-maven_2.12</artifactId>
+                <groupId>au.com.dius.pact.provider</groupId>
+                <artifactId>maven</artifactId>
                 <version>${pact.version}</version>
                 <configuration>
                     <pactDirectory>target/pacts</pactDirectory>
@@ -395,7 +395,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 </project>
