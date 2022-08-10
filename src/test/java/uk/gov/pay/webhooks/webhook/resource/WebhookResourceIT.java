@@ -73,7 +73,7 @@ public class WebhookResourceIT {
                 .post("/v1/webhook")
                 .then()
                 .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
-                .body("error_identifier", is("callback_url_protocol_not_supported"));
+                .body("error_identifier", is("CALLBACK_URL_PROTOCOL_NOT_SUPPORTED"));
         given()
                 .port(port)
                 .contentType(JSON)
@@ -81,7 +81,7 @@ public class WebhookResourceIT {
                 .post("/v1/webhook")
                 .then()
                 .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
-                .body("error_identifier", is("callback_url_malformed"));
+                .body("error_identifier", is("CALLBACK_URL_MALFORMED"));
         given()
                 .port(port)
                 .contentType(JSON)
@@ -89,7 +89,7 @@ public class WebhookResourceIT {
                 .post("/v1/webhook")
                 .then()
                 .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
-                .body("error_identifier", is("callback_url_not_on_allow_list"));
+                .body("error_identifier", is("CALLBACK_URL_NOT_ON_ALLOW_LIST"));
     }
 
     @Test

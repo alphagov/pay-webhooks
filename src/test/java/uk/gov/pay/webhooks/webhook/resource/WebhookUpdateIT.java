@@ -198,6 +198,6 @@ public class WebhookUpdateIT {
                 .patch(format("/v1/webhook/%s?service_id=%s", externalId, serviceId))
                 .then()
                 .statusCode(400)
-                .body("error_identifier", is("callback_url_not_on_allow_list"));
+                .body("error_identifier", is("CALLBACK_URL_NOT_ON_ALLOW_LIST"));
     }
 }
