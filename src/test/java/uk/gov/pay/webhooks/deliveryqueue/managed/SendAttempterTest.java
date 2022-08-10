@@ -15,6 +15,7 @@ import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.WebhookMessageSender;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
+import uk.gov.pay.webhooks.validations.CallbackUrlDomainNotOnAllowListException;
 import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
@@ -132,7 +133,7 @@ class SendAttempterTest {
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant());
         given(mockHttpResponse.statusCode()).willReturn(404);
-        
+       
         sendAttempter.attemptSend(enqueuedItem);
         assertThat(enqueuedItem.getDeliveryStatus(), is(WebhookDeliveryQueueEntity.DeliveryStatus.FAILED));
 
@@ -140,6 +141,16 @@ class SendAttempterTest {
             assertThat(webhookDeliveryQueueDao.nextToSend((Instant.parse("2007-12-03T10:15:30.00Z"))), is(notNullValue()));
             assertThat(webhookDeliveryQueueDao.countFailed(webhookMessageEntity), is(1L));
         });
-        
+    }
+
+    @Test
+    void sendAttempterDoesNotEnqueueRetryForRejectedForSecurityRules() throws IOException, InvalidKeyException, InterruptedException {
+        given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willThrow(CallbackUrlDomainNotOnAllowListException.class);
+        var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
+        var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
+        var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant());
+
+        sendAttempter.attemptSend(enqueuedItem);
+        assertThat(enqueuedItem.getDeliveryStatus(), is(WebhookDeliveryQueueEntity.DeliveryStatus.WONT_SEND));
     }
 }

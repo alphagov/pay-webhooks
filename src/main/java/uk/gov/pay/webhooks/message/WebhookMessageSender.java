@@ -2,6 +2,8 @@ package uk.gov.pay.webhooks.message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
+import uk.gov.pay.webhooks.validations.CallbackUrlDomainNotOnAllowListException;
+import uk.gov.pay.webhooks.validations.CallbackUrlService;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -19,18 +21,27 @@ public class WebhookMessageSender {
 
     private final HttpClient httpClient;
     private final WebhookMessageSignatureGenerator webhookMessageSignatureGenerator;
+    private final CallbackUrlService callbackUrlService;
     private final ObjectMapper objectMapper;
 
     @Inject
     public WebhookMessageSender(HttpClient httpClient,
                                 ObjectMapper objectMapper,
+                                CallbackUrlService callbackUrlService,
                                 WebhookMessageSignatureGenerator webhookMessageSignatureGenerator) {
         this.httpClient = httpClient;
         this.webhookMessageSignatureGenerator = webhookMessageSignatureGenerator;
+        this.callbackUrlService = callbackUrlService;
         this.objectMapper = objectMapper;
     }
 
-    public HttpResponse<String> sendWebhookMessage(WebhookMessageEntity webhookMessage) throws IOException, InterruptedException, InvalidKeyException {
+    public HttpResponse<String> sendWebhookMessage(WebhookMessageEntity webhookMessage) throws IOException, InterruptedException, InvalidKeyException, CallbackUrlDomainNotOnAllowListException {
+        var webhook = webhookMessage.getWebhookEntity();
+
+        if (webhook.isLive()) {
+            callbackUrlService.validateCallbackUrl(webhook.getCallbackUrl(), webhook.isLive());
+        }
+
         URI uri = URI.create(webhookMessage.getWebhookEntity().getCallbackUrl());
         String body = objectMapper.writeValueAsString(WebhookMessageBody.from(webhookMessage));
         String signingKey = webhookMessage.getWebhookEntity().getSigningKey();

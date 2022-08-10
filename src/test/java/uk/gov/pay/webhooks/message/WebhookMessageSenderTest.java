@@ -12,6 +12,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
+import uk.gov.pay.webhooks.validations.CallbackUrlDomainNotOnAllowListException;
+import uk.gov.pay.webhooks.validations.CallbackUrlService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import java.io.IOException;
@@ -29,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static uk.gov.pay.webhooks.message.WebhookMessageSender.SIGNATURE_HEADER_NAME;
 import static uk.gov.pay.webhooks.message.WebhookMessageSender.TIMEOUT;
 
@@ -61,6 +65,9 @@ class WebhookMessageSenderTest {
     private WebhookMessageSignatureGenerator mockWebhookMessageSignatureGenerator;
 
     @Mock
+    private CallbackUrlService callbackUrlService;
+
+    @Mock
     private HttpResponse<String> mockHttpResponse;
     
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -76,6 +83,7 @@ class WebhookMessageSenderTest {
         webhookEntity = new WebhookEntity(); 
         webhookEntity.setCallbackUrl(CALLBACK_URL.toString());
         webhookEntity.setSigningKey(SIGNING_KEY);
+        webhookEntity.setLive(true);
 
         webhookMessageEntity = new WebhookMessageEntity();
         webhookMessageEntity.setWebhookEntity(webhookEntity);
@@ -87,14 +95,13 @@ class WebhookMessageSenderTest {
         webhookMessageEntity.setExternalId("externalId");
         webhookMessageEntity.setResourceType("payment");
 
-        given(mockWebhookMessageSignatureGenerator.generate(objectMapper.writeValueAsString(WebhookMessageBody.from(webhookMessageEntity)), SIGNING_KEY)).willReturn(SIGNATURE);
-
-        webhookMessageSender = new WebhookMessageSender(mockHttpClient, objectMapper, mockWebhookMessageSignatureGenerator);
+        webhookMessageSender = new WebhookMessageSender(mockHttpClient, objectMapper, callbackUrlService, mockWebhookMessageSignatureGenerator);
     }
 
     @Test
     void constructsHttpRequestAndReturnsHttpResponse() throws IOException, InvalidKeyException, InterruptedException {
         var httpRequestArgumentCaptor = ArgumentCaptor.forClass(HttpRequest.class);
+        given(mockWebhookMessageSignatureGenerator.generate(objectMapper.writeValueAsString(WebhookMessageBody.from(webhookMessageEntity)), SIGNING_KEY)).willReturn(SIGNATURE);
         given(mockHttpClient.send(httpRequestArgumentCaptor.capture(), eq(HttpResponse.BodyHandlers.ofString()))).willReturn(mockHttpResponse);
 
         HttpResponse<String> result = webhookMessageSender.sendWebhookMessage(webhookMessageEntity);
@@ -109,14 +116,16 @@ class WebhookMessageSenderTest {
     }
 
     @Test
-    void propagatesIOException() throws IOException, InterruptedException {
+    void propagatesIOException() throws IOException, InterruptedException, InvalidKeyException {
         given(mockHttpClient.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).willThrow(IOException.class);
+        given(mockWebhookMessageSignatureGenerator.generate(objectMapper.writeValueAsString(WebhookMessageBody.from(webhookMessageEntity)), SIGNING_KEY)).willReturn(SIGNATURE);
         assertThrows(IOException.class, () -> webhookMessageSender.sendWebhookMessage(webhookMessageEntity));
     }
 
     @Test
-    void propagatesInterruptedException() throws IOException, InterruptedException {
+    void propagatesInterruptedException() throws IOException, InterruptedException, InvalidKeyException {
         given(mockHttpClient.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).willThrow(InterruptedException.class);
+        given(mockWebhookMessageSignatureGenerator.generate(objectMapper.writeValueAsString(WebhookMessageBody.from(webhookMessageEntity)), SIGNING_KEY)).willReturn(SIGNATURE);
         assertThrows(InterruptedException.class, () -> webhookMessageSender.sendWebhookMessage(webhookMessageEntity));
     }
 
@@ -124,6 +133,12 @@ class WebhookMessageSenderTest {
     void propagatesInvalidKeyException() throws InvalidKeyException, JsonProcessingException {
         given(mockWebhookMessageSignatureGenerator.generate(objectMapper.writeValueAsString(WebhookMessageBody.from(webhookMessageEntity)), SIGNING_KEY)).willThrow(InvalidKeyException.class);
         assertThrows(InvalidKeyException.class, () -> webhookMessageSender.sendWebhookMessage(webhookMessageEntity));
+    }
+
+    @Test
+    void propagatesAndValidatesForLiveDataCallbackUrlDomainNotOnAllowListException() {
+        doThrow(CallbackUrlDomainNotOnAllowListException.class).when(callbackUrlService).validateCallbackUrl(webhookEntity.getCallbackUrl(), webhookEntity.isLive());
+        assertThrows(CallbackUrlDomainNotOnAllowListException.class, () -> webhookMessageSender.sendWebhookMessage(webhookMessageEntity));
     }
 
 }

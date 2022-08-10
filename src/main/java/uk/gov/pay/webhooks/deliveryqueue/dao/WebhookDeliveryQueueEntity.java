@@ -75,7 +75,8 @@ public class WebhookDeliveryQueueEntity {
     public enum DeliveryStatus {
         PENDING,
         SUCCESSFUL,
-        FAILED
+        FAILED,
+        WONT_SEND
     }
 
 
