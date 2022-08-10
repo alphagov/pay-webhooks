@@ -36,7 +36,7 @@ public class WebhookSigningKeyIT {
         var json = """
                 {
                   "service_id": "test_service_id",
-                  "live": true,
+                  "live": false,
                   "callback_url": "https://example.com",
                   "description": "description",
                   "subscriptions": ["card_payment_captured"]
@@ -59,7 +59,7 @@ public class WebhookSigningKeyIT {
                 .get("/v1/webhook/%s/signing-key?service_id=%s".formatted(externalId, serviceId))
                 .then()
                 .statusCode(200)
-                .body("signing_key", startsWith("webhook_live_"))
+                .body("signing_key", startsWith("webhook_test_"))
                 .extract()
                 .as(Map.class);
 
@@ -72,7 +72,7 @@ public class WebhookSigningKeyIT {
                 .then()
                 .statusCode(200)
                 .body("signing_key", not(originalSigningKey))
-                .body("signing_key", startsWith("webhook_live_"))
+                .body("signing_key", startsWith("webhook_test_"))
                 .extract()
                 .as(Map.class);
 

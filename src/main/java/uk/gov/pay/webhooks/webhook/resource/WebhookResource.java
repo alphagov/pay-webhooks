@@ -32,7 +32,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
@@ -65,7 +64,8 @@ public class WebhookResource {
                     @ApiResponse(responseCode = "400", description = "Invalid payload (ex: non existent event type)")
             }
     )
-    public WebhookResponse createWebhook(@NotNull @Valid CreateWebhookRequest webhookRequest) throws MalformedURLException {
+    public WebhookResponse createWebhook(@NotNull @Valid CreateWebhookRequest webhookRequest) {
+        webhookRequestValidator.validate(webhookRequest);
         WebhookEntity webhookEntity = webhookService.createWebhook(webhookRequest);
         return WebhookResponse.from(webhookEntity);
     }
@@ -236,11 +236,8 @@ public class WebhookResource {
                                                  "                            \"value\": \"new description\"" +
                                                  "                        }"))
                                                  JsonNode payload) {
-        try {
-            webhookRequestValidator.validateJsonPatch(payload);
-        } catch (ValidationException e) {
-            throw new BadRequestException(String.join(", ", e.getErrors()));
-        }
+        var webhook = webhookService.findByExternalId(externalId, serviceId).orElseThrow(NotFoundException::new);
+        webhookRequestValidator.validate(payload, webhook.isLive());
         List<JsonPatchRequest> patchRequests = StreamSupport.stream(payload.spliterator(), false)
                 .map(JsonPatchRequest::from)
                 .toList();

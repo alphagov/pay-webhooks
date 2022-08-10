@@ -1,9 +1,12 @@
 package uk.gov.pay.webhooks.validations;
 
-public class CallbackUrlProtocolNotSupported extends RuntimeException {
+import uk.gov.pay.webhooks.webhook.exception.WebhooksErrorIdentifier;
+import uk.gov.pay.webhooks.webhook.exception.WebhooksException;
+
+public class CallbackUrlProtocolNotSupported extends WebhooksException {
 
     public CallbackUrlProtocolNotSupported(String message) {
-        super(message);
+        super(message, WebhooksErrorIdentifier.CALLBACK_URL_PROTOCOL_NOT_SUPPORTED);
     }
 
 }

@@ -1,6 +1,7 @@
 package uk.gov.pay.webhooks.validations;
 
 import com.google.common.net.InternetDomainName;
+import com.google.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
 
@@ -13,18 +14,19 @@ import static java.util.stream.Collectors.toUnmodifiableSet;
 public class CallbackUrlService {
     private final Set<InternetDomainName> allowedDomains;
 
+    @Inject
     public CallbackUrlService(WebhooksConfig webhooksConfig) {
-        this.allowedDomains = webhooksConfig.getLiveDataAllowHosts().stream().map(InternetDomainName::from).collect(toUnmodifiableSet());
+        this.allowedDomains = webhooksConfig.getLiveDataAllowDomains().stream().map(InternetDomainName::from).collect(toUnmodifiableSet());
     }
 
-    public void validateCallbackUrl(String callbackUrl, Boolean contextIsLive) throws MalformedURLException {
+    public void validateCallbackUrl(String callbackUrl, Boolean contextIsLive) {
         var url = validateAndGetUrlIsWellFormed(callbackUrl);
         if (Boolean.TRUE.equals(contextIsLive)) {
             validateUrlIsInLiveDomains(url);
         }
     }
 
-    private URL validateAndGetUrlIsWellFormed(String callbackUrl) throws MalformedURLException {
+    private URL validateAndGetUrlIsWellFormed(String callbackUrl) {
         URL url;
         try {
             url = new URL(callbackUrl);

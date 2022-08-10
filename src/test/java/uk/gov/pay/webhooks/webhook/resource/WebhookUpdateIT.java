@@ -35,7 +35,7 @@ public class WebhookUpdateIT {
         var json = """
                 {
                   "service_id": "test_service_id",
-                  "live": true,
+                  "live": false,
                   "callback_url": "https://example.com",
                   "description": "original description",
                   "subscriptions": ["card_payment_captured"]
@@ -59,7 +59,7 @@ public class WebhookUpdateIT {
                         {
                             "path": "callback_url",
                             "op": "replace",
-                            "value": "http://example.org"
+                            "value": "https://example.org"
                         }
                     ]
                 """;
@@ -73,7 +73,7 @@ public class WebhookUpdateIT {
                 .then()
                 .statusCode(200)
                 .body("description", is("new description"))
-                .body("callback_url", is("http://example.org"));
+                .body("callback_url", is("https://example.org"));
 
         given().port(port)
                 .contentType(JSON)
@@ -81,7 +81,7 @@ public class WebhookUpdateIT {
                 .then()
                 .statusCode(200)
                 .body("description", is("new description"))
-                .body("callback_url", is("http://example.org"));
+                .body("callback_url", is("https://example.org"));
     }
 
     @Test
@@ -89,7 +89,7 @@ public class WebhookUpdateIT {
         var json = """
                 {
                   "service_id": "test_service_id",
-                  "live": true,
+                  "live": false,
                   "callback_url": "https://example.com",
                   "description": "original description",
                   "subscriptions": ["card_payment_captured"]
@@ -128,7 +128,7 @@ public class WebhookUpdateIT {
         var json = """
                 {
                   "service_id": "test_service_id",
-                  "live": true,
+                  "live": false,
                   "callback_url": "https://example.com",
                   "description": "original description",
                   "subscriptions": []
@@ -161,6 +161,43 @@ public class WebhookUpdateIT {
                 .then()
                 .statusCode(200)
                 .body("subscriptions", containsInAnyOrder("card_payment_captured"));
+    }
 
+    @Test
+    public void shouldRejectCallbackUrlUpdateWithAppropriateErrorIdentifier() throws JsonProcessingException {
+        var json = """
+                {
+                  "service_id": "test_service_id",
+                  "live": true,
+                  "callback_url": "https://gov.uk",
+                  "description": "original description",
+                  "subscriptions": ["card_payment_captured"]
+                }
+                """;
+
+        var response = given().port(port)
+                .contentType(JSON)
+                .body(json)
+                .post("/v1/webhook")
+                .then()
+                .extract()
+                .as(Map.class);
+
+        var payload = singletonList(Map.of(
+                "path", "callback_url",
+                "op", "replace",
+                "value", "https://notgov.uk"));
+
+        var externalId = response.get("external_id");
+        var serviceId = response.get("service_id");
+
+        var mapper = new ObjectMapper();
+        given().port(port)
+                .contentType(JSON)
+                .body(mapper.writeValueAsString(payload))
+                .patch(format("/v1/webhook/%s?service_id=%s", externalId, serviceId))
+                .then()
+                .statusCode(400)
+                .body("error_identifier", is("CALLBACK_URL_NOT_ON_ALLOW_LIST"));
     }
 }
