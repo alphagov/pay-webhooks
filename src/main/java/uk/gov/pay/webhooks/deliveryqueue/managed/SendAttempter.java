@@ -8,17 +8,20 @@ import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.message.WebhookMessageSender;
+import uk.gov.pay.webhooks.validations.CallbackUrlDomainNotOnAllowListException;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.net.http.HttpTimeoutException;
 import java.security.InvalidKeyException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.InstantSource;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -41,10 +44,15 @@ public class SendAttempter {
     private final InstantSource instantSource;
     private final WebhookMessageSender webhookMessageSender;
 
+    private final List<WebhookDeliveryQueueEntity.DeliveryStatus> terminalStatuses = List.of(
+            WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL,
+            WebhookDeliveryQueueEntity.DeliveryStatus.WILL_NOT_SEND
+    );
+
     @Inject
     public SendAttempter(WebhookDeliveryQueueDao webhookDeliveryQueueDao,
                          InstantSource instantSource,
-                         WebhookMessageSender webhookMessageSender, 
+                         WebhookMessageSender webhookMessageSender,
                          Environment environment) {
         this.webhookDeliveryQueueDao = webhookDeliveryQueueDao;
         this.instantSource = instantSource;
@@ -53,17 +61,17 @@ public class SendAttempter {
     }
 
     public void attemptSend(WebhookDeliveryQueueEntity queueItem) {
+        var webhook = queueItem.getWebhookMessageEntity().getWebhookEntity();
         var retryCount = webhookDeliveryQueueDao.countFailed(queueItem.getWebhookMessageEntity());
         Instant start = instantSource.instant();
 
         try {
-            var url = queueItem.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl();
-            var uri = new URI(url);
-            
+            var url = new URL(webhook.getCallbackUrl());
+
             LOGGER.info(
                     Markers.append(WEBHOOK_CALLBACK_URL, queueItem.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl())
                             .and(Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount))
-                            .and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, uri.getHost()))
+                            .and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, url.getHost()))
                             .and(Markers.append(WEBHOOK_MESSAGE_TIME_TO_EMIT_IN_MILLIS, Duration.between(queueItem.getCreatedDate(), instantSource.instant()).toMillis())),
                     "Sending webhook message"
             ); 
@@ -84,6 +92,12 @@ public class SendAttempter {
                     "Exception caught by request"
             );
             handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, null, e.getMessage(), retryCount, start);
+        } catch (CallbackUrlDomainNotOnAllowListException e) {
+            LOGGER.error(
+                    Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, e.getUrl()),
+                    "Attempt to send to domain missing from allow list blocked"
+            );
+            handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.WILL_NOT_SEND, null, "Violates security rules", retryCount, start);
         } catch (Exception e) {
             var responseTime = Duration.between(start, instantSource.instant());
             // handle all exceptions at this level to make sure that the retry mechanism is allowed to work as designed
@@ -95,7 +109,7 @@ public class SendAttempter {
             handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, null, "Unknown error", retryCount, start);
         }
     }
-    
+
     private void handleResponse(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, WebhookDeliveryQueueEntity.DeliveryStatus status, Integer statusCode, String reason, Long retryCount, Instant startTime) {
         var responseTime = Duration.between(startTime, instantSource.instant());
         LOGGER.info(
@@ -108,7 +122,7 @@ public class SendAttempter {
         ); 
         webhookDeliveryQueueDao.recordResult(webhookDeliveryQueueEntity, reason, responseTime, statusCode, status, metricRegistry);
         
-        if (!status.equals(WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL)) {
+        if (!terminalStatuses.contains(status)) {
             enqueueRetry(webhookDeliveryQueueEntity, nextRetryIn(retryCount));
         }
     }

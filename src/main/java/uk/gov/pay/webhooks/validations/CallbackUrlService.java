@@ -2,7 +2,10 @@ package uk.gov.pay.webhooks.validations;
 
 import com.google.common.net.InternetDomainName;
 import com.google.inject.Inject;
+import net.logstash.logback.marker.Markers;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
 
 import java.net.MalformedURLException;
@@ -10,8 +13,11 @@ import java.net.URL;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toUnmodifiableSet;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_CALLBACK_URL;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_CALLBACK_URL_DOMAIN;
 
 public class CallbackUrlService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CallbackUrlService.class);
     private final Set<InternetDomainName> allowedDomains;
 
     @Inject
@@ -57,6 +63,11 @@ public class CallbackUrlService {
             }
             domain = domain.parent();
         }
-        throw new CallbackUrlDomainNotOnAllowListException(callbackUrl.getHost() + " is not in the allow list");
+        LOGGER.warn(
+                Markers.append(WEBHOOK_CALLBACK_URL, callbackUrl.toString())
+                        .and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, callbackUrl.getHost())),
+                "Cannot set domains not found in allow list"
+        );
+        throw new CallbackUrlDomainNotOnAllowListException(callbackUrl.getHost() + " is not in the allow list", callbackUrl);
     }
 }
