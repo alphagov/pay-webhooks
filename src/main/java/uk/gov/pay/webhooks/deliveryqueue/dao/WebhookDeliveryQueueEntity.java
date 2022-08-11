@@ -76,7 +76,7 @@ public class WebhookDeliveryQueueEntity {
         PENDING,
         SUCCESSFUL,
         FAILED,
-        WONT_SEND
+        WILL_NOT_SEND
     }
 
 

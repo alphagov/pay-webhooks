@@ -9,12 +9,12 @@ import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.message.WebhookMessageSender;
 import uk.gov.pay.webhooks.validations.CallbackUrlDomainNotOnAllowListException;
-import uk.gov.pay.webhooks.validations.CallbackUrlService;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.net.http.HttpTimeoutException;
 import java.security.InvalidKeyException;
 import java.time.Duration;
@@ -46,7 +46,7 @@ public class SendAttempter {
 
     private final List<WebhookDeliveryQueueEntity.DeliveryStatus> terminalStatuses = List.of(
             WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL,
-            WebhookDeliveryQueueEntity.DeliveryStatus.WONT_SEND
+            WebhookDeliveryQueueEntity.DeliveryStatus.WILL_NOT_SEND
     );
 
     @Inject
@@ -66,12 +66,12 @@ public class SendAttempter {
         Instant start = instantSource.instant();
 
         try {
-            var uri = new URI(webhook.getCallbackUrl());
+            var url = new URL(webhook.getCallbackUrl());
 
             LOGGER.info(
                     Markers.append(WEBHOOK_CALLBACK_URL, queueItem.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl())
                             .and(Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount))
-                            .and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, uri.getHost()))
+                            .and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, url.getHost()))
                             .and(Markers.append(WEBHOOK_MESSAGE_TIME_TO_EMIT_IN_MILLIS, Duration.between(queueItem.getCreatedDate(), instantSource.instant()).toMillis())),
                     "Sending webhook message"
             ); 
@@ -94,10 +94,10 @@ public class SendAttempter {
             handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, null, e.getMessage(), retryCount, start);
         } catch (CallbackUrlDomainNotOnAllowListException e) {
             LOGGER.error(
-                    Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, URI.create(webhook.getCallbackUrl()).getHost()),
+                    Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, e.getUrl()),
                     "Attempt to send to domain missing from allow list blocked"
             );
-            handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.WONT_SEND, null, "Violates security rules", retryCount, start);
+            handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.WILL_NOT_SEND, null, "Violates security rules", retryCount, start);
         } catch (Exception e) {
             var responseTime = Duration.between(start, instantSource.instant());
             // handle all exceptions at this level to make sure that the retry mechanism is allowed to work as designed

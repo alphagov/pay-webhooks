@@ -151,6 +151,6 @@ class SendAttempterTest {
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant());
 
         sendAttempter.attemptSend(enqueuedItem);
-        assertThat(enqueuedItem.getDeliveryStatus(), is(WebhookDeliveryQueueEntity.DeliveryStatus.WONT_SEND));
+        assertThat(enqueuedItem.getDeliveryStatus(), is(WebhookDeliveryQueueEntity.DeliveryStatus.WILL_NOT_SEND));
     }
 }
