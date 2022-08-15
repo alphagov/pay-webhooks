@@ -3,7 +3,7 @@ package uk.gov.pay.webhooks.webhook.dao.entity;
 import java.util.stream.Stream;
 
 public enum WebhookStatus {
-    ACTIVE, INACTIVE;
+    ACTIVE, INACTIVE, DISABLED;
 
     public static WebhookStatus of(String name) {
         return Stream.of(WebhookStatus.values())

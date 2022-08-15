@@ -124,6 +124,45 @@ public class WebhookUpdateIT {
     }
 
     @Test
+    public void shouldMakeWebhookDisabled() throws JsonProcessingException {
+        var json = """
+                {
+                  "service_id": "test_service_id",
+                  "live": false,
+                  "callback_url": "https://example.com",
+                  "description": "original description",
+                  "subscriptions": ["card_payment_captured"]
+                }
+                """;
+
+        var response = given().port(port)
+                .contentType(JSON)
+                .body(json)
+                .post("/v1/webhook")
+                .then()
+                .extract()
+                .as(Map.class);
+
+        var payload = singletonList(Map.of(
+                "path", "status",
+                "op", "replace",
+                "value", "DISABLED"));
+
+        var externalId = response.get("external_id");
+        var serviceId = response.get("service_id");
+
+
+        var mapper = new ObjectMapper();
+        given().port(port)
+                .contentType(JSON)
+                .body(mapper.writeValueAsString(payload))
+                .patch(format("/v1/webhook/%s?service_id=%s", externalId, serviceId))
+                .then()
+                .statusCode(200)
+                .body("status", is("DISABLED"));
+    }
+
+    @Test
     public void shouldUpdateSubscriptions() {
         var json = """
                 {

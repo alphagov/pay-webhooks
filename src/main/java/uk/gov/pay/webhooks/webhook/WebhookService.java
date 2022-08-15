@@ -131,7 +131,12 @@ public class WebhookService {
         return list(event.live(), event.serviceId())
                 .stream()
                 .filter(webhook -> webhookHasSubscriptionForEvent(webhook, event))
+                .filter(this::webhookIsNotDisabled)
                 .toList();
+    }
+
+    private boolean webhookIsNotDisabled(WebhookEntity webhook) {
+        return webhook.getStatus() != WebhookStatus.DISABLED;
     }
 
     private boolean webhookHasSubscriptionForEvent(WebhookEntity webhook, InternalEvent event) {

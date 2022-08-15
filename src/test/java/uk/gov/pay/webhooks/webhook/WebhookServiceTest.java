@@ -12,6 +12,7 @@ import uk.gov.pay.webhooks.queue.InternalEvent;
 import uk.gov.pay.webhooks.util.IdGenerator;
 import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
+import uk.gov.pay.webhooks.webhook.dao.entity.WebhookStatus;
 import uk.gov.pay.webhooks.webhook.resource.CreateWebhookRequest;
 
 import java.time.Instant;
@@ -113,6 +114,21 @@ class WebhookServiceTest {
         assertThat(subscribedWebhooks.size(), is(1));
         var subscribedWebhook = subscribedWebhooks.get(0);
         assertThat(subscribedWebhook.getSubscriptions(), hasItem(capturedEventType));
+    }
+
+    @Test
+    public void shouldNotReturnDisabledSubscribedWebhooks() {
+        var capturedEventType = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
+        var disabledWebhookSubscribedToCaptureEvent = new WebhookEntity();
+        disabledWebhookSubscribedToCaptureEvent.setStatus(WebhookStatus.DISABLED);
+        disabledWebhookSubscribedToCaptureEvent.addSubscription(capturedEventType);
+        when(webhookDao.list(live, serviceId))
+                .thenReturn(List.of(disabledWebhookSubscribedToCaptureEvent));
+        var event = new InternalEvent("CAPTURE_CONFIRMED", serviceId, live, "resource_id", null, instantSource.instant(), "PAYMENT");
+
+        var subscribedWebhooks = webhookService.getWebhooksSubscribedToEvent(event);
+
+        assertThat(subscribedWebhooks.size(), is(0));
     }
 
     @Test
