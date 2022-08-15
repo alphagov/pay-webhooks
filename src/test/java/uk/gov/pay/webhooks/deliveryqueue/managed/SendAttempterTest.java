@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.pay.webhooks.deliveryqueue.WebhookNotActiveException;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
@@ -146,6 +147,17 @@ class SendAttempterTest {
     @Test
     void sendAttempterDoesNotEnqueueRetryForRejectedForSecurityRules() throws IOException, InvalidKeyException, InterruptedException {
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willThrow(CallbackUrlDomainNotOnAllowListException.class);
+        var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
+        var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
+        var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant());
+
+        sendAttempter.attemptSend(enqueuedItem);
+        assertThat(enqueuedItem.getDeliveryStatus(), is(WebhookDeliveryQueueEntity.DeliveryStatus.WILL_NOT_SEND));
+    }
+
+    @Test
+    void sendAttempterDoesNotEnqueueRetryForNotActiveWebhooks() throws IOException, InvalidKeyException, InterruptedException {
+        given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willThrow(WebhookNotActiveException.class);
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant());

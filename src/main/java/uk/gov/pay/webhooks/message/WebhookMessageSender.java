@@ -1,9 +1,11 @@
 package uk.gov.pay.webhooks.message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import uk.gov.pay.webhooks.deliveryqueue.WebhookNotActiveException;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.validations.CallbackUrlDomainNotOnAllowListException;
 import uk.gov.pay.webhooks.validations.CallbackUrlService;
+import uk.gov.pay.webhooks.webhook.dao.entity.WebhookStatus;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -40,6 +42,9 @@ public class WebhookMessageSender {
 
         if (webhook.isLive()) {
             callbackUrlService.validateCallbackUrl(webhook.getCallbackUrl(), webhook.isLive());
+        }
+        if (webhook.getStatus() != WebhookStatus.ACTIVE) {
+            throw new WebhookNotActiveException("Webhook must be active to send messages");
         }
 
         URI uri = URI.create(webhookMessage.getWebhookEntity().getCallbackUrl());

@@ -15,6 +15,7 @@ import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.validations.CallbackUrlDomainNotOnAllowListException;
 import uk.gov.pay.webhooks.validations.CallbackUrlService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
+import uk.gov.pay.webhooks.webhook.dao.entity.WebhookStatus;
 
 import java.io.IOException;
 import java.net.URI;
@@ -81,6 +82,7 @@ class WebhookMessageSenderTest {
         jsonPayload = objectMapper.readTree(PAYLOAD);
 
         webhookEntity = new WebhookEntity(); 
+        webhookEntity.setStatus(WebhookStatus.ACTIVE);
         webhookEntity.setCallbackUrl(CALLBACK_URL.toString());
         webhookEntity.setSigningKey(SIGNING_KEY);
         webhookEntity.setLive(true);

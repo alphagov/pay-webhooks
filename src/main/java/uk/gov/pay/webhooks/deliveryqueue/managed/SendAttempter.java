@@ -5,6 +5,7 @@ import io.dropwizard.setup.Environment;
 import net.logstash.logback.marker.Markers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.pay.webhooks.deliveryqueue.WebhookNotActiveException;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.message.WebhookMessageSender;
@@ -92,6 +93,9 @@ public class SendAttempter {
                     "Exception caught by request"
             );
             handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, null, e.getMessage(), retryCount, start);
+        } catch (WebhookNotActiveException e) {
+            LOGGER.info("Not sending webhook message for non-active webhook");
+            handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.WILL_NOT_SEND, null, "Webhook not active", retryCount, start);
         } catch (CallbackUrlDomainNotOnAllowListException e) {
             LOGGER.error(
                     Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, e.getUrl()),
