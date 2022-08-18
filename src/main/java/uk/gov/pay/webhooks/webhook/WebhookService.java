@@ -139,6 +139,6 @@ public class WebhookService {
                 .map(EventTypeEntity::getName)
                 .map(EventMapper::getInternalEventNameFor)
                 .flatMap(Optional::stream)
-                .anyMatch(internalEventName -> internalEventName.equals(event.eventType()));
+                .anyMatch(internalEventName -> internalEventName.contains(event.eventType()));
     }
 }
