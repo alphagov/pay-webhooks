@@ -12,7 +12,11 @@ public enum EventTypeName {
     @JsonProperty("card_payment_captured")
     CARD_PAYMENT_CAPTURED("card_payment_captured"),
     @JsonProperty("card_payment_refunded")
-    CARD_PAYMENT_REFUNDED("card_payment_refunded");
+    CARD_PAYMENT_REFUNDED("card_payment_refunded"),
+    @JsonProperty("card_payment_failed")
+    CARD_PAYMENT_FAILED("card_payment_failed"),
+    @JsonProperty("card_payment_expired")
+    CARD_PAYMENT_EXPIRED("card_payment_expired");
 
     private final String name;
     

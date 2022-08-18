@@ -95,7 +95,7 @@ class WebhookRequestValidatorTest {
                         """
         );
         var thrown = assertThrows(ValidationException.class, () -> webhookRequestValidator.validate(request, false));
-        assertThat(thrown.getErrors().get(0), is("Value for path [subscriptions] must be array of [card_payment_started, card_payment_succeeded, card_payment_captured, card_payment_refunded]"));
+        assertThat(thrown.getErrors().get(0), is("Value for path [subscriptions] must be array of [card_payment_started, card_payment_succeeded, card_payment_captured, card_payment_refunded, card_payment_failed, card_payment_expired]"));
     }
 
     @Test
@@ -113,7 +113,7 @@ class WebhookRequestValidatorTest {
                         """
         );
         var thrown = assertThrows(ValidationException.class, () -> webhookRequestValidator.validate(request, false));
-        assertThat(thrown.getErrors().get(0), is("Value for path [subscriptions] must be array of [card_payment_started, card_payment_succeeded, card_payment_captured, card_payment_refunded]"));
+        assertThat(thrown.getErrors().get(0), is("Value for path [subscriptions] must be array of [card_payment_started, card_payment_succeeded, card_payment_captured, card_payment_refunded, card_payment_failed, card_payment_expired]"));
     }
 
     @Test
