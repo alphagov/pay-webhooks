@@ -1,13 +1,11 @@
 package uk.gov.pay.webhooks.webhook;
 
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
-import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.EventMapper;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
-import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.message.resource.WebhookDeliveryQueueResponse;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageResponse;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageSearchResponse;
@@ -137,8 +135,7 @@ public class WebhookService {
     private boolean webhookHasSubscriptionForEvent(WebhookEntity webhook, InternalEvent event) {
         return webhook.getSubscriptions().stream()
                 .map(EventTypeEntity::getName)
-                .map(EventMapper::getInternalEventNameFor)
-                .flatMap(Optional::stream)
-                .anyMatch(internalEventName -> internalEventName.contains(event.eventType()));
+                .map(EventMapper::getInternalEventNamesFor)
+                .anyMatch(internalEventNames -> internalEventNames.contains(event.eventType()));
     }
 }
