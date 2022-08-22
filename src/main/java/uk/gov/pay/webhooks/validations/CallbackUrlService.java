@@ -66,7 +66,7 @@ public class CallbackUrlService {
         LOGGER.warn(
                 Markers.append(WEBHOOK_CALLBACK_URL, callbackUrl.toString())
                         .and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, callbackUrl.getHost())),
-                "Cannot set domains not found in allow list"
+                "Cannot set domains not found in the allow list"
         );
         throw new CallbackUrlDomainNotOnAllowListException(callbackUrl.getHost() + " is not in the allow list", callbackUrl);
     }
