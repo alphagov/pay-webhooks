@@ -89,7 +89,7 @@ public class SendAttempter {
                 handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, statusCode, getReasonFromStatusCode(statusCode), retryCount, start);
             }
         } catch (SocketTimeoutException | HttpTimeoutException | NoHttpResponseException | ConnectTimeoutException e) {
-            LOGGER.info("Request timed out");
+            LOGGER.info("Request timed out %s [%s]".formatted(e.getMessage(), e), e);
             handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, null, "HTTP Timeout", retryCount, start);
         } catch (IOException | InterruptedException | InvalidKeyException e) {
             LOGGER.info(

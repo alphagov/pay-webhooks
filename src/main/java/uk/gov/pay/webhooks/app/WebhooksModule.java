@@ -56,6 +56,12 @@ public class WebhooksModule extends AbstractModule {
 
     @Provides
     @Singleton
+    public java.net.http.HttpClient netHttpClient() {
+        return java.net.http.HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+    }
+
+    @Provides
+    @Singleton
     public HttpClient httpClient() {
         var timeoutInMillis = Math.toIntExact(Duration.ofSeconds(5).toMillis());
         var config = RequestConfig.custom()
