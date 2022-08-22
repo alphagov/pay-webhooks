@@ -5,6 +5,9 @@ import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.testing.junit5.DAOTestExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +28,6 @@ import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import java.io.IOException;
-import java.net.http.HttpResponse;
 import java.security.InvalidKeyException;
 import java.time.Instant;
 import java.time.InstantSource;
@@ -59,14 +61,17 @@ class WebhookMessagePollingServiceTest {
     private WebhookMessageSender webhookMessageSenderMock;
     private SendAttempter sendAttempter;
     @Mock
-    private HttpResponse response;
+    private CloseableHttpResponse response;
+    @Mock
+    private StatusLine statusLine;
 
     @BeforeEach
     void setUp() throws IOException, InvalidKeyException, InterruptedException {
         var environment = mock(Environment.class);
 
         when(environment.metrics()).thenReturn(mock(MetricRegistry.class));
-        when(response.statusCode()).thenReturn(200);
+        when(response.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(200);
         webhookMessageSenderMock = mock(WebhookMessageSender.class);
         when(webhookMessageSenderMock.sendWebhookMessage(any(WebhookMessageEntity.class))).thenReturn(response);
         instantSource = InstantSource.fixed(Instant.now());
@@ -119,7 +124,7 @@ class WebhookMessagePollingServiceTest {
 
     @Test
     public void shouldAppropriatelyHandleFailedEmitAndNotTryAgainImmediately() {
-        when(response.statusCode()).thenReturn(500);
+        when(statusLine.getStatusCode()).thenReturn(500);
         setupOrderedDeliveryQueueWith(List.of("first-external-id"));
 
         database.inTransaction(() -> {
