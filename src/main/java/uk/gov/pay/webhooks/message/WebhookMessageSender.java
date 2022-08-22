@@ -1,6 +1,10 @@
 package uk.gov.pay.webhooks.message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import uk.gov.pay.webhooks.deliveryqueue.WebhookNotActiveException;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.validations.CallbackUrlDomainNotOnAllowListException;
@@ -10,9 +14,6 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookStatus;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.security.InvalidKeyException;
 import java.time.Duration;
 
@@ -37,7 +38,7 @@ public class WebhookMessageSender {
         this.objectMapper = objectMapper;
     }
 
-    public HttpResponse<String> sendWebhookMessage(WebhookMessageEntity webhookMessage) throws IOException, InterruptedException, InvalidKeyException, CallbackUrlDomainNotOnAllowListException {
+    public HttpResponse sendWebhookMessage(WebhookMessageEntity webhookMessage) throws IOException, InterruptedException, InvalidKeyException, CallbackUrlDomainNotOnAllowListException {
         var webhook = webhookMessage.getWebhookEntity();
 
         if (webhook.isLive()) {
@@ -52,14 +53,11 @@ public class WebhookMessageSender {
         String signingKey = webhookMessage.getWebhookEntity().getSigningKey();
         String signature = webhookMessageSignatureGenerator.generate(body, signingKey);
 
-        var httpRequest = HttpRequest.newBuilder(uri)
-                .timeout(TIMEOUT)
-                .header("Content-Type", "application/json")
-                .header(SIGNATURE_HEADER_NAME, signature)
-                .POST(HttpRequest.BodyPublishers.ofString(body))
-                .build();
-
-        return httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+        var request = new HttpPost(uri);
+        request.addHeader("Content-Type", "application/json");
+        request.addHeader(SIGNATURE_HEADER_NAME, signature);
+        request.setEntity(new StringEntity(body));
+        return httpClient.execute(request);
     }
 
 }

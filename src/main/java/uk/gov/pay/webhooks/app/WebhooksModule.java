@@ -5,22 +5,24 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.setup.Environment;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.ssl.SSLContexts;
 import org.hibernate.SessionFactory;
-import uk.gov.pay.webhooks.message.WebhookMessageSender;
 import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
 import uk.gov.pay.webhooks.util.IdGenerator;
 
 import javax.inject.Singleton;
-import java.net.http.HttpClient;
 import java.time.Duration;
 import java.time.InstantSource;
+import java.util.concurrent.TimeUnit;
 
 public class WebhooksModule extends AbstractModule {
     private final WebhooksConfig configuration;
@@ -55,7 +57,25 @@ public class WebhooksModule extends AbstractModule {
     @Provides
     @Singleton
     public HttpClient httpClient() {
-        return HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+        var timeoutInMillis = Math.toIntExact(Duration.ofSeconds(5).toMillis());
+        var config = RequestConfig.custom()
+                .setConnectTimeout(timeoutInMillis)
+                .setConnectionRequestTimeout(timeoutInMillis)
+                .setSocketTimeout(timeoutInMillis)
+                .build();
+
+        var sslsf = new SSLConnectionSocketFactory(
+                SSLContexts.createDefault(),
+                new String[] { "TLSv1.2", "TLSv1.3" },
+                null,
+                SSLConnectionSocketFactory.getDefaultHostnameVerifier()
+        );
+
+        return HttpClientBuilder.create()
+                .setConnectionTimeToLive(60L, TimeUnit.SECONDS)
+                .setSSLSocketFactory(sslsf)
+                .setDefaultRequestConfig(config)
+                .build();
     }
 
     @Provides
