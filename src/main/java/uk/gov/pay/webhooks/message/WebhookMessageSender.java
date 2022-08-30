@@ -22,7 +22,6 @@ import java.time.Duration;
 public class WebhookMessageSender {
 
     public static final String SIGNATURE_HEADER_NAME = "Pay-Signature";
-    public static final Duration TIMEOUT = Duration.ofSeconds(5);
 
     private final CloseableHttpClient httpClient;
     private final WebhookMessageSignatureGenerator webhookMessageSignatureGenerator;

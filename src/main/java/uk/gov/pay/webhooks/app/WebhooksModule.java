@@ -10,13 +10,10 @@ import com.google.inject.Provides;
 import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.setup.Environment;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContexts;
 import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
@@ -66,7 +63,7 @@ public class WebhooksModule extends AbstractModule {
     @Provides
     @Singleton
     public CloseableHttpClient httpClient() {
-        var timeoutInMillis = Math.toIntExact(Duration.ofSeconds(5).toMillis());
+        var timeoutInMillis = Math.toIntExact(configuration.getQueueMessageReceiverConfig().getRequestTimeout().toMilliseconds());
         var config = RequestConfig.custom()
                 .setConnectTimeout(timeoutInMillis)
                 .setConnectionRequestTimeout(timeoutInMillis)
@@ -82,7 +79,7 @@ public class WebhooksModule extends AbstractModule {
 
         return HttpClientBuilder.create()
                 .useSystemProperties()
-                .setConnectionTimeToLive(60L, TimeUnit.SECONDS)
+                .setConnectionTimeToLive(configuration.getQueueMessageReceiverConfig().getConnectionPoolTimeToLive().toSeconds(), TimeUnit.SECONDS)
                 .setSSLSocketFactory(sslsf)
                 .setDefaultRequestConfig(config)
                 .build();
