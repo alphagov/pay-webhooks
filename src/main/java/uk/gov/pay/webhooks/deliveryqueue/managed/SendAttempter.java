@@ -99,7 +99,7 @@ public class SendAttempter {
         } catch (CallbackUrlDomainNotOnAllowListException e) {
             LOGGER.error(
                     Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, e.getUrl()),
-                    "Attempt to send to domain missing from allow list blocked"
+                    "Attempt to send to a domain not on the allow list has been blocked"
             );
             handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.WILL_NOT_SEND, null, "Violates security rules", retryCount, start);
         } catch (Exception e) {
