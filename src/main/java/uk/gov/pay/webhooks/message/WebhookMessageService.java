@@ -64,6 +64,11 @@ public class WebhookMessageService {
     }
     
     public void handleInternalEvent(InternalEvent event) throws IOException, InterruptedException {
+        if (event.live() == null || event.serviceId() == null) {
+            LOGGER.info("Ignoring event without `service_id` or `live` properties");
+            return;
+        }
+
         var subscribedWebhooks = webhookService.getWebhooksSubscribedToEvent(event);
 
         if (!subscribedWebhooks.isEmpty()) {
