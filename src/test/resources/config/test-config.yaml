@@ -59,5 +59,7 @@ queueMessageReceiverConfig:
   threadDelayInMilliseconds: ${QUEUE_MESSAGE_RECEIVER_THREAD_DELAY_IN_MILLISECONDS:-1}
   numberOfThreads: ${QUEUE_MESSAGE_RECEIVER_NUMBER_OF_THREADS:-1}
   messageRetryDelayInSeconds: ${QUEUE_MESSAGE_RETRY_DELAY_IN_SECONDS:-1}
+  connectionPoolTimeToLive: ${WEBHOOK_MESSAGE_SENDER_CONNECTION_POOL_TIME_TO_LIVE:-60s}
+  requestTimeout: ${WEBHOOK_MESSAGE_SENDER_REQUEST_TIMEOUT:-5s}
 
 liveDataAllowDomains: ["gov.uk"]

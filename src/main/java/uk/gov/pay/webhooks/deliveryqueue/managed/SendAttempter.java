@@ -3,6 +3,9 @@ package uk.gov.pay.webhooks.deliveryqueue.managed;
 import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.setup.Environment;
 import net.logstash.logback.marker.Markers;
+import org.apache.http.NoHttpResponseException;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.deliveryqueue.WebhookNotActiveException;
@@ -14,6 +17,7 @@ import uk.gov.pay.webhooks.validations.CallbackUrlDomainNotOnAllowListException;
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpTimeoutException;
@@ -78,13 +82,13 @@ public class SendAttempter {
             ); 
             var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity());
 
-            var statusCode = response.statusCode();
+            var statusCode = response.getStatusLine().getStatusCode();
             if (statusCode >= 200 && statusCode <= 299) {
                 handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL, statusCode, getReasonFromStatusCode(statusCode), retryCount, start);
             } else {
                 handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, statusCode, getReasonFromStatusCode(statusCode), retryCount, start);
             }
-        } catch (HttpTimeoutException e) {
+        } catch (SocketTimeoutException | HttpTimeoutException | NoHttpResponseException | ConnectTimeoutException e) {
             LOGGER.info("Request timed out");
             handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, null, "HTTP Timeout", retryCount, start);
         } catch (IOException | InterruptedException | InvalidKeyException e) {
