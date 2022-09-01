@@ -1,6 +1,7 @@
 package uk.gov.pay.webhooks.app;
 
 import io.dropwizard.Configuration;
+import io.dropwizard.util.Duration;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -19,6 +20,11 @@ public class WebhookMessageSendingQueueProcessorConfig extends Configuration {
     @NotNull
     private int initialDelayInMilliseconds;
 
+    @NotNull
+    private Duration connectionPoolTimeToLive;
+    @NotNull
+    private Duration requestTimeout;
+
     public int getThreadDelayInMilliseconds() {
         return threadDelayInMilliseconds;
     }
@@ -29,5 +35,13 @@ public class WebhookMessageSendingQueueProcessorConfig extends Configuration {
 
     public int getInitialDelayInMilliseconds() {
         return initialDelayInMilliseconds;
+    }
+
+    public Duration getConnectionPoolTimeToLive() {
+        return connectionPoolTimeToLive;
+    }
+
+    public Duration getRequestTimeout() {
+        return requestTimeout;
     }
 }

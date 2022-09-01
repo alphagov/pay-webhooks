@@ -1,7 +1,6 @@
 package uk.gov.pay.webhooks.app;
 
 import io.dropwizard.Configuration;
-import io.dropwizard.util.Duration;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -22,10 +21,6 @@ public class QueueMessageReceiverConfig extends Configuration {
     @Valid
     @NotNull
     private int messageRetryDelayInSeconds;
-    @NotNull
-    private Duration connectionPoolTimeToLive;
-    @NotNull
-    private Duration requestTimeout;
 
     public int getThreadDelayInMilliseconds() {
         return threadDelayInMilliseconds;
@@ -40,12 +35,4 @@ public class QueueMessageReceiverConfig extends Configuration {
     }
 
     public boolean isBackgroundProcessingEnabled() { return backgroundProcessingEnabled; }
-
-    public Duration getConnectionPoolTimeToLive() {
-        return connectionPoolTimeToLive;
-    }
-
-    public Duration getRequestTimeout() {
-        return requestTimeout;
-    }
 }

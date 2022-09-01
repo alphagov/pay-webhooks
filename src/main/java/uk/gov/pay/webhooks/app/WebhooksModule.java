@@ -63,7 +63,7 @@ public class WebhooksModule extends AbstractModule {
     @Provides
     @Singleton
     public CloseableHttpClient httpClient() {
-        var timeoutInMillis = Math.toIntExact(configuration.getQueueMessageReceiverConfig().getRequestTimeout().toMilliseconds());
+        var timeoutInMillis = Math.toIntExact(configuration.getWebhookMessageSendingQueueProcessorConfig().getRequestTimeout().toMilliseconds());
         var config = RequestConfig.custom()
                 .setConnectTimeout(timeoutInMillis)
                 .setConnectionRequestTimeout(timeoutInMillis)
@@ -79,7 +79,7 @@ public class WebhooksModule extends AbstractModule {
 
         return HttpClientBuilder.create()
                 .useSystemProperties()
-                .setConnectionTimeToLive(configuration.getQueueMessageReceiverConfig().getConnectionPoolTimeToLive().toSeconds(), TimeUnit.SECONDS)
+                .setConnectionTimeToLive(configuration.getWebhookMessageSendingQueueProcessorConfig().getConnectionPoolTimeToLive().toSeconds(), TimeUnit.SECONDS)
                 .setSSLSocketFactory(sslsf)
                 .setDefaultRequestConfig(config)
                 .build();
