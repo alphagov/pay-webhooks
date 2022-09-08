@@ -48,12 +48,12 @@ class WebhookMessageBodyTest {
         var body = WebhookMessageBody.from(webhookMessageEntity);;
         var expectedJson = """
                 {
-                 	"id": "externalId",
+                 	"webhook_message_id": "externalId",
                  	"created_date": "2019-10-01T08:25:24.000Z",
                  	"resource_id": "resource-external-id",
                  	"api_version": 1,
                  	"resource_type": "payment",
-                 	"event_type_name": "card_payment_captured",
+                 	"event_type": "card_payment_captured",
                  	"resource": {
                  		"json": "and",
                  		"the": "argonauts"

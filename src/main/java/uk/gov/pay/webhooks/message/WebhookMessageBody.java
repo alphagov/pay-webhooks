@@ -12,12 +12,12 @@ import java.time.Instant;
 
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public record WebhookMessageBody(String id,
+public record WebhookMessageBody(String webhookMessageId,
                                  @JsonSerialize(using = ApiResponseInstantSerializer.class) Instant createdDate,
                                  String resourceId,
                                  Integer apiVersion,
                                  String resourceType,
-                                 EventTypeName eventTypeName,
+                                 EventTypeName eventType,
                                  JsonNode resource) {
 
     public static final int API_VERSION = 1;
