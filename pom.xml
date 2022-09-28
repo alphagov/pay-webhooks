@@ -18,7 +18,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <mainClass>uk.gov.pay.webhooks.app.WebhooksApp</mainClass>
         <pay-java-commons.version>1.0.20220927102701</pay-java-commons.version>
-        <swagger-version>2.2.2</swagger-version>
+        <swagger-version>2.2.3</swagger-version>
         <pact.version>4.3.14</pact.version>
         <PACT_BROKER_URL/>
         <PACT_BROKER_USERNAME/>
