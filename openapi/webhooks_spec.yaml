@@ -94,13 +94,13 @@ paths:
       summary: Create new webhook
       tags:
       - Webhooks
-  /v1/webhook/{externalId}:
+  /v1/webhook/{webhookExternalId}:
     get:
       operationId: getWebhookByExternalId
       parameters:
       - example: gh0d0923jpsjdf0923jojlsfgkw3seg
         in: path
-        name: externalId
+        name: webhookExternalId
         required: true
         schema:
           type: string
@@ -128,7 +128,7 @@ paths:
       parameters:
       - example: gh0d0923jpsjdf0923jojlsfgkw3seg
         in: path
-        name: externalId
+        name: webhookExternalId
         required: true
         schema:
           type: string
@@ -157,13 +157,13 @@ paths:
       summary: Update webhook
       tags:
       - Webhooks
-  /v1/webhook/{externalId}/message:
+  /v1/webhook/{webhookExternalId}/message:
     get:
       operationId: getWebhookMessages
       parameters:
       - example: gh0d0923jpsjdf0923jojlsfgkw3seg
         in: path
-        name: externalId
+        name: webhookExternalId
         required: true
         schema:
           type: string
@@ -182,6 +182,7 @@ paths:
           - PENDING
           - SUCCESSFUL
           - FAILED
+          - WILL_NOT_SEND
       responses:
         "200":
           content:
@@ -192,18 +193,18 @@ paths:
       summary: Get webhook messages by webhook external ID
       tags:
       - Webhooks
-  /v1/webhook/{externalId}/message/{messageId}:
+  /v1/webhook/{webhookExternalId}/message/{webhookMessageExternalId}:
     get:
       operationId: getWebhookMessage
       parameters:
       - in: path
-        name: externalId
+        name: webhookExternalId
         required: true
         schema:
           type: string
           example: gh0d0923jpsjdf0923jojlsfgkw3seg
       - in: path
-        name: messageId
+        name: webhookMessageExternalId
         required: true
         schema:
           type: string
@@ -218,18 +219,18 @@ paths:
       summary: Get messages by webhook external ID and message ID
       tags:
       - Webhooks
-  /v1/webhook/{externalId}/message/{messageId}/attempt:
+  /v1/webhook/{webhookExternalId}/message/{webhookMessageExternalId}/attempt:
     get:
       operationId: getWebhookMessageAttemps
       parameters:
       - in: path
-        name: externalId
+        name: webhookExternalId
         required: true
         schema:
           type: string
           example: gh0d0923jpsjdf0923jojlsfgkw3seg
       - in: path
-        name: messageId
+        name: webhookMessageExternalId
         required: true
         schema:
           type: string
@@ -246,13 +247,13 @@ paths:
       summary: Get message attempts for webhook external ID and message ID
       tags:
       - Webhooks
-  /v1/webhook/{externalId}/signing-key:
+  /v1/webhook/{webhookExternalId}/signing-key:
     get:
       operationId: getSigningKeyByExternalId
       parameters:
       - example: gh0d0923jpsjdf0923jojlsfgkw3seg
         in: path
-        name: externalId
+        name: webhookExternalId
         required: true
         schema:
           type: string
@@ -279,7 +280,7 @@ paths:
       parameters:
       - example: gh0d0923jpsjdf0923jojlsfgkw3seg
         in: path
-        name: externalId
+        name: webhookExternalId
         required: true
         schema:
           type: string
@@ -330,6 +331,8 @@ components:
             - card_payment_succeeded
             - card_payment_captured
             - card_payment_refunded
+            - card_payment_failed
+            - card_payment_expired
             example: card_payment_started
       required:
       - callback_url
@@ -432,6 +435,10 @@ components:
         created_date:
           type: string
           format: date-time
+        response_time:
+          type: integer
+          format: int64
+          example: 23
         result:
           type: string
           example: 200 OK
@@ -444,6 +451,7 @@ components:
           - PENDING
           - SUCCESSFUL
           - FAILED
+          - WILL_NOT_SEND
           example: SUCCESSFUL
         status_code:
           type: integer
@@ -465,6 +473,8 @@ components:
           - card_payment_succeeded
           - card_payment_captured
           - card_payment_refunded
+          - card_payment_failed
+          - card_payment_expired
           example: card_payment_started
         external_id:
           type: string
@@ -507,6 +517,7 @@ components:
         created_date:
           type: string
           format: date-time
+          example: 2022-04-05T17:07:15.281Z
         description:
           type: string
           example: Webhook description
@@ -533,4 +544,6 @@ components:
             - card_payment_succeeded
             - card_payment_captured
             - card_payment_refunded
+            - card_payment_failed
+            - card_payment_expired
             example: card_payment_started

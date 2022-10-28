@@ -1,6 +1,12 @@
 # pay-webhooks
 GOV.UK Pay microservice for sending events to callback URLs configured by partner services
 
+## API Specification
+
+The [API Specification](openapi/webhooks_spec.yaml) provides more detail on the paths and operations including examples.
+
+[View the API specification for webhooks in Swagger Editor](https://editor.swagger.io/?url=https://raw.githubusercontent.com/alphagov/pay-webhooks/main/openapi/webhooks_spec.yaml).
+
 ## Licence
 
 [MIT License](LICENSE)
