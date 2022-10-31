@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.pay.rule.PostgresTestDocker;
 import uk.gov.pay.rule.SqsTestDocker;
 import uk.gov.pay.webhooks.app.WebhooksApp;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
@@ -25,17 +26,17 @@ public class AppWithPostgresAndSqsExtension implements BeforeAllCallback, AfterA
 
     private static final Logger logger = LoggerFactory.getLogger(AppWithPostgresAndSqsExtension.class);
 
-    private static String CONFIG_PATH = resourceFilePath("config/test-config.yaml");
+    private static final String CONFIG_PATH = resourceFilePath("config/test-config.yaml");
     private final Jdbi jdbi;
-    private DropwizardAppExtension<WebhooksConfig> dropwizardAppExtension;
-    private AmazonSQS sqsClient;
+    private final DropwizardAppExtension<WebhooksConfig> dropwizardAppExtension;
+    private final AmazonSQS sqsClient;
 
     public AppWithPostgresAndSqsExtension() {
         this(new ConfigOverride[0]);
     }
 
     public AppWithPostgresAndSqsExtension(ConfigOverride... configOverrides) {
-        getOrCreate();
+        PostgresTestDocker.getOrCreate();
         sqsClient = SqsTestDocker.initialise("event-queue");
 
 
