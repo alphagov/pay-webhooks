@@ -1,7 +1,6 @@
 package uk.gov.pay.webhooks.queue;
 
 import com.amazonaws.services.sqs.AmazonSQS;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class EventQueueIT {
+class EventQueueIT {
 
     @RegisterExtension
     public static AppWithPostgresAndSqsExtension rule = new AppWithPostgresAndSqsExtension();
@@ -35,8 +34,8 @@ public class EventQueueIT {
     }
 
     @Test
-    public void shouldReceiveMessageFromTheQueue() throws QueueException {
-        client.sendMessage(SqsTestDocker.getQueueUrl("event-queue"), "");
+    void shouldReceiveMessageFromTheQueue() throws QueueException {
+        client.sendMessage(SqsTestDocker.getQueueUrl("event-queue"), "{ messageBody: \"example message\" }");
 
         SqsConfig sqsConfig = mock(SqsConfig.class);
         when(sqsConfig.getMessageMaximumBatchSize()).thenReturn(10);
@@ -52,7 +51,7 @@ public class EventQueueIT {
     }
     
     @Test
-    public void shouldConvertValidMessageFromQueueToEventMessage() throws QueueException, JsonProcessingException {
+    void shouldConvertValidMessageFromQueueToEventMessage() throws QueueException {
         var sqsMessage = """
                 {
                   "Type" : "Notification",
@@ -61,7 +60,7 @@ public class EventQueueIT {
                   "TopicArn" : "card-payment-events-topic",
                   "Timestamp" : "2021-12-16T18:52:27.068Z",
                   "SignatureVersion" : "1",
-                  "Signature" : "some-signature", 
+                  "Signature" : "some-signature",
                   "SigningCertURL" : "https://sns.eu-west-1.amazonaws.com/SimpleNotificationService-signing-cert-uuid.pem",
                   "UnsubscribeURL" : "https://sns.eu-west-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:a-aws-arn"
                 }

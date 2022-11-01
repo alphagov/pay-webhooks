@@ -13,66 +13,63 @@ import org.testcontainers.containers.wait.strategy.Wait;
 public class SqsTestDocker {
     private static final Logger logger = LoggerFactory.getLogger(SqsTestDocker.class);
 
-        private static GenericContainer sqsContainer;
+    private static GenericContainer<?> sqsContainer;
+    
+    private static final Integer PORT = 9324;
 
-        public static AmazonSQS initialise(String... queues) {
-            try {
-                createContainer();
-                return createQueues(queues);
-            } catch (Exception e) {
-                logger.error("Exception initialising SQS Container - {}", e.getMessage());
-                throw new RuntimeException(e);
+    public static AmazonSQS initialise(String... queues) {
+        try {
+            createContainer();
+            return createQueues(queues);
+        } catch (Exception e) {
+            logger.error("Exception initialising SQS Container - {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void createContainer() {
+        if (sqsContainer == null) {
+            logger.info("Creating SQS Container");
+
+            sqsContainer = new GenericContainer<>("softwaremill/elasticmq-native")
+                    .withExposedPorts(PORT)
+                    .waitingFor(Wait.forLogMessage(".*ElasticMQ server.*.*started.*", 1));
+
+            sqsContainer.start();
+        }
+    }
+
+    private static AmazonSQS createQueues(String... queues) {
+        AmazonSQS amazonSQS = getSqsClient();
+        if (queues != null) {
+            for (String queue : queues) {
+                amazonSQS.createQueue(queue);
             }
         }
 
-        private static void createContainer() {
-            if (sqsContainer == null) {
-                logger.info("Creating SQS Container");
+        return amazonSQS;
+    }
 
-                sqsContainer = new GenericContainer("roribio16/alpine-sqs")
-                        .withExposedPorts(9324)
-                        .waitingFor(Wait.forHttp("/?Action=GetQueueUrl&QueueName=default"));
+    public static String getQueueUrl(String queueName) {
+        return getEndpoint() + "/queue/" + queueName;
+    }
 
-                sqsContainer.start();
-            }
-        }
+    public static String getEndpoint() {
+        return "http://localhost:" + sqsContainer.getMappedPort(PORT);
+    }
 
-        public static void stopContainer() {
-            sqsContainer.stop();
-            sqsContainer = null;
-        }
+    private static AmazonSQS getSqsClient() {
+        // random credentials required by AWS SDK to build SQS client
+        BasicAWSCredentials awsCreds = new BasicAWSCredentials("x", "x");
 
-        private static AmazonSQS createQueues(String... queues) {
-            AmazonSQS amazonSQS = getSqsClient();
-            if (queues != null) {
-                for (String queue : queues) {
-                    amazonSQS.createQueue(queue);
-                }
-            }
-
-            return amazonSQS;
-        }
-
-        public static String getQueueUrl(String queueName) {
-            return getEndpoint() + "/queue/" + queueName;
-        }
-
-        public static String getEndpoint() {
-            return "http://localhost:" + sqsContainer.getMappedPort(9324);
-        }
-
-        private static AmazonSQS getSqsClient() {
-            // random credentials required by AWS SDK to build SQS client
-            BasicAWSCredentials awsCreds = new BasicAWSCredentials("x", "x");
-
-            return AmazonSQSClientBuilder.standard()
-                    .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-                    .withEndpointConfiguration(
-                            new AwsClientBuilder.EndpointConfiguration(
-                                    getEndpoint(),
-                                    "region-1"
-                            ))
-                    .withRequestHandlers()
-                    .build();
-        }
+        return AmazonSQSClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+                .withEndpointConfiguration(
+                        new AwsClientBuilder.EndpointConfiguration(
+                                getEndpoint(),
+                                "region-1"
+                        ))
+                .withRequestHandlers()
+                .build();
+    }
 }
