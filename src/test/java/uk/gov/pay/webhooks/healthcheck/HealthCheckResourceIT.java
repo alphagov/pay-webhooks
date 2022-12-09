@@ -5,15 +5,17 @@ import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import uk.gov.pay.extension.AppWithPostgresAndSqsExtension;
+import uk.gov.pay.rule.PostgresTestDocker;
+import uk.gov.pay.rule.SqsTestDocker;
 
 import static org.hamcrest.Matchers.equalTo;
 
-public class HealthCheckResourceIT {
+class HealthCheckResourceIT {
     @RegisterExtension
     public static AppWithPostgresAndSqsExtension app = new AppWithPostgresAndSqsExtension();
 
     @Test
-    public void HealthCheckIsHealthyTest(){
+    void HealthCheckIsHealthyTest(){
         RestAssured.given().port(app.getAppRule().getLocalPort())
                 .contentType(ContentType.JSON)
                 .when()
@@ -21,10 +23,29 @@ public class HealthCheckResourceIT {
                 .get("healthcheck")
                 .then()
                 .statusCode(200)
-                .body("[0].database.healthy", equalTo(true))
-                .body("[1].deadlocks.healthy", equalTo(true))
-                .body("[2].hibernate.healthy", equalTo(true))
-                .body("[3].ping.healthy", equalTo(true));
+                .body("database.healthy", equalTo(true))
+                .body("deadlocks.healthy", equalTo(true))
+                .body("hibernate.healthy", equalTo(true))
+                .body("ping.healthy", equalTo(true))
+                .body("sqsQueue.healthy", equalTo(true));
     }
 
+    @Test
+    void healthCheckShouldReturn503WhenDBAndSqsQueueDown() throws InterruptedException {
+        PostgresTestDocker.shutDown();
+        app.getSqsClient().deleteQueue("event-queue");
+
+        RestAssured.given().port(app.getAppRule().getLocalPort())
+                .contentType(ContentType.JSON)
+                .when()
+                .accept(ContentType.JSON)
+                .get("healthcheck")
+                .then()
+                .statusCode(503)
+                .body("database.healthy", equalTo(false))
+                .body("deadlocks.healthy", equalTo(true))
+                .body("hibernate.healthy", equalTo(false))
+                .body("ping.healthy", equalTo(true))
+                .body("sqsQueue.healthy", equalTo(false));
+    }
 }

@@ -55,4 +55,9 @@ public class PostgresTestDocker {
     public static String getDbUsername() {
         return DB_USERNAME;
     }
+
+    public static void shutDown() {
+        POSTGRES_CONTAINER.stop();
+        POSTGRES_CONTAINER = null;
+    }
 }
