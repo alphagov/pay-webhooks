@@ -95,7 +95,4 @@ public class AppWithPostgresAndSqsExtension implements BeforeAllCallback, AfterA
     public AmazonSQS getSqsClient() {
         return sqsClient;
     }
-    
 }
-
-

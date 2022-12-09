@@ -20,6 +20,7 @@ import uk.gov.pay.webhooks.deliveryqueue.managed.WebhookMessageSendingQueueProce
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.healthcheck.HealthCheckResource;
 import uk.gov.pay.webhooks.healthcheck.Ping;
+import uk.gov.pay.webhooks.healthcheck.SQSHealthCheck;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.queue.QueueMessageReceiver;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
@@ -69,6 +70,7 @@ public class WebhooksApp extends Application<WebhooksConfig> {
 
         environment.healthChecks().register("ping", new Ping());
         environment.healthChecks().register("database", new DatabaseHealthCheck(configuration.getDataSourceFactory()));
+        environment.healthChecks().register("sqsQueue", injector.getInstance(SQSHealthCheck.class));
         environment.jersey().register(injector.getInstance(HealthCheckResource.class));
         environment.jersey().register(injector.getInstance(WebhookResource.class));
 

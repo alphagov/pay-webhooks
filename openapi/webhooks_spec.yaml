@@ -26,6 +26,9 @@ paths:
                   deadlocks:
                     healthy: true
                     message: Healthy
+                  sqsQueue:
+                    healthy: true
+                    message: Healthy
           description: OK
         "503":
           description: Service unavailable. If any healthchecks fail
@@ -344,85 +347,6 @@ components:
         path: description
         op: replace
         value: new description
-    Result:
-      type: object
-      properties:
-        details:
-          type: object
-          additionalProperties:
-            type: object
-        duration:
-          type: integer
-          format: int64
-        error:
-          type: object
-          properties:
-            localizedMessage:
-              type: string
-            message:
-              type: string
-            stackTrace:
-              type: array
-              items:
-                type: object
-                properties:
-                  classLoaderName:
-                    type: string
-                  className:
-                    type: string
-                  fileName:
-                    type: string
-                  lineNumber:
-                    type: integer
-                    format: int32
-                  methodName:
-                    type: string
-                  moduleName:
-                    type: string
-                  moduleVersion:
-                    type: string
-                  nativeMethod:
-                    type: boolean
-            suppressed:
-              type: array
-              items:
-                type: object
-                properties:
-                  localizedMessage:
-                    type: string
-                  message:
-                    type: string
-                  stackTrace:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        classLoaderName:
-                          type: string
-                        className:
-                          type: string
-                        fileName:
-                          type: string
-                        lineNumber:
-                          type: integer
-                          format: int32
-                        methodName:
-                          type: string
-                        moduleName:
-                          type: string
-                        moduleVersion:
-                          type: string
-                        nativeMethod:
-                          type: boolean
-        healthy:
-          type: boolean
-        message:
-          type: string
-        time:
-          type: integer
-          format: int64
-        timestamp:
-          type: string
     SigningKeyResponse:
       type: object
       properties:
