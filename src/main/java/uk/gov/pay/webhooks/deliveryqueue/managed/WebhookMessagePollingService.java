@@ -33,12 +33,9 @@ public class WebhookMessagePollingService {
 
     public void pollWebhookMessageQueue() {
         Optional<WebhookDeliveryQueueEntity> attemptCursor;
-        MDC.put(JOB_BATCH_ID, UUID.randomUUID().toString());
-
         do {
             attemptCursor = sendIfAvailable();
         } while(attemptCursor.isPresent());
-        MDC.remove(JOB_BATCH_ID);
     }
 
     @UnitOfWork
