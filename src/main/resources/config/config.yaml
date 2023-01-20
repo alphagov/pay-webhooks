@@ -12,6 +12,9 @@ server:
             environment: ${ENVIRONMENT}
 logging:
   level: INFO
+  loggers:
+    "org.apache.http.impl.conn":
+      level: DEBUG
   appenders:
     - type: logstash-console
       threshold: ALL

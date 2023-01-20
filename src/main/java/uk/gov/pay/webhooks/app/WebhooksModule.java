@@ -15,6 +15,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
 import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
@@ -81,6 +82,7 @@ public class WebhooksModule extends AbstractModule {
 
         return HttpClientBuilder.create()
                 .useSystemProperties()
+                .setConnectionManager(new BasicHttpClientConnectionManager())
                 .setConnectionTimeToLive(configuration.getWebhookMessageSendingQueueProcessorConfig().getConnectionPoolTimeToLive().toSeconds(), TimeUnit.SECONDS)
                 .setSSLSocketFactory(sslsf)
                 .setDefaultRequestConfig(config)
