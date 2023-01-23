@@ -5,7 +5,6 @@ import io.dropwizard.setup.Environment;
 import net.logstash.logback.marker.Markers;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.conn.ConnectTimeoutException;
-import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.deliveryqueue.WebhookNotActiveException;
@@ -19,7 +18,6 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
-import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpTimeoutException;
 import java.security.InvalidKeyException;
@@ -33,7 +31,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.lang.String.format;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.ERROR_MESSAGE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.STATE_TRANSITION_TO_STATE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_CALLBACK_URL;
@@ -76,7 +73,7 @@ public class SendAttempter {
         try {
             url = new URL(webhook.getCallbackUrl());
         } catch (MalformedURLException e) {
-            LOGGER.info(format("Callback URL %s is malformed.", webhook.getCallbackUrl()));
+            LOGGER.error("Callback URL {} is malformed.", webhook.getCallbackUrl());
             throw new RuntimeException(e);
         }
 
