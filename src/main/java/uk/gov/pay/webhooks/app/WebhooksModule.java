@@ -10,11 +10,19 @@ import com.google.inject.Provides;
 import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.setup.Environment;
+import org.apache.http.HeaderElement;
+import org.apache.http.HeaderElementIterator;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.message.BasicHeaderElementIterator;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
 import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
@@ -79,8 +87,24 @@ public class WebhooksModule extends AbstractModule {
                 SSLConnectionSocketFactory.getDefaultHostnameVerifier()
         );
 
+        ConnectionKeepAliveStrategy keepAliveStrategy = (response, context) -> {
+            HeaderElementIterator it = new BasicHeaderElementIterator
+                    (response.headerIterator(HTTP.CONN_KEEP_ALIVE));
+            while (it.hasNext()) {
+                HeaderElement he = it.nextElement();
+                String param = he.getName();
+                String value = he.getValue();
+                if (value != null && param.equalsIgnoreCase
+                        ("timeout")) {
+                    return Long.parseLong(value) * 1000;
+                }
+            }
+            return 5 * 1000;
+        };
+        
         return HttpClientBuilder.create()
                 .useSystemProperties()
+                .setKeepAliveStrategy(keepAliveStrategy)
                 .setConnectionTimeToLive(configuration.getWebhookMessageSendingQueueProcessorConfig().getConnectionPoolTimeToLive().toSeconds(), TimeUnit.SECONDS)
                 .setSSLSocketFactory(sslsf)
                 .setDefaultRequestConfig(config)
