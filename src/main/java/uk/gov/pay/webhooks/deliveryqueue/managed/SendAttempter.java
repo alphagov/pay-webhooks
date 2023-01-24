@@ -5,7 +5,6 @@ import io.dropwizard.setup.Environment;
 import net.logstash.logback.marker.Markers;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.conn.ConnectTimeoutException;
-import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.deliveryqueue.WebhookNotActiveException;
@@ -18,7 +17,6 @@ import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpTimeoutException;
 import java.security.InvalidKeyException;
@@ -118,12 +116,18 @@ public class SendAttempter {
         }
     }
 
-    private void handleResponse(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, WebhookDeliveryQueueEntity.DeliveryStatus status, Integer statusCode, String reason, Long retryCount, Instant startTime) {
+    private void handleResponse(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, 
+                                WebhookDeliveryQueueEntity.DeliveryStatus status, 
+                                Integer statusCode, 
+                                String reason, 
+                                Long retryCount, 
+                                Instant startTime) {
         var responseTime = Duration.between(startTime, instantSource.instant());
         LOGGER.info(
                 Markers.append(HTTP_STATUS, statusCode)
                         .and(Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount))
                         .and(Markers.append(STATE_TRANSITION_TO_STATE, status))
+                        .and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, webhookDeliveryQueueEntity.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl()))
                         .and(Markers.append(RESPONSE_TIME, responseTime.toMillis()))
                         .and(Markers.append(WEBHOOK_MESSAGE_ATTEMPT_RESPONSE_REASON, reason)),
                 "Sending webhook message finished"
