@@ -16,7 +16,6 @@ import uk.gov.pay.webhooks.validations.CallbackUrlDomainNotOnAllowListException;
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.http.HttpTimeoutException;
@@ -69,15 +68,8 @@ public class SendAttempter {
         var retryCount = webhookDeliveryQueueDao.countFailed(queueItem.getWebhookMessageEntity());
         Instant start = instantSource.instant();
 
-        URL url = null;
         try {
-            url = new URL(webhook.getCallbackUrl());
-        } catch (MalformedURLException e) {
-            LOGGER.error("Callback URL {} is malformed.", webhook.getCallbackUrl());
-            throw new RuntimeException(e);
-        }
-
-        try {
+            var url = new URL(webhook.getCallbackUrl());
 
             LOGGER.info(
                     Markers.append(WEBHOOK_CALLBACK_URL, queueItem.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl())
@@ -90,28 +82,28 @@ public class SendAttempter {
 
             var statusCode = response.getStatusLine().getStatusCode();
             if (statusCode >= 200 && statusCode <= 299) {
-                handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL, statusCode, getReasonFromStatusCode(statusCode), retryCount, start, url);
+                handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL, statusCode, getReasonFromStatusCode(statusCode), retryCount, start);
             } else {
-                handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, statusCode, getReasonFromStatusCode(statusCode), retryCount, start, url);
+                handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, statusCode, getReasonFromStatusCode(statusCode), retryCount, start);
             }
         } catch (SocketTimeoutException | HttpTimeoutException | NoHttpResponseException | ConnectTimeoutException e) {
             LOGGER.info("Request timed out");
-            handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, null, "HTTP Timeout", retryCount, start, url);
+            handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, null, "HTTP Timeout", retryCount, start);
         } catch (IOException | InterruptedException | InvalidKeyException e) {
             LOGGER.info(
                     Markers.append(ERROR_MESSAGE, e.getMessage()),
                     "Exception caught by request"
             );
-            handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, null, e.getMessage(), retryCount, start, url);
+            handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, null, e.getMessage(), retryCount, start);
         } catch (WebhookNotActiveException e) {
             LOGGER.info("Not sending webhook message for non-active webhook");
-            handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.WILL_NOT_SEND, null, "Webhook not active", retryCount, start, url);
+            handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.WILL_NOT_SEND, null, "Webhook not active", retryCount, start);
         } catch (CallbackUrlDomainNotOnAllowListException e) {
             LOGGER.error(
                     Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, e.getUrl()),
                     "Attempt to send to a domain not on the allow list has been blocked"
             );
-            handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.WILL_NOT_SEND, null, "Violates security rules", retryCount, start, url);
+            handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.WILL_NOT_SEND, null, "Violates security rules", retryCount, start);
         } catch (Exception e) {
             var responseTime = Duration.between(start, instantSource.instant());
             // handle all exceptions at this level to make sure that the retry mechanism is allowed to work as designed
@@ -120,7 +112,7 @@ public class SendAttempter {
                     Markers.append(ERROR_MESSAGE, e.getMessage()),
                     "Unexpected exception thrown by request"
             );
-            handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, null, "Unknown error", retryCount, start, url);
+            handleResponse(queueItem, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, null, "Unknown error", retryCount, start);
         }
     }
 
@@ -129,14 +121,13 @@ public class SendAttempter {
                                 Integer statusCode, 
                                 String reason, 
                                 Long retryCount, 
-                                Instant startTime,
-                                URL url) {
+                                Instant startTime) {
         var responseTime = Duration.between(startTime, instantSource.instant());
         LOGGER.info(
                 Markers.append(HTTP_STATUS, statusCode)
                         .and(Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount))
                         .and(Markers.append(STATE_TRANSITION_TO_STATE, status))
-                        .and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, url.getHost()))
+                        .and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, webhookDeliveryQueueEntity.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl()))
                         .and(Markers.append(RESPONSE_TIME, responseTime.toMillis()))
                         .and(Markers.append(WEBHOOK_MESSAGE_ATTEMPT_RESPONSE_REASON, reason)),
                 "Sending webhook message finished"
