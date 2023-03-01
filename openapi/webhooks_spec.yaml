@@ -403,6 +403,13 @@ components:
         external_id:
           type: string
           example: s0wjen129ejalk21nfjkdknf1jejklh
+        last_delivery_status:
+          type: string
+          enum:
+          - PENDING
+          - SUCCESSFUL
+          - FAILED
+          - WILL_NOT_SEND
         latest_attempt:
           $ref: '#/components/schemas/WebhookDeliveryQueueResponse'
         resource:

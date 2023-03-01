@@ -6,12 +6,15 @@ import org.hibernate.annotations.JoinFormula;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -126,6 +129,10 @@ public class WebhookMessageEntity {
             """)
     private WebhookDeliveryQueueEntity webhookDeliveryQueueEntity;
 
+    @Column(name = "last_delivery_status")
+    @Enumerated(EnumType.STRING)
+    private DeliveryStatus lastDeliveryStatus;
+
     public String getExternalId() {
         return externalId;
     }
@@ -176,5 +183,13 @@ public class WebhookMessageEntity {
 
     public WebhookDeliveryQueueEntity getWebhookDeliveryQueueEntity() {
         return webhookDeliveryQueueEntity;
+    }
+
+    public DeliveryStatus getLastDeliveryStatus() {
+        return lastDeliveryStatus;
+    }
+
+    public void setLastDeliveryStatus(DeliveryStatus lastDeliveryStatus) {
+        this.lastDeliveryStatus = lastDeliveryStatus;
     }
 }

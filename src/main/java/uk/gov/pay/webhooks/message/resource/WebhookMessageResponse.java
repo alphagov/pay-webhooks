@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.v3.oas.annotations.media.Schema;
+import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.service.payments.commons.api.json.ApiResponseInstantSerializer;
@@ -24,7 +25,8 @@ public record WebhookMessageResponse(
         @Schema(example = "payment")
         @JsonProperty("resource_type") String resourceType,
         @JsonProperty("resource") JsonNode resource,
-        @JsonProperty("latest_attempt") WebhookDeliveryQueueResponse webhookDeliveryQueueEntity) {
+        @JsonProperty("latest_attempt") WebhookDeliveryQueueResponse webhookDeliveryQueueEntity,
+        @JsonProperty("last_delivery_status") DeliveryStatus lastDeliveryStatus) {
 
     public static WebhookMessageResponse from(WebhookMessageEntity webhookMessageEntity) {
         var latestAttempt = (webhookMessageEntity.getWebhookDeliveryQueueEntity() != null) ? WebhookDeliveryQueueResponse.from(webhookMessageEntity.getWebhookDeliveryQueueEntity()) : null;
@@ -36,7 +38,8 @@ public record WebhookMessageResponse(
                 webhookMessageEntity.getResourceExternalId(),
                 webhookMessageEntity.getResourceType(),
                 webhookMessageEntity.getResource(),
-                latestAttempt
+                latestAttempt,
+                webhookMessageEntity.getLastDeliveryStatus()
         );
     }
 }
