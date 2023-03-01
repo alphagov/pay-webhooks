@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
@@ -55,7 +56,7 @@ class WebhookDeliveryQueueDaoTest {
             return webhookMessageDao.create(webhookMessageEntity);
         });
         database.inTransaction(() -> {
-            webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant().minusMillis(1));
+            webhookDeliveryQueueDao.enqueueFrom(persisted, DeliveryStatus.PENDING, instantSource.instant().minusMillis(1));
             assertThat(webhookDeliveryQueueDao.nextToSend(instantSource.instant()).get().getWebhookMessageEntity(), is(persisted));
         });
     }
@@ -68,9 +69,9 @@ class WebhookDeliveryQueueDaoTest {
             return webhookMessageDao.create(webhookMessageEntity);
         });
         database.inTransaction(() -> {
-            var enqueued = webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant().minusMillis(1));
-            var updated = webhookDeliveryQueueDao.recordResult(enqueued, "200 OK", Duration.ofMillis(50L), 200, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL, mockMetricRegistry);
-            assertThat(updated.getDeliveryStatus(), is(WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL));
+            var enqueued = webhookDeliveryQueueDao.enqueueFrom(persisted, DeliveryStatus.PENDING, instantSource.instant().minusMillis(1));
+            var updated = webhookDeliveryQueueDao.recordResult(enqueued, "200 OK", Duration.ofMillis(50L), 200, DeliveryStatus.SUCCESSFUL, mockMetricRegistry);
+            assertThat(updated.getDeliveryStatus(), is(DeliveryStatus.SUCCESSFUL));
             assertThat(updated.getDeliveryResult(), is("200 OK"));
             assertThat(updated.getStatusCode(), is(200));
         });
@@ -84,8 +85,8 @@ class WebhookDeliveryQueueDaoTest {
             return webhookMessageDao.create(webhookMessageEntity);
         });
         database.inTransaction(() -> {
-            webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, instantSource.instant());
-            webhookDeliveryQueueDao.enqueueFrom(persisted, WebhookDeliveryQueueEntity.DeliveryStatus.FAILED, instantSource.instant());
+            webhookDeliveryQueueDao.enqueueFrom(persisted, DeliveryStatus.FAILED, instantSource.instant());
+            webhookDeliveryQueueDao.enqueueFrom(persisted, DeliveryStatus.FAILED, instantSource.instant());
             assertThat(webhookDeliveryQueueDao.countFailed(persisted), is(2L));
         });
     }

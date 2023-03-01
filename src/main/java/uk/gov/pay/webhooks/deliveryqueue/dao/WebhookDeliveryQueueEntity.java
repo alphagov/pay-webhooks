@@ -1,6 +1,7 @@
 package uk.gov.pay.webhooks.deliveryqueue.dao;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 
 import javax.persistence.Column;
@@ -70,13 +71,6 @@ public class WebhookDeliveryQueueEntity {
 
     public Instant getCreatedDate() {
         return createdDate.toInstant();
-    }
-
-    public enum DeliveryStatus {
-        PENDING,
-        SUCCESSFUL,
-        FAILED,
-        WILL_NOT_SEND
     }
 
 

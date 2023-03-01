@@ -4,6 +4,7 @@ import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.LockOptions;
 import org.hibernate.SessionFactory;
+import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 
 import javax.inject.Inject;
@@ -42,7 +43,7 @@ public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEnt
                 .findAny();
     }
 
-    public WebhookDeliveryQueueEntity enqueueFrom(WebhookMessageEntity webhookMessageEntity, WebhookDeliveryQueueEntity.DeliveryStatus deliveryStatus, Instant sendAt) {
+    public WebhookDeliveryQueueEntity enqueueFrom(WebhookMessageEntity webhookMessageEntity, DeliveryStatus deliveryStatus, Instant sendAt) {
        return persist(WebhookDeliveryQueueEntity.enqueueFrom(
                 webhookMessageEntity,
                 instantSource.instant(),
@@ -56,7 +57,7 @@ public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEnt
                 .getSingleResult();
     }
 
-    public WebhookDeliveryQueueEntity recordResult(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, String deliveryResult, Duration deliveryResponseTime, Integer statusCode, WebhookDeliveryQueueEntity.DeliveryStatus deliveryStatus, MetricRegistry metricRegistry) {
+    public WebhookDeliveryQueueEntity recordResult(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, String deliveryResult, Duration deliveryResponseTime, Integer statusCode, DeliveryStatus deliveryStatus, MetricRegistry metricRegistry) {
         metricRegistry.counter("delivery-status.%s".formatted(deliveryStatus.name()));
         return persist(WebhookDeliveryQueueEntity.recordResult(webhookDeliveryQueueEntity, deliveryResult, deliveryResponseTime, statusCode, deliveryStatus));
     }

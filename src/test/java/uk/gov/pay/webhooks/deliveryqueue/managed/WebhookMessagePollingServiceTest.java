@@ -5,7 +5,6 @@ import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.testing.junit5.DAOTestExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
-import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
@@ -163,7 +163,7 @@ class WebhookMessagePollingServiceTest {
                 return webhookMessageDao.create(webhookMessageEntity);
             });
             database.inTransaction(() -> {
-                webhookDeliveryQueueDao.enqueueFrom(message, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, instantSource.instant().minusMillis((messageIds.size() - i) * 10L));
+                webhookDeliveryQueueDao.enqueueFrom(message, DeliveryStatus.PENDING, instantSource.instant().minusMillis((messageIds.size() - i) * 10L));
             });
         });
     }

@@ -5,6 +5,7 @@ import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
@@ -82,14 +83,14 @@ class WebhookMessageDaoTest {
        database.inTransaction(() -> {
            webhookDao.create(webhook);
            webhookMessageDao.create(message);
-           webhookDeliveryQueueDao.enqueueFrom(message, WebhookDeliveryQueueEntity.DeliveryStatus.SUCCESSFUL, Instant.now());
+           webhookDeliveryQueueDao.enqueueFrom(message, DeliveryStatus.SUCCESSFUL, Instant.now());
 
            for (var i = 0; i < numberOfPendingMessagesToPad; i++) {
                var padMessage = new WebhookMessageEntity();
                padMessage.setWebhookEntity(webhook);
                padMessage.setExternalId("padded-message-%s".formatted(i));
                webhookMessageDao.create(padMessage);
-               webhookDeliveryQueueDao.enqueueFrom(padMessage, WebhookDeliveryQueueEntity.DeliveryStatus.PENDING, Instant.now());
+               webhookDeliveryQueueDao.enqueueFrom(padMessage, DeliveryStatus.PENDING, Instant.now());
            }
        });
    }
