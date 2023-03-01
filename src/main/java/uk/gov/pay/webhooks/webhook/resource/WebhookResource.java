@@ -9,14 +9,13 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
+import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.message.resource.WebhookDeliveryQueueResponse;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageResponse;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageSearchResponse;
 import uk.gov.pay.webhooks.validations.WebhookRequestValidator;
 import uk.gov.pay.webhooks.webhook.WebhookService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
-import uk.gov.service.payments.commons.api.exception.ValidationException;
 import uk.gov.service.payments.commons.model.jsonpatch.JsonPatchRequest;
 
 import javax.inject.Inject;
@@ -175,7 +174,7 @@ public class WebhookResource {
     public WebhookMessageSearchResponse getWebhookMessages(
             @Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("webhookExternalId") String externalId,
             @Parameter(example = "1") @QueryParam("page") Integer page,
-            @Parameter(example = "SUCCESSFUL") @Valid @QueryParam("status") WebhookDeliveryQueueEntity.DeliveryStatus status
+            @Parameter(example = "SUCCESSFUL") @Valid @QueryParam("status") DeliveryStatus status
     ) {
         var currentPage = Optional.ofNullable(page)
                 .orElse(1);
