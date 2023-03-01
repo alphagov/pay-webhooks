@@ -2,6 +2,7 @@ package uk.gov.pay.webhooks.message.dao;
 
 import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.SessionFactory;
+import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 
 import javax.inject.Inject;
@@ -28,7 +29,7 @@ public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
                .getSingleResult();
     }
 
-    public List<WebhookMessageEntity> list(String webhookId, String deliveryStatus, int page) {
+    public List<WebhookMessageEntity> list(String webhookId, DeliveryStatus deliveryStatus, int page) {
         var query = deliveryStatus != null ?
                 namedTypedQuery(WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID_AND_STATUS).setParameter("webhookId", webhookId).setParameter("deliveryStatus", deliveryStatus) :
                 namedTypedQuery(WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID).setParameter("webhookId", webhookId);
@@ -37,7 +38,7 @@ public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
                 .getResultList();
     }
 
-    public Long count(String webhookId, String deliveryStatus) {
+    public Long count(String webhookId, DeliveryStatus deliveryStatus) {
         var query = deliveryStatus != null ?
                 namedQuery(WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID_AND_STATUS).setParameter("webhookId", webhookId).setParameter("deliveryStatus", deliveryStatus) :
                 namedQuery(WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID).setParameter("webhookId", webhookId);

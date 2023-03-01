@@ -1,5 +1,6 @@
 package uk.gov.pay.webhooks.webhook;
 
+import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
@@ -75,7 +76,7 @@ public class WebhookService {
         return webhookDao.list(live);
     }
 
-    public WebhookMessageSearchResponse listMessages(String webhookId, String status, int page) {
+    public WebhookMessageSearchResponse listMessages(String webhookId, DeliveryStatus status, int page) {
         var messages = webhookMessageDao.list(webhookId, status, page)
                 .stream()
                 .map(WebhookMessageResponse::from)

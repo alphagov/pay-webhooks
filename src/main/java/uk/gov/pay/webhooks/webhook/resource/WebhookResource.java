@@ -174,13 +174,10 @@ public class WebhookResource {
     public WebhookMessageSearchResponse getWebhookMessages(
             @Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("webhookExternalId") String externalId,
             @Parameter(example = "1") @QueryParam("page") Integer page,
-            @Parameter(example = "SUCCESSFUL") @Valid @QueryParam("status") DeliveryStatus status
+            @Parameter(example = "SUCCESSFUL") @Valid @QueryParam("status") DeliveryStatus deliveryStatus
     ) {
         var currentPage = Optional.ofNullable(page)
                 .orElse(1);
-        var deliveryStatus = Optional.ofNullable(status)
-                .map(String::valueOf)
-                .orElse(null);
         return webhookService.listMessages(externalId, deliveryStatus, currentPage);
     }
 
