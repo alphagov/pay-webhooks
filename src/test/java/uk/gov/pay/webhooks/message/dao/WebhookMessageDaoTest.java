@@ -52,8 +52,8 @@ class WebhookMessageDaoTest {
     @Test
     public void shouldListAndCountFilteredByStatus() {
         setup(1);
-        var messages = webhookMessageDao.list(webhookExternalId, "SUCCESSFUL", 1);
-        var total = webhookMessageDao.count(webhookExternalId, "SUCCESSFUL");
+        var messages = webhookMessageDao.list(webhookExternalId, DeliveryStatus.SUCCESSFUL, 1);
+        var total = webhookMessageDao.count(webhookExternalId, DeliveryStatus.SUCCESSFUL);
         assertThat(messages.size(), is(1));
         assertThat(total, is(1L));
         assertThat(messages.get(0).getExternalId(), is("successful-message-external-id"));

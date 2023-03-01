@@ -6,6 +6,8 @@ import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -73,18 +75,17 @@ public class WebhookDeliveryQueueEntity {
         return createdDate.toInstant();
     }
 
-
-    public void setDeliveryStatus(DeliveryStatus deliveryStatusEnum) {
-        this.deliveryStatus = deliveryStatusEnum.name();
+    public void setDeliveryStatus(DeliveryStatus deliveryStatus) {
+        this.deliveryStatus = deliveryStatus;
     }
 
-
     public DeliveryStatus getDeliveryStatus() {
-        return DeliveryStatus.valueOf(deliveryStatus);
+        return deliveryStatus;
     }
 
     @Column(name = "delivery_status")
-    private String deliveryStatus;
+    @Enumerated(EnumType.STRING)
+    private DeliveryStatus deliveryStatus;
 
     @Column(name = "delivery_response_time_in_millis")
     private Long deliveryResponseTime;
