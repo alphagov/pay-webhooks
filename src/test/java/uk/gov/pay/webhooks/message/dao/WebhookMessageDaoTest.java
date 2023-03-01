@@ -41,6 +41,15 @@ class WebhookMessageDaoTest {
     }
 
    @Test
+   public void shouldSerialiseAndDeserialiseWebhookMessage() {
+        setup(0);
+        var message = webhookMessageDao.get(webhookExternalId, "successful-message-external-id");
+        assertThat(message.getExternalId(), is("successful-message-external-id"));
+        assertThat(message.getWebhookEntity().getExternalId(), is(webhookExternalId));
+        assertThat(message.getLastDeliveryStatus(), is(DeliveryStatus.SUCCESSFUL));
+   }
+
+   @Test
    public void shouldListAndCountAllWithNoStatus() {
         setup(1);
         var messages = webhookMessageDao.list(webhookExternalId, null, 1);
@@ -78,6 +87,7 @@ class WebhookMessageDaoTest {
 
        var message = new WebhookMessageEntity();
        message.setWebhookEntity(webhook);
+       message.setLastDeliveryStatus(DeliveryStatus.SUCCESSFUL);
        message.setExternalId("successful-message-external-id");
 
        database.inTransaction(() -> {

@@ -104,6 +104,7 @@ public class WebhookResourceIT {
                 .get("/v1/webhook/%s/message".formatted(externalId))
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
+                .body("results.last_delivery_status[0]", is("FAILED"))
                 .body("results.latest_attempt[0].status", is("FAILED"));
 
         given().port(port)
@@ -156,6 +157,7 @@ public class WebhookResourceIT {
                 .body("external_id", is(messageExternalId))
                 .body("resource_id", is("transaction-external-id"))
                 .body("resource_type", is("payment"))
+                .body("last_delivery_status", is("FAILED"))
                 .body("latest_attempt.status", is("FAILED"))
                 .body("latest_attempt.response_time", is(25));
     }
@@ -187,18 +189,18 @@ public class WebhookResourceIT {
         ));
         app.getJdbi().withHandle(h -> h.execute("""
                             INSERT INTO webhook_messages VALUES
-                            (1, '%s', '2022-01-01', 1, '2022-01-01', 1, '{}', 'transaction-external-id', 'payment'),
-                            (2, 'second-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null),
-                            (3, 'third-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null),
-                            (4, 'fourth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null),
-                            (5, 'fifth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null),
-                            (6, 'sixth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null),
-                            (7, 'seventh-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null),
-                            (8, 'eighth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null),
-                            (9, 'ninth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null),
-                            (10, 'tenth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null),
-                            (11, 'eleventh-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null),
-                            (12, 'twelfth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null)
+                            (1, '%s', '2022-01-01', 1, '2022-01-01', 1, '{}', 'transaction-external-id', 'payment', 'FAILED'),
+                            (2, 'second-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
+                            (3, 'third-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
+                            (4, 'fourth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
+                            (5, 'fifth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
+                            (6, 'sixth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
+                            (7, 'seventh-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
+                            (8, 'eighth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
+                            (9, 'ninth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
+                            (10, 'tenth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
+                            (11, 'eleventh-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
+                            (12, 'twelfth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null)
                         """.formatted(messageExternalId)
         ));
         app.getJdbi().withHandle(h -> h.execute("""
