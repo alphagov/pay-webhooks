@@ -1,0 +1,11 @@
+{
+  "Type" : "Notification",
+  "MessageId" : "04424f78-d540-5eb7-87e1-154d586b6b02",
+  "Message" : "",
+  "TopicArn" : "card-payment-events-topic",
+  "Timestamp" : "2021-12-16T18:52:27.068Z",
+  "SignatureVersion" : "1",
+  "Signature" : "a-valid-signature",
+  "SigningCertURL" : "https://sns.eu-west-1.amazonaws.com/SimpleNotificationService-signing-cert-uuid.pem",
+  "UnsubscribeURL" : "https://sns.eu-west-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:a-aws-arn"
+}
