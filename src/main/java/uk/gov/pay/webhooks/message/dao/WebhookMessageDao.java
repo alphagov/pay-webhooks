@@ -44,7 +44,7 @@ public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
                 namedQuery(WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID).setParameter("webhookId", webhookId);
         return (Long) query.getSingleResult();
     }
-
+    
     private int calculateFirstResult(int page) {
         return (page - 1) * WEBHOOK_MESSAGES_PAGE_SIZE;
     }

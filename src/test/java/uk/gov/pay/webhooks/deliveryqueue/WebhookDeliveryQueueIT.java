@@ -1,9 +1,9 @@
 package uk.gov.pay.webhooks.deliveryqueue;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import io.dropwizard.testing.ConfigOverride;
+import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -25,6 +25,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static uk.gov.pay.webhooks.ledger.TransactionFromLedgerFixture.aTransactionFromLedgerFixture;
 import static uk.gov.pay.webhooks.util.SNSToSQSEventFixture.anSNSToSQSEventFixture;
@@ -85,6 +87,13 @@ public class WebhookDeliveryQueueIT {
         wireMock.verify(
                 exactly(1),
                 postRequestedFor(urlEqualTo("/a-test-endpoint")).withRequestBody(matchingJsonPath("$.resource_id", equalTo(transaction.getTransactionId())))
-        ); 
+        );
+        
+        given().port(app.getAppRule().getLocalPort())
+                .contentType(ContentType.JSON)
+                .get("/v1/webhook/webhook-external-id/message")
+                .then()
+                .body("results[0].latest_attempt.status", is("SUCCESSFUL"))
+                .body("results[0].last_delivery_status", is("SUCCESSFUL"));
     }
 }

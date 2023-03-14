@@ -145,9 +145,9 @@ public class SendAttempter {
         domain.ifPresent(d -> logstashMarker.and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, d.getHost())));
         
         LOGGER.info(logstashMarker, "Sending webhook message finished"); 
-        
         webhookDeliveryQueueDao.recordResult(webhookDeliveryQueueEntity, reason, responseTime, statusCode, status, metricRegistry);
-        
+        webhookDeliveryQueueEntity.getWebhookMessageEntity().setLastDeliveryStatus(status);
+
         if (!terminalStatuses.contains(status)) {
             enqueueRetry(webhookDeliveryQueueEntity, nextRetryIn(retryCount));
         }
