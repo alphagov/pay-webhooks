@@ -14,6 +14,7 @@ import uk.gov.pay.rule.PostgresTestDocker;
 import uk.gov.pay.rule.SqsTestDocker;
 import uk.gov.pay.webhooks.app.WebhooksApp;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
+import uk.gov.service.payments.commons.testing.port.PortFactory;
 
 import java.util.List;
 
@@ -29,6 +30,9 @@ public class AppWithPostgresAndSqsExtension implements BeforeAllCallback, AfterA
     private static final String CONFIG_PATH = resourceFilePath("config/test-config.yaml");
     private final Jdbi jdbi;
     private final DropwizardAppExtension<WebhooksConfig> dropwizardAppExtension;
+
+    static final int wireMockPort = PortFactory.findFreePort();
+
     private final AmazonSQS sqsClient;
 
     public AppWithPostgresAndSqsExtension() {
@@ -39,9 +43,9 @@ public class AppWithPostgresAndSqsExtension implements BeforeAllCallback, AfterA
         PostgresTestDocker.getOrCreate();
         sqsClient = SqsTestDocker.initialise("event-queue");
 
-
         ConfigOverride[] newConfigOverrides = overrideDatabaseConfig(configOverrides);
         newConfigOverrides = overrideSqsConfig(newConfigOverrides);
+        newConfigOverrides = overrideUrlsConfig(newConfigOverrides);
 
         dropwizardAppExtension = new DropwizardAppExtension<>(WebhooksApp.class,
                 CONFIG_PATH, newConfigOverrides);
@@ -84,6 +88,12 @@ public class AppWithPostgresAndSqsExtension implements BeforeAllCallback, AfterA
         return newConfigOverride.toArray(new ConfigOverride[0]);
     }
 
+    private ConfigOverride[] overrideUrlsConfig(ConfigOverride[] configOverrides) {
+        List<ConfigOverride> newConfigOverride = newArrayList(configOverrides);
+        newConfigOverride.add(config("ledgerBaseURL", "http://localhost:" + getWireMockPort()));
+        return newConfigOverride.toArray(new ConfigOverride[0]);
+    }
+
     public DropwizardAppExtension<WebhooksConfig> getAppRule() {
         return dropwizardAppExtension;
     }
@@ -94,5 +104,9 @@ public class AppWithPostgresAndSqsExtension implements BeforeAllCallback, AfterA
 
     public AmazonSQS getSqsClient() {
         return sqsClient;
+    }
+
+    public int getWireMockPort() {
+        return wireMockPort;
     }
 }
