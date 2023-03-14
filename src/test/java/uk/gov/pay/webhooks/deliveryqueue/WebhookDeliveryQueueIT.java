@@ -62,8 +62,7 @@ public class WebhookDeliveryQueueIT {
     @Test
     public void webhookMessageIsEmittedForSubscribedWebhook() throws IOException, InterruptedException {
         var serviceExternalId = "a-valid-service-id";
-        app.getJdbi().withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', 'webhook-external-id', 'signing-key', '%s', false, 'http://localhost:%d/a-test-endpoint', 'description', 'ACTIVE')".formatted(serviceExternalId, app.getWireMockPort())));
-        app.getJdbi().withHandle(h -> h.execute("INSERT INTO webhook_subscriptions VALUES (1, (SELECT id FROM event_types WHERE name = 'card_payment_succeeded'))"));
+        dbHelper.addWebhookWithSubscription("a-valid-webhook-id", serviceExternalId, "http://localhost:%d/a-test-endpoint".formatted(app.getWireMockPort()));
         
         var transaction = aTransactionFromLedgerFixture();
         var sqsMessage = anSNSToSQSEventFixture()
