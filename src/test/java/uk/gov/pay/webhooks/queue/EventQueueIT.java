@@ -14,13 +14,16 @@ import uk.gov.pay.webhooks.queue.sqs.QueueException;
 import uk.gov.pay.webhooks.queue.sqs.QueueMessage;
 import uk.gov.pay.webhooks.queue.sqs.SqsQueueService;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.pay.webhooks.util.SNSToSQSEventFixture.anSNSToSQSEventFixture;
 
 class EventQueueIT {
 
@@ -51,20 +54,19 @@ class EventQueueIT {
     }
     
     @Test
-    void shouldConvertValidMessageFromQueueToEventMessage() throws QueueException {
-        var sqsMessage = """
-                {
-                  "Type" : "Notification",
-                  "MessageId" : "04424f78-d540-5eb7-87e1-154d586b6b02",
-                  "Message" : "{\\"sqs_message_id\\":\\"dc142884-1e4b-4e57-be93-111b692a4868\\",\\"service_id\\":\\"some-service-id\\",\\"live\\":false,\\"resource_type\\":\\"payment\\",\\"resource_external_id\\":\\"t8cj9v1lci7da7pbp99qg9olv3\\",\\"parent_resource_external_id\\":null,\\"timestamp\\":\\"2019-08-31T14:18:46.446541Z\\",\\"event_type\\":\\"PAYMENT_DETAILS_ENTERED\\",\\"reproject_domain_object\\":false}",
-                  "TopicArn" : "card-payment-events-topic",
-                  "Timestamp" : "2021-12-16T18:52:27.068Z",
-                  "SignatureVersion" : "1",
-                  "Signature" : "some-signature",
-                  "SigningCertURL" : "https://sns.eu-west-1.amazonaws.com/SimpleNotificationService-signing-cert-uuid.pem",
-                  "UnsubscribeURL" : "https://sns.eu-west-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:a-aws-arn"
-                }
-                """;
+    void shouldConvertValidMessageFromQueueToEventMessage() throws QueueException, IOException {
+        var eventMessage = Map.of(
+                "sqs_message_id", "dc142884-1e4b-4e57-be93-111b692a4868",
+                "service_id", "some-service-id",
+                "live", "false",
+                "resource_type", "payment",
+                "resource_external_id", "t8cj9v1lci7da7pbp99qg9olv3",
+                "timestamp", "2019-08-31T14:18:46.446541Z",
+                "event_type", "PAYMENT_DETAILS_ENTERED"
+        );
+        var sqsMessage = anSNSToSQSEventFixture()
+                .withBody(eventMessage)
+                .build();
         client.sendMessage(SqsTestDocker.getQueueUrl("event-queue"), sqsMessage);
 
         SqsConfig sqsConfig = mock(SqsConfig.class);
