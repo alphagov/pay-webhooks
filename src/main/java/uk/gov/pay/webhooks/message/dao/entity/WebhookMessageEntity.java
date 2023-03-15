@@ -40,7 +40,7 @@ import java.time.ZoneOffset;
 
 @NamedQuery(
         name = WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID_AND_STATUS,
-        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and webhookDeliveryQueueEntity.deliveryStatus = :deliveryStatus order by createdDate desc"
+        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and lastDeliveryStatus = :deliveryStatus order by createdDate desc"
 )
 
 @NamedQuery(
@@ -50,7 +50,7 @@ import java.time.ZoneOffset;
 
 @NamedQuery(
         name = WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID_AND_STATUS,
-        query = "select count(m) from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and webhookDeliveryQueueEntity.deliveryStatus = :deliveryStatus"
+        query = "select count(m) from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and lastDeliveryStatus = :deliveryStatus"
 )
 
 @Entity
