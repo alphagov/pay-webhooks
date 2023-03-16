@@ -44,10 +44,13 @@ public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
                 .getResultList();
     }
 
-    public Long count(String webhookId, DeliveryStatus deliveryStatus) {
+    public Long count(WebhookEntity webhook, DeliveryStatus deliveryStatus) {
         var query = deliveryStatus != null ?
-                namedQuery(WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID_AND_STATUS).setParameter("webhookId", webhookId).setParameter("deliveryStatus", deliveryStatus) :
-                namedQuery(WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID).setParameter("webhookId", webhookId);
+                namedQuery(WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID_AND_STATUS)
+                        .setParameter("webhook", webhook)
+                        .setParameter("deliveryStatus", deliveryStatus) :
+                namedQuery(WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID)
+                        .setParameter("webhook", webhook);
         return (Long) query.getSingleResult();
     }
 

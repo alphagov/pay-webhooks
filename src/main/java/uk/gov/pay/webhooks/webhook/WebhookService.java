@@ -82,7 +82,7 @@ public class WebhookService {
                 .stream()
                 .map(WebhookMessageResponse::from)
                 .toList();
-        var total = webhookMessageDao.count(webhookId, status);
+        var total = webhookMessageDao.count(webhook, status);
         return new WebhookMessageSearchResponse(total.intValue(), messages.size(), page, messages);
     }
 
