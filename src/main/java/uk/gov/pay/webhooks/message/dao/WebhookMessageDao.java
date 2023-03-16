@@ -32,10 +32,13 @@ public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
                .findFirst();
     }
 
-    public List<WebhookMessageEntity> list(String webhookId, DeliveryStatus deliveryStatus, int page) {
+    public List<WebhookMessageEntity> list(WebhookEntity webhook, DeliveryStatus deliveryStatus, int page) {
         var query = deliveryStatus != null ?
-                namedTypedQuery(WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID_AND_STATUS).setParameter("webhookId", webhookId).setParameter("deliveryStatus", deliveryStatus) :
-                namedTypedQuery(WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID).setParameter("webhookId", webhookId);
+                namedTypedQuery(WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID_AND_STATUS)
+                        .setParameter("webhook", webhook)
+                        .setParameter("deliveryStatus", deliveryStatus) :
+                namedTypedQuery(WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID)
+                        .setParameter("webhook", webhook);
         return query.setFirstResult(calculateFirstResult(page))
                 .setMaxResults(WEBHOOK_MESSAGES_PAGE_SIZE)
                 .getResultList();

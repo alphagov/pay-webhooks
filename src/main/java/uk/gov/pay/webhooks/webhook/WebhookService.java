@@ -77,7 +77,8 @@ public class WebhookService {
     }
 
     public WebhookMessageSearchResponse listMessages(String webhookId, DeliveryStatus status, int page) {
-        var messages = webhookMessageDao.list(webhookId, status, page)
+        var webhook = webhookDao.findByExternalId(webhookId).orElseThrow(NotFoundException::new);
+        var messages = webhookMessageDao.list(webhook, status, page)
                 .stream()
                 .map(WebhookMessageResponse::from)
                 .toList();

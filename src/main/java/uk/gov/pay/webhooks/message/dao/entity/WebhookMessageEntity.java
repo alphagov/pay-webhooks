@@ -35,12 +35,12 @@ import java.time.ZoneOffset;
 
 @NamedQuery(
         name = WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID,
-        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId order by createdDate desc"
+        query = "select m from WebhookMessageEntity m where webhookEntity = :webhook order by createdDate desc"
 )
 
 @NamedQuery(
         name = WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID_AND_STATUS,
-        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and lastDeliveryStatus = :deliveryStatus order by createdDate desc"
+        query = "select m from WebhookMessageEntity m where webhookEntity = :webhook and lastDeliveryStatus = :deliveryStatus order by createdDate desc"
 )
 
 @NamedQuery(

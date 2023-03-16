@@ -130,6 +130,15 @@ public class WebhookResourceIT {
     }
 
     @Test
+    public void messagesShouldReturn404ForMissingWebhook() {
+        given().port(port)
+                .contentType(JSON)
+                .get("/v1/webhook/a-missing-webhook-id/message")
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+    }
+
+    @Test
     public void shouldReturnAndCountEmptyMessages() {
         var externalId = "a-valid-webhook-id";
         app.getJdbi().withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE')".formatted(externalId)));

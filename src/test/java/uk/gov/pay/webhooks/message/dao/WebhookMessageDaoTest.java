@@ -53,7 +53,8 @@ class WebhookMessageDaoTest {
    @Test
    public void shouldListAndCountAllWithNoStatus() {
         setup(1);
-        var messages = webhookMessageDao.list(webhookExternalId, null, 1);
+        var webhook = webhookDao.findByExternalId(webhookExternalId).get();
+        var messages = webhookMessageDao.list(webhook, null, 1);
         var total = webhookMessageDao.count(webhookExternalId, null);
         assertThat(messages.size(), is(2));
         assertThat(total, is(2L));
@@ -62,7 +63,8 @@ class WebhookMessageDaoTest {
     @Test
     public void shouldListAndCountFilteredByStatus() {
         setup(1);
-        var messages = webhookMessageDao.list(webhookExternalId, DeliveryStatus.SUCCESSFUL, 1);
+        var webhook = webhookDao.findByExternalId(webhookExternalId).get();
+        var messages = webhookMessageDao.list(webhook, DeliveryStatus.SUCCESSFUL, 1);
         var total = webhookMessageDao.count(webhookExternalId, DeliveryStatus.SUCCESSFUL);
         assertThat(messages.size(), is(1));
         assertThat(total, is(1L));
@@ -72,8 +74,9 @@ class WebhookMessageDaoTest {
     @Test
     public void shouldCalculateCorrectPagePosition() {
         setup(15);
-        var firstPage = webhookMessageDao.list(webhookExternalId, null, 1);
-        var secondPage = webhookMessageDao.list(webhookExternalId, null, 2);
+        var webhook = webhookDao.findByExternalId(webhookExternalId).get();
+        var firstPage = webhookMessageDao.list(webhook, null, 1);
+        var secondPage = webhookMessageDao.list(webhook, null, 2);
         var total = webhookMessageDao.count(webhookExternalId, null);
         assertThat(firstPage.size(), is(10));
         assertThat(secondPage.size(), is(6));
