@@ -64,8 +64,8 @@ public class WebhookService {
         return webhookEntity;
     }
 
-    public Optional<WebhookEntity> findByExternalId(String externalId, String serviceId) {
-        return webhookDao.findByExternalId(externalId, serviceId);
+    public Optional<WebhookEntity> findByExternalIdAndServiceId(String externalId, String serviceId) {
+        return webhookDao.findByExternalIdAndServiceId(externalId, serviceId);
     }    
 
     public List<WebhookEntity> list(boolean live, String serviceId) {
@@ -77,17 +77,19 @@ public class WebhookService {
     }
 
     public WebhookMessageSearchResponse listMessages(String webhookId, DeliveryStatus status, int page) {
-        var messages = webhookMessageDao.list(webhookId, status, page)
+        var webhook = webhookDao.findByExternalId(webhookId).orElseThrow(NotFoundException::new);
+        var messages = webhookMessageDao.list(webhook, status, page)
                 .stream()
                 .map(WebhookMessageResponse::from)
                 .toList();
-        var total = webhookMessageDao.count(webhookId, status);
+        var total = webhookMessageDao.count(webhook, status);
         return new WebhookMessageSearchResponse(total.intValue(), messages.size(), page, messages);
     }
 
-    public WebhookMessageResponse getMessage(String webhookId, String messageId) {
-        var message = webhookMessageDao.get(webhookId, messageId);
-        return WebhookMessageResponse.from(message);
+    public Optional<WebhookMessageResponse> getMessage(String webhookId, String messageId) {
+        return webhookDao.findByExternalId(webhookId)
+                .flatMap(webhookEntity -> webhookMessageDao.get(webhookEntity, messageId))
+                .map(WebhookMessageResponse::from);
     }
 
     public List<WebhookDeliveryQueueResponse> listMessageAttempts(String webhookId, String messageId) {
@@ -98,14 +100,14 @@ public class WebhookService {
     }
 
     public Optional<WebhookEntity> regenerateSigningKey(String externalId, String serviceId) {
-         return webhookDao.findByExternalId(externalId, serviceId).map(webhookEntity -> { 
+         return webhookDao.findByExternalIdAndServiceId(externalId, serviceId).map(webhookEntity -> { 
           webhookEntity.setSigningKey(idGenerator.newWebhookSigningKey(webhookEntity.isLive()));
              return webhookEntity;
          });
     } 
     
     public WebhookEntity update(String externalId, String serviceId, List<JsonPatchRequest> patchRequests) {
-        return webhookDao.findByExternalId(externalId, serviceId).map(webhookEntity -> {
+        return webhookDao.findByExternalIdAndServiceId(externalId, serviceId).map(webhookEntity -> {
             patchRequests.forEach(patchRequest -> {
                 if (JsonPatchOp.REPLACE == patchRequest.getOp()) {
                     switch (patchRequest.getPath()) {

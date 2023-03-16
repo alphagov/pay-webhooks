@@ -84,7 +84,7 @@ public class WebhookResource {
                                                   @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12")
                                                   @QueryParam("service_id") @NotNull String serviceId) {
         return webhookService
-                .findByExternalId(externalId, serviceId)
+                .findByExternalIdAndServiceId(externalId, serviceId)
                 .map(WebhookResponse::from)
                 .orElseThrow(NotFoundException::new);
     }
@@ -105,7 +105,7 @@ public class WebhookResource {
                                                         @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12")
                                                         @QueryParam("service_id") @NotNull String serviceId) {
         return webhookService
-                .findByExternalId(externalId, serviceId)
+                .findByExternalIdAndServiceId(externalId, serviceId)
                 .map(WebhookEntity::getSigningKey)
                 .map(SigningKeyResponse::new)
                 .orElseThrow(NotFoundException::new);
@@ -194,7 +194,8 @@ public class WebhookResource {
             @Schema(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("webhookExternalId") String externalId,
             @Schema(example = "s0wjen129ejalk21nfjkdknf1jejklh") @PathParam("webhookMessageExternalId") String messageId
     ) {
-        return webhookService.getMessage(externalId, messageId);
+        return webhookService.getMessage(externalId, messageId)
+                .orElseThrow(NotFoundException::new);
     }
 
     @UnitOfWork
@@ -232,7 +233,7 @@ public class WebhookResource {
                                                  "                            \"value\": \"new description\"" +
                                                  "                        }"))
                                                  JsonNode payload) {
-        var webhook = webhookService.findByExternalId(externalId, serviceId).orElseThrow(NotFoundException::new);
+        var webhook = webhookService.findByExternalIdAndServiceId(externalId, serviceId).orElseThrow(NotFoundException::new);
         webhookRequestValidator.validate(payload, webhook.isLive());
         List<JsonPatchRequest> patchRequests = StreamSupport.stream(payload.spliterator(), false)
                 .map(JsonPatchRequest::from)

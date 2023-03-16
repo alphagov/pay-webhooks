@@ -147,7 +147,8 @@ public class SendAttempter {
         LOGGER.info(logstashMarker, "Sending webhook message finished"); 
         
         webhookDeliveryQueueDao.recordResult(webhookDeliveryQueueEntity, reason, responseTime, statusCode, status, metricRegistry);
-        
+        webhookDeliveryQueueEntity.getWebhookMessageEntity().setLastDeliveryStatus(status);
+
         if (!terminalStatuses.contains(status)) {
             enqueueRetry(webhookDeliveryQueueEntity, nextRetryIn(retryCount));
         }

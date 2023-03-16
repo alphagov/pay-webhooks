@@ -122,7 +122,7 @@ public class WebhookResourceTest {
 
     @Test
     public void getWebhookByIdWhenWebhookExists() {
-        when(webhookService.findByExternalId(eq(existingWebhookId), eq(existingServiceId))).thenReturn(Optional.of(webhook));
+        when(webhookService.findByExternalIdAndServiceId(eq(existingWebhookId), eq(existingServiceId))).thenReturn(Optional.of(webhook));
 
         var response = resources
                 .target("/v1/webhook/%s".formatted(existingWebhookId))
@@ -135,7 +135,7 @@ public class WebhookResourceTest {
 
     @Test
     public void getWebhookByIdWhenWebhookExistsAndServiceIdIncorrect404() {
-        when(webhookService.findByExternalId(eq(existingWebhookId), eq(existingServiceId))).thenReturn(Optional.of(webhook));
+        when(webhookService.findByExternalIdAndServiceId(eq(existingWebhookId), eq(existingServiceId))).thenReturn(Optional.of(webhook));
 
         var response = resources
                 .target("/v1/webhook/%s".formatted(existingWebhookId))
@@ -148,7 +148,7 @@ public class WebhookResourceTest {
 
     @Test
     public void getWebhookByIdWhenDoesNotExist404() {
-        when(webhookService.findByExternalId(any(String.class), any(String.class))).thenReturn(Optional.empty());
+        when(webhookService.findByExternalIdAndServiceId(any(String.class), any(String.class))).thenReturn(Optional.empty());
 
         var response = resources
                 .target("/v1/webhook/%s".formatted("aint_no_webhook"))
@@ -161,7 +161,7 @@ public class WebhookResourceTest {
 
     @Test
     public void getWebhookByIdWithoutServiceId400() {
-        when(webhookService.findByExternalId(eq(existingWebhookId), any(String.class))).thenReturn(Optional.of(webhook));
+        when(webhookService.findByExternalIdAndServiceId(eq(existingWebhookId), any(String.class))).thenReturn(Optional.of(webhook));
 
         var response = resources
                 .target("/v1/webhook/%s".formatted(existingWebhookId))

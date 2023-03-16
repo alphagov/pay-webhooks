@@ -30,27 +30,27 @@ import java.time.ZoneOffset;
 
 @NamedQuery(
         name = WebhookMessageEntity.MESSAGE_BY_WEBHOOK_ID_AND_MESSAGE_ID,
-        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and externalId = :messageId"
+        query = "select m from WebhookMessageEntity m where webhookEntity = :webhook and externalId = :messageId"
 )
 
 @NamedQuery(
         name = WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID,
-        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId order by createdDate desc"
+        query = "select m from WebhookMessageEntity m where webhookEntity = :webhook order by createdDate desc"
 )
 
 @NamedQuery(
         name = WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID_AND_STATUS,
-        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and webhookDeliveryQueueEntity.deliveryStatus = :deliveryStatus order by createdDate desc"
+        query = "select m from WebhookMessageEntity m where webhookEntity = :webhook and lastDeliveryStatus = :deliveryStatus order by createdDate desc"
 )
 
 @NamedQuery(
         name = WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID,
-        query = "select count(m) from WebhookMessageEntity m where webhookEntity.externalId = :webhookId"
+        query = "select count(m) from WebhookMessageEntity m where webhookEntity = :webhook"
 )
 
 @NamedQuery(
         name = WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID_AND_STATUS,
-        query = "select count(m) from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and webhookDeliveryQueueEntity.deliveryStatus = :deliveryStatus"
+        query = "select count(m) from WebhookMessageEntity m where webhookEntity = :webhook and lastDeliveryStatus = :deliveryStatus"
 )
 
 @Entity
@@ -101,7 +101,7 @@ public class WebhookMessageEntity {
     @Column(name = "created_date")
     private OffsetDateTime createdDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "webhook_id", updatable = false)
     private WebhookEntity webhookEntity;
 

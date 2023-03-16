@@ -98,9 +98,11 @@ class SendAttempterTest {
         
         sendAttempter.attemptSend(enqueuedItem);
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.FAILED));
+        assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.FAILED));
         assertThat(enqueuedItem.getDeliveryResult(), is("404 Not Found"));
         sendAttempter.attemptSend(enqueuedItem);
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.SUCCESSFUL));
+        assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.SUCCESSFUL));
         assertThat(enqueuedItem.getDeliveryResult(), is("200 OK"));
     }    
     
@@ -126,9 +128,7 @@ class SendAttempterTest {
 
         assertDoesNotThrow(() -> sendAttempter.attemptSend(enqueuedItem));
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.FAILED));
-
-        assertDoesNotThrow(() -> sendAttempter.attemptSend(enqueuedItem));
-        assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.FAILED));
+        assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.FAILED));
     }
     
     @Test
@@ -142,6 +142,7 @@ class SendAttempterTest {
        
         sendAttempter.attemptSend(enqueuedItem);
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.FAILED));
+        assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.FAILED));
 
         database.inTransaction(() -> {
             assertThat(webhookDeliveryQueueDao.nextToSend((Instant.parse("2007-12-03T10:15:30.00Z"))), is(notNullValue()));
@@ -158,6 +159,7 @@ class SendAttempterTest {
 
         sendAttempter.attemptSend(enqueuedItem);
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.WILL_NOT_SEND));
+        assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.WILL_NOT_SEND));
     }
 
     @Test
@@ -169,5 +171,6 @@ class SendAttempterTest {
 
         sendAttempter.attemptSend(enqueuedItem);
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.WILL_NOT_SEND));
+        assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.WILL_NOT_SEND));
     }
 }
