@@ -30,7 +30,7 @@ import java.time.ZoneOffset;
 
 @NamedQuery(
         name = WebhookMessageEntity.MESSAGE_BY_WEBHOOK_ID_AND_MESSAGE_ID,
-        query = "select m from WebhookMessageEntity m where webhookEntity.externalId = :webhookId and externalId = :messageId"
+        query = "select m from WebhookMessageEntity m where webhookEntity = :webhook and externalId = :messageId"
 )
 
 @NamedQuery(
@@ -101,7 +101,7 @@ public class WebhookMessageEntity {
     @Column(name = "created_date")
     private OffsetDateTime createdDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "webhook_id", updatable = false)
     private WebhookEntity webhookEntity;
 

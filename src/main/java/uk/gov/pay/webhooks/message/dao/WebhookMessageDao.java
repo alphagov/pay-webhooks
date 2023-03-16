@@ -4,9 +4,11 @@ import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
+import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Optional;
 
 public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
 
@@ -22,11 +24,12 @@ public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
         return webhookMessage;
     }
 
-    public WebhookMessageEntity get(String webhookId, String messageId) {
+    public Optional<WebhookMessageEntity> get(WebhookEntity webhook, String messageId) {
        return namedTypedQuery(WebhookMessageEntity.MESSAGE_BY_WEBHOOK_ID_AND_MESSAGE_ID)
-               .setParameter("webhookId", webhookId)
+               .setParameter("webhook", webhook)
                .setParameter("messageId", messageId)
-               .getSingleResult();
+               .stream()
+               .findFirst();
     }
 
     public List<WebhookMessageEntity> list(String webhookId, DeliveryStatus deliveryStatus, int page) {

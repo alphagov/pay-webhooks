@@ -107,7 +107,7 @@ public class WebhookDaoTest {
     
     @Test
     public void notFoundEntityReturnsEmptyOption(){
-        assertThat(webhookDao.findByExternalId("foo", "bar").isEmpty(), equalTo(true));
+        assertThat(webhookDao.findByExternalIdAndServiceId("foo", "bar").isEmpty(), equalTo(true));
     }     
 
     @Test

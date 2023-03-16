@@ -20,13 +20,21 @@ public class WebhookDao extends AbstractDAO<WebhookEntity> {
         return webhook;
     }
 
-    public Optional<WebhookEntity> findByExternalId(String webhookExternalId, String serviceId) {
+    public Optional<WebhookEntity> findByExternalIdAndServiceId(String webhookExternalId, String serviceId) {
             return namedTypedQuery(WebhookEntity.GET_BY_EXTERNAL_ID_AND_SERVICE_ID)
                     .setParameter("externalId", webhookExternalId)
                     .setParameter("serviceId", serviceId)
                     .getResultList()
                     .stream()
                     .findFirst();
+    }
+
+    public Optional<WebhookEntity> findByExternalId(String webhookExternalId) {
+        return namedTypedQuery(WebhookEntity.GET_BY_EXTERNAL_ID)
+                .setParameter("externalId", webhookExternalId)
+                .getResultList()
+                .stream()
+                .findFirst();
     }
 
     public List<WebhookEntity> list(boolean live, String serviceId) {

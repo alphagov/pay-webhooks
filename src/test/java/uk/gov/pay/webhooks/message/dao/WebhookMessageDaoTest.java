@@ -43,7 +43,8 @@ class WebhookMessageDaoTest {
    @Test
    public void shouldSerialiseAndDeserialiseWebhookMessage() {
         setup(0);
-        var message = webhookMessageDao.get(webhookExternalId, "successful-message-external-id");
+        var webhook = webhookDao.findByExternalId(webhookExternalId).get();
+        var message = webhookMessageDao.get(webhook, "successful-message-external-id").get();
         assertThat(message.getExternalId(), is("successful-message-external-id"));
         assertThat(message.getWebhookEntity().getExternalId(), is(webhookExternalId));
         assertThat(message.getLastDeliveryStatus(), is(DeliveryStatus.SUCCESSFUL));

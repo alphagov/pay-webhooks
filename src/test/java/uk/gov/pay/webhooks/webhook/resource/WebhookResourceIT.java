@@ -130,6 +130,22 @@ public class WebhookResourceIT {
     }
 
     @Test
+    public void shouldReturnAndCountEmptyMessages() {
+        var externalId = "a-valid-webhook-id";
+        app.getJdbi().withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE')".formatted(externalId)));
+
+        given().port(port)
+                .contentType(JSON)
+                .get("/v1/webhook/%s/message".formatted(externalId))
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .body("count", is(0))
+                .body("total", is(0))
+                .body("page", is(1))
+                .body("results.size()", is(0));
+    }
+
+    @Test
     public void shouldReturnMessageAttempts() {
         var externalId = "awebhookexternalid";
         var messageExternalId = "message-external-id-1";
@@ -160,6 +176,19 @@ public class WebhookResourceIT {
                 .body("last_delivery_status", is("FAILED"))
                 .body("latest_attempt.status", is("FAILED"))
                 .body("latest_attempt.response_time", is(25));
+    }
+
+    @Test
+    public void shouldReturn404ForMessageNotFound() {
+        var externalId = "awebhookexternalid";
+        var messageExternalId = "message-external-id-1";
+        setupWebhookWithMessages(externalId, messageExternalId);
+
+        given().port(port)
+                .contentType(JSON)
+                .get("/v1/webhook/%s/message/a-missing-message-id".formatted(externalId))
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
 
     @Test
