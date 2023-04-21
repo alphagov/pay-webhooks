@@ -435,10 +435,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WebhookMessageResponse'
-        total:
-          type: integer
-          format: int32
-          example: 120
     WebhookResponse:
       type: object
       properties:

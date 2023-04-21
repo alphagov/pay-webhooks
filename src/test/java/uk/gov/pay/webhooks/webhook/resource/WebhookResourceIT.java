@@ -113,7 +113,6 @@ public class WebhookResourceIT {
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("count", is(10))
-                .body("total", is(12))
                 .body("page", is(1))
                 .body("results.size()", is(10));
 
@@ -124,7 +123,6 @@ public class WebhookResourceIT {
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("count", is(2))
-                .body("total", is(12))
                 .body("page", is(2))
                 .body("results.size()", is(2));
     }
@@ -149,7 +147,6 @@ public class WebhookResourceIT {
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("count", is(0))
-                .body("total", is(0))
                 .body("page", is(1))
                 .body("results.size()", is(0));
     }
