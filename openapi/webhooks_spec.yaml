@@ -110,9 +110,14 @@ paths:
       - example: eo29upsdkjlk3jpwjj2dfn12
         in: query
         name: service_id
-        required: true
         schema:
           type: string
+      - description: "If false, the service_id must be specified"
+        example: false
+        in: query
+        name: override_account_or_service_id_restriction
+        schema:
+          type: boolean
       responses:
         "200":
           content:
@@ -224,7 +229,7 @@ paths:
       - Webhooks
   /v1/webhook/{webhookExternalId}/message/{webhookMessageExternalId}/attempt:
     get:
-      operationId: getWebhookMessageAttemps
+      operationId: getWebhookMessageAttempts
       parameters:
       - in: path
         name: webhookExternalId

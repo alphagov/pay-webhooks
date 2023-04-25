@@ -66,7 +66,11 @@ public class WebhookService {
 
     public Optional<WebhookEntity> findByExternalIdAndServiceId(String externalId, String serviceId) {
         return webhookDao.findByExternalIdAndServiceId(externalId, serviceId);
-    }    
+    }
+
+    public Optional<WebhookEntity> findByExternalId(String externalId) {
+        return webhookDao.findByExternalId(externalId);
+    }
 
     public List<WebhookEntity> list(boolean live, String serviceId) {
         return webhookDao.list(live, serviceId);

@@ -172,6 +172,19 @@ public class WebhookResourceTest {
     }
 
     @Test
+    public void getWebhookByIdWithoutServiceIdWithOverrideFlagWhenWebhookExists() {
+        when(webhookService.findByExternalId(eq(existingWebhookId))).thenReturn(Optional.of(webhook));
+
+        var response = resources
+                .target("/v1/webhook/%s".formatted(existingWebhookId))
+                .queryParam("override_account_or_service_id_restriction", "true")
+                .request()
+                .get();
+
+        assertThat(response.getStatus(), is(200)); 
+    }
+
+    @Test
     public void getWebhooksReturnsListOfWebhooks() throws JsonProcessingException {
         webhook.setServiceId("some-service-id");
         webhook.setLive(true);
