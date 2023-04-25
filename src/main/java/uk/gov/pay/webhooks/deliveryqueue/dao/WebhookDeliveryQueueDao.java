@@ -9,13 +9,11 @@ import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 
 import javax.inject.Inject;
 import javax.persistence.LockModeType;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.InstantSource;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEntity> {
     public final InstantSource instantSource;
@@ -66,6 +64,18 @@ public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEnt
         return namedTypedQuery(WebhookDeliveryQueueEntity.LIST_DELIVERY_ATTEMPTS)
                 .setParameter("webhookId", webhookId)
                 .setParameter("messageId", messageId)
+                .getResultList();
+    }
+
+    public int deleteDeliveryQueueEntries(Stream<WebhookDeliveryQueueEntity> webhookDeliveryQueueEntities) {
+        return currentSession().createQuery("delete from WebhookDeliveryQueueEntity where id in :ids")
+                .setParameter("ids", webhookDeliveryQueueEntities.map(WebhookDeliveryQueueEntity::getId).collect(Collectors.toList()))
+                .executeUpdate();
+    }
+
+    public List<WebhookDeliveryQueueEntity> getWebhookDeliveryQueueEntitiesOlderThan(int days) {
+        return namedTypedQuery(WebhookDeliveryQueueEntity.ENTRIES_OLDER_THAN_X_DAYS)
+                .setParameter("datetime", OffsetDateTime.now().minusDays(days))
                 .getResultList();
     }
 }

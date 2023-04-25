@@ -15,6 +15,7 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import java.time.Instant;
 import java.time.InstantSource;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -40,6 +41,32 @@ class WebhookMessageDaoTest {
         webhookDeliveryQueueDao = new WebhookDeliveryQueueDao(database.getSessionFactory(), InstantSource.fixed(Instant.now()));
     }
 
+    @Test
+    public void shouldDeleteWebhookMessages() {
+        database.inTransaction(() -> {
+            var webhook = new WebhookEntity();
+            var webhookMessage1 = createWebhookMessageEntity(webhook);
+            var webhookMessage2 = createWebhookMessageEntity(webhook);
+            var webhookMessage3 = createWebhookMessageEntity(webhook);
+            webhookMessageDao.deleteMessages(Stream.of(webhookMessage1, webhookMessage2, webhookMessage3));
+        });
+    }
+
+    private WebhookMessageEntity createWebhookMessageEntity(WebhookEntity webhook) {
+        var message = new WebhookMessageEntity();
+        message.setWebhookEntity(webhook);
+        message.setLastDeliveryStatus(DeliveryStatus.SUCCESSFUL);
+        message.setCreatedDate(Instant.now());
+        return message;
+    }
+    
+    @Test
+    public void shouldGetWebhookMessagesOlderThanDays() {
+        database.inTransaction(() -> {
+            webhookMessageDao.getWebhookMessagesOlderThan(7);
+        });
+    }
+    
    @Test
    public void shouldSerialiseAndDeserialiseWebhookMessage() {
         setup(0);

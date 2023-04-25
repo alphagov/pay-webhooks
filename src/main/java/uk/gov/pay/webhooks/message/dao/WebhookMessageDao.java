@@ -7,8 +7,12 @@ import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import javax.inject.Inject;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
 
@@ -56,5 +60,17 @@ public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
 
     private int calculateFirstResult(int page) {
         return (page - 1) * WEBHOOK_MESSAGES_PAGE_SIZE;
+    }
+
+    public List<WebhookMessageEntity> getWebhookMessagesOlderThan(int days) {
+        return namedTypedQuery(WebhookMessageEntity.MESSAGES_OLDER_THAN_X_DAYS)
+                .setParameter("datetime", OffsetDateTime.now().minusDays(days))
+                .getResultList();
+    }
+
+    public int deleteMessages(Stream<WebhookMessageEntity> webhookMessageEntities) {
+        return currentSession().createQuery("delete from WebhookMessageEntity where id in :ids")
+                .setParameter("ids", webhookMessageEntities.map(WebhookMessageEntity::getId).collect(Collectors.toList()))
+                .executeUpdate();
     }
 }
