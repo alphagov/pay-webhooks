@@ -82,9 +82,14 @@ public class WebhookResource {
     public WebhookResponse getWebhookByExternalId(@Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg")
                                                   @PathParam("webhookExternalId") @NotNull String externalId,
                                                   @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12")
-                                                  @QueryParam("service_id") @NotNull String serviceId) {
-        return webhookService
-                .findByExternalIdAndServiceId(externalId, serviceId)
+                                                  @QueryParam("service_id") String serviceId,
+                                                  @Parameter(description = "If false, the service_id must be specified", example = "false")
+                                                  @QueryParam("override_account_or_service_id_restriction") Boolean overrideFilterRestrictions) {
+        if (!Boolean.TRUE.equals(overrideFilterRestrictions) && serviceId == null) {
+            throw new BadRequestException("[service_id] is required");
+        }
+        var webhook = Boolean.TRUE.equals(overrideFilterRestrictions) ? webhookService.findByExternalId(externalId) : webhookService.findByExternalIdAndServiceId(externalId, serviceId);
+        return webhook
                 .map(WebhookResponse::from)
                 .orElseThrow(NotFoundException::new);
     }
@@ -207,7 +212,7 @@ public class WebhookResource {
                     @ApiResponse(responseCode = "200", description = "OK", content = @Content(array = @ArraySchema(schema = @Schema(implementation = WebhookDeliveryQueueResponse.class))))
             }
     )
-    public List<WebhookDeliveryQueueResponse> getWebhookMessageAttemps(
+    public List<WebhookDeliveryQueueResponse> getWebhookMessageAttempts(
             @Schema(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("webhookExternalId") String externalId,
             @Schema(example = "s0wjen129ejalk21nfjkdknf1jejklh") @PathParam("webhookMessageExternalId") String messageId
     ) {
