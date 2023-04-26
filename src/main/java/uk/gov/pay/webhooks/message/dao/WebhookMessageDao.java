@@ -1,5 +1,6 @@
 package uk.gov.pay.webhooks.message.dao;
 
+import com.google.common.base.Preconditions;
 import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
@@ -63,6 +64,7 @@ public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
     }
 
     public List<WebhookMessageEntity> getWebhookMessagesOlderThan(int days) {
+        Preconditions.checkArgument(days > 0, "Can only get webhook messages older than 0 days.");
         return namedTypedQuery(WebhookMessageEntity.MESSAGES_OLDER_THAN_X_DAYS)
                 .setParameter("datetime", OffsetDateTime.now().minusDays(days))
                 .getResultList();

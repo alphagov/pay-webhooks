@@ -1,6 +1,7 @@
 package uk.gov.pay.webhooks.deliveryqueue.dao;
 
 import com.codahale.metrics.MetricRegistry;
+import com.google.common.base.Preconditions;
 import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.LockOptions;
 import org.hibernate.SessionFactory;
@@ -9,7 +10,11 @@ import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 
 import javax.inject.Inject;
 import javax.persistence.LockModeType;
-import java.time.*;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.InstantSource;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -74,6 +79,7 @@ public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEnt
     }
 
     public List<WebhookDeliveryQueueEntity> getWebhookDeliveryQueueEntitiesOlderThan(int days) {
+        Preconditions.checkArgument(days > 0, "Can only get webhook delivery queue entities older than 0 days.");
         return namedTypedQuery(WebhookDeliveryQueueEntity.ENTRIES_OLDER_THAN_X_DAYS)
                 .setParameter("datetime", OffsetDateTime.now().minusDays(days))
                 .getResultList();

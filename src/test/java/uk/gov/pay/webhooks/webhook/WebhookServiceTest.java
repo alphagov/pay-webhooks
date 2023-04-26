@@ -3,11 +3,15 @@ package uk.gov.pay.webhooks.webhook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import uk.gov.pay.webhooks.app.WebhookMessageDeletionConfig;
+import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
+import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
+import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.queue.InternalEvent;
 import uk.gov.pay.webhooks.util.IdGenerator;
 import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
@@ -18,11 +22,14 @@ import java.time.Instant;
 import java.time.InstantSource;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -31,10 +38,11 @@ import static org.mockito.Mockito.when;
 class WebhookServiceTest {
     private final WebhookDao webhookDao = mock(WebhookDao.class);
     private final WebhookMessageDao webhookMessageDao = mock(WebhookMessageDao.class);
-    private final WebhookDeliveryQueueDao webhookDeliveryQueueDao = mock (WebhookDeliveryQueueDao.class);
+    private final WebhookDeliveryQueueDao webhookDeliveryQueueDao = mock(WebhookDeliveryQueueDao.class);
     private final EventTypeDao eventTypeDao = mock(EventTypeDao.class);
     private final InstantSource instantSource = InstantSource.fixed(Instant.now());
     private final IdGenerator idGenerator = mock(IdGenerator.class);
+    private final WebhookMessageDeletionConfig webhookMessageDeletionConfig = mock(WebhookMessageDeletionConfig.class);
     private WebhookService webhookService;
     private final String serviceId = "test_service_id";
     private final String callbackUrl = "test_callback_url";
@@ -43,7 +51,49 @@ class WebhookServiceTest {
     
     @BeforeEach
     public void setUp() {
-        webhookService = new WebhookService(webhookDao, eventTypeDao, instantSource, idGenerator, webhookMessageDao, webhookDeliveryQueueDao);
+        webhookService = new WebhookService(webhookDao, eventTypeDao, instantSource, idGenerator, webhookMessageDao, 
+                webhookDeliveryQueueDao, webhookMessageDeletionConfig);
+    }
+    
+    @Test
+    public void shouldDeleteWebhookMessages() {
+        when(webhookMessageDeletionConfig.getMaxAgeOfMessages()).thenReturn(7);
+        when(webhookMessageDeletionConfig.getMaxNumOfMessagesToExpire()).thenReturn(2);
+        
+        var webhook = new WebhookEntity();
+        var webhookMessage1 = createWebhookMessageEntity(webhook);
+        var webhookMessage2 = createWebhookMessageEntity(webhook);
+        var webhookMessage3 = createWebhookMessageEntity(webhook);
+        var webhookMessage4 = createWebhookMessageEntity(webhook);
+        when(webhookMessageDao.getWebhookMessagesOlderThan(7)).thenReturn(
+                List.of(webhookMessage1, webhookMessage2, webhookMessage3, webhookMessage4));
+
+        var webhookDeliveryQueueEntity1 = new WebhookDeliveryQueueEntity();
+        var webhookDeliveryQueueEntity2 = new WebhookDeliveryQueueEntity();
+        var webhookDeliveryQueueEntity3 = new WebhookDeliveryQueueEntity();
+        var webhookDeliveryQueueEntity4 = new WebhookDeliveryQueueEntity();
+        when(webhookDeliveryQueueDao.getWebhookDeliveryQueueEntitiesOlderThan(7)).thenReturn(
+                List.of(webhookDeliveryQueueEntity1, webhookDeliveryQueueEntity2, webhookDeliveryQueueEntity3, webhookDeliveryQueueEntity4));
+
+        webhookService.deleteWebhookMessagesOlderThan();
+        
+        var webhookMessageEntityArgumentCaptor = ArgumentCaptor.forClass(Stream.class);
+        verify(webhookMessageDao).deleteMessages(webhookMessageEntityArgumentCaptor.capture());
+        Stream<WebhookMessageEntity> capturedWebhookMessageEntityStream = webhookMessageEntityArgumentCaptor.getAllValues().get(0);
+        assertThat(capturedWebhookMessageEntityStream.collect(Collectors.toList()), hasSize(2));
+        
+        var webhookDeliveryQueueEntityArgumentCaptor = ArgumentCaptor.forClass(Stream.class);
+        verify(webhookDeliveryQueueDao).deleteDeliveryQueueEntries(webhookDeliveryQueueEntityArgumentCaptor.capture());
+        Stream<WebhookDeliveryQueueEntity> capturedWebhookDeliveryQEntityStream = webhookDeliveryQueueEntityArgumentCaptor.getAllValues().get(0);
+        assertThat(capturedWebhookDeliveryQEntityStream.collect(Collectors.toList()), hasSize(2));
+    }
+
+    private WebhookMessageEntity createWebhookMessageEntity(WebhookEntity webhook) {
+        var message = new WebhookMessageEntity();
+        message.setWebhookEntity(webhook);
+        message.setLastDeliveryStatus(DeliveryStatus.SUCCESSFUL);
+        message.setCreatedDate(Instant.now());
+        return message;
     }
 
     @Test
