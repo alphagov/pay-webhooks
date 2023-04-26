@@ -15,7 +15,7 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import java.time.Instant;
 import java.time.InstantSource;
-import java.util.stream.Stream;
+import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -45,19 +45,8 @@ class WebhookMessageDaoTest {
     public void shouldDeleteWebhookMessages() {
         database.inTransaction(() -> {
             var webhook = new WebhookEntity();
-            var webhookMessage1 = createWebhookMessageEntity(webhook);
-            var webhookMessage2 = createWebhookMessageEntity(webhook);
-            var webhookMessage3 = createWebhookMessageEntity(webhook);
-            webhookMessageDao.deleteMessages(Stream.of(webhookMessage1, webhookMessage2, webhookMessage3));
+            webhookMessageDao.deleteMessages(Collections.nCopies(3, createWebhookMessageEntity(webhook)).stream());
         });
-    }
-
-    private WebhookMessageEntity createWebhookMessageEntity(WebhookEntity webhook) {
-        var message = new WebhookMessageEntity();
-        message.setWebhookEntity(webhook);
-        message.setLastDeliveryStatus(DeliveryStatus.SUCCESSFUL);
-        message.setCreatedDate(Instant.now());
-        return message;
     }
     
     @Test
@@ -108,6 +97,14 @@ class WebhookMessageDaoTest {
         assertThat(firstPage.size(), is(10));
         assertThat(secondPage.size(), is(6));
         assertThat(total, is(16L));
+    }
+
+    private WebhookMessageEntity createWebhookMessageEntity(WebhookEntity webhook) {
+        var message = new WebhookMessageEntity();
+        message.setWebhookEntity(webhook);
+        message.setLastDeliveryStatus(DeliveryStatus.SUCCESSFUL);
+        message.setCreatedDate(Instant.now());
+        return message;
     }
 
    private void setup(int numberOfPendingMessagesToPad) {

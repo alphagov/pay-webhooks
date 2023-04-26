@@ -20,6 +20,7 @@ import uk.gov.pay.webhooks.webhook.resource.CreateWebhookRequest;
 
 import java.time.Instant;
 import java.time.InstantSource;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -61,19 +62,11 @@ class WebhookServiceTest {
         when(webhookMessageDeletionConfig.getMaxNumOfMessagesToExpire()).thenReturn(2);
         
         var webhook = new WebhookEntity();
-        var webhookMessage1 = createWebhookMessageEntity(webhook);
-        var webhookMessage2 = createWebhookMessageEntity(webhook);
-        var webhookMessage3 = createWebhookMessageEntity(webhook);
-        var webhookMessage4 = createWebhookMessageEntity(webhook);
         when(webhookMessageDao.getWebhookMessagesOlderThan(7)).thenReturn(
-                List.of(webhookMessage1, webhookMessage2, webhookMessage3, webhookMessage4));
+                Collections.nCopies(4, createWebhookMessageEntity(webhook)));
 
-        var webhookDeliveryQueueEntity1 = new WebhookDeliveryQueueEntity();
-        var webhookDeliveryQueueEntity2 = new WebhookDeliveryQueueEntity();
-        var webhookDeliveryQueueEntity3 = new WebhookDeliveryQueueEntity();
-        var webhookDeliveryQueueEntity4 = new WebhookDeliveryQueueEntity();
         when(webhookDeliveryQueueDao.getWebhookDeliveryQueueEntitiesOlderThan(7)).thenReturn(
-                List.of(webhookDeliveryQueueEntity1, webhookDeliveryQueueEntity2, webhookDeliveryQueueEntity3, webhookDeliveryQueueEntity4));
+                Collections.nCopies(4, new WebhookDeliveryQueueEntity()));
 
         webhookService.deleteWebhookMessagesOlderThan();
         
