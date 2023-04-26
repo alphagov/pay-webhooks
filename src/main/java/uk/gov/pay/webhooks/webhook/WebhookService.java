@@ -1,12 +1,17 @@
 package uk.gov.pay.webhooks.webhook;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.pay.webhooks.app.WebhookMessageDeletionConfig;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
+import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.EventMapper;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
+import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.message.resource.WebhookDeliveryQueueResponse;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageResponse;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageSearchResponse;
@@ -26,6 +31,7 @@ import java.time.InstantSource;
 import java.util.List;
 import java.util.Optional;
 
+import static java.lang.String.format;
 import static uk.gov.pay.webhooks.webhook.resource.WebhookResponse.FIELD_CALLBACK_URL;
 import static uk.gov.pay.webhooks.webhook.resource.WebhookResponse.FIELD_DESCRIPTION;
 import static uk.gov.pay.webhooks.webhook.resource.WebhookResponse.FIELD_STATUS;
@@ -33,21 +39,27 @@ import static uk.gov.pay.webhooks.webhook.resource.WebhookResponse.FIELD_SUBSCRI
 
 public class WebhookService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebhookService.class);
+    
     private final WebhookDao webhookDao;
     private final WebhookMessageDao webhookMessageDao;
     private final WebhookDeliveryQueueDao webhookDeliveryQueueDao;
     private final EventTypeDao eventTypeDao;
     private final InstantSource instantSource;
     private final IdGenerator idGenerator;
+    private final WebhookMessageDeletionConfig webhookMessageDeletionConfig;
 
     @Inject
-    public WebhookService(WebhookDao webhookDao, EventTypeDao eventTypeDao, InstantSource instantSource, IdGenerator idGenerator, WebhookMessageDao webhookMessageDao, WebhookDeliveryQueueDao webhookDeliveryQueueDao) {
+    public WebhookService(WebhookDao webhookDao, EventTypeDao eventTypeDao, InstantSource instantSource,
+                          IdGenerator idGenerator, WebhookMessageDao webhookMessageDao,
+                          WebhookDeliveryQueueDao webhookDeliveryQueueDao, WebhookMessageDeletionConfig webhookMessageDeletionConfig) {
         this.webhookDao = webhookDao;
         this.eventTypeDao = eventTypeDao;
         this.instantSource = instantSource;
         this.idGenerator = idGenerator;
         this.webhookMessageDao = webhookMessageDao;
         this.webhookDeliveryQueueDao = webhookDeliveryQueueDao;
+        this.webhookMessageDeletionConfig = webhookMessageDeletionConfig;
     }
 
     public WebhookEntity createWebhook(CreateWebhookRequest createWebhookRequest) {
@@ -143,5 +155,21 @@ public class WebhookService {
                 .map(EventTypeEntity::getName)
                 .map(EventMapper::getInternalEventNamesFor)
                 .anyMatch(internalEventNames -> internalEventNames.contains(event.eventType()));
+    }
+
+    public void deleteWebhookMessagesOlderThan() {
+        int maxAgeOfMessages = webhookMessageDeletionConfig.getMaxAgeOfMessages();
+        int maxNumOfMessagesToExpire = webhookMessageDeletionConfig.getMaxNumOfMessagesToExpire();
+        
+        var webhookMessages = webhookMessageDao.getWebhookMessagesOlderThan(maxAgeOfMessages);
+        int webhookMessagesDeleted = webhookMessageDao.deleteMessages(
+                webhookMessages.stream().limit(maxNumOfMessagesToExpire));
+        LOGGER.info(format("%s webhook messages were deleted.", webhookMessagesDeleted));
+
+        var deliveryQueueEntities = webhookDeliveryQueueDao.getWebhookDeliveryQueueEntitiesOlderThan(maxAgeOfMessages);
+        int deliveryQueueEntitiesDeleted = webhookDeliveryQueueDao.deleteDeliveryQueueEntries(
+                deliveryQueueEntities.stream().limit(maxNumOfMessagesToExpire));
+        LOGGER.info(format("%s webhook delivery queue entities were deleted.", deliveryQueueEntitiesDeleted));
+
     }
 }

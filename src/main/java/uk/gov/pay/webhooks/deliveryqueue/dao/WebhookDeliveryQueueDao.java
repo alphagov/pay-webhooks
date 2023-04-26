@@ -1,6 +1,7 @@
 package uk.gov.pay.webhooks.deliveryqueue.dao;
 
 import com.codahale.metrics.MetricRegistry;
+import com.google.common.base.Preconditions;
 import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.LockOptions;
 import org.hibernate.SessionFactory;
@@ -16,6 +17,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEntity> {
     public final InstantSource instantSource;
@@ -66,6 +69,19 @@ public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEnt
         return namedTypedQuery(WebhookDeliveryQueueEntity.LIST_DELIVERY_ATTEMPTS)
                 .setParameter("webhookId", webhookId)
                 .setParameter("messageId", messageId)
+                .getResultList();
+    }
+
+    public int deleteDeliveryQueueEntries(Stream<WebhookDeliveryQueueEntity> webhookDeliveryQueueEntities) {
+        return currentSession().createQuery("delete from WebhookDeliveryQueueEntity where id in :ids")
+                .setParameter("ids", webhookDeliveryQueueEntities.map(WebhookDeliveryQueueEntity::getId).collect(Collectors.toList()))
+                .executeUpdate();
+    }
+
+    public List<WebhookDeliveryQueueEntity> getWebhookDeliveryQueueEntitiesOlderThan(int days) {
+        Preconditions.checkArgument(days > 0, "Can only get webhook delivery queue entities older than 0 days.");
+        return namedTypedQuery(WebhookDeliveryQueueEntity.ENTRIES_OLDER_THAN_X_DAYS)
+                .setParameter("datetime", OffsetDateTime.now().minusDays(days))
                 .getResultList();
     }
 }

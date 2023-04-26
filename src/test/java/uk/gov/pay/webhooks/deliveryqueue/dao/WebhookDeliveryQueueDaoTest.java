@@ -17,10 +17,10 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.InstantSource;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-
 
 @ExtendWith(DropwizardExtensionsSupport.class)
 @ExtendWith(MockitoExtension.class)
@@ -48,6 +48,20 @@ class WebhookDeliveryQueueDaoTest {
         webhookDeliveryQueueDao = new WebhookDeliveryQueueDao(database.getSessionFactory(), instantSource);
     }
 
+    @Test
+    public void shouldGetWebhookDeliveryQueueEntitiesOlderThanDays() {
+        database.inTransaction(() -> {
+            webhookDeliveryQueueDao.getWebhookDeliveryQueueEntitiesOlderThan(7);
+        });
+    }
+    
+    @Test
+    void shouldDeleteWebhookDeliveryQueueEntities() {
+        database.inTransaction(() -> {
+            webhookDeliveryQueueDao.deleteDeliveryQueueEntries(Stream.of(new WebhookDeliveryQueueEntity()));
+        });
+    }
+    
     @Test
     void nextToSendReturnsEnqueuedMessage() {
         WebhookMessageEntity persisted = database.inTransaction(() -> {

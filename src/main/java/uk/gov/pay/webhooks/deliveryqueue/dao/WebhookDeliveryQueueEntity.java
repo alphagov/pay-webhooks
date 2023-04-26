@@ -24,6 +24,11 @@ import java.time.ZoneOffset;
 import java.util.Optional;
 
 @NamedQuery(
+        name = WebhookDeliveryQueueEntity.ENTRIES_OLDER_THAN_X_DAYS,
+        query = "select m from WebhookDeliveryQueueEntity m where createdDate < :datetime"
+)
+
+@NamedQuery(
         name = WebhookDeliveryQueueEntity.NEXT_TO_SEND,
         query = "select m from WebhookDeliveryQueueEntity m where :send_at > send_at and delivery_status = 'PENDING'"
 )
@@ -45,6 +50,7 @@ import java.util.Optional;
 
 
 public class WebhookDeliveryQueueEntity {
+    public static final String ENTRIES_OLDER_THAN_X_DAYS = "WebhookDeliveryQueue.entries_older_than_x_days";
     public static final String NEXT_TO_SEND = "WebhookDeliveryQueue.next_to_send";
     public static final String COUNT_FAILED = "WebhookDeliveryQueue.count_failed";
     public static final String LIST_DELIVERY_ATTEMPTS = "WebhookDeliveryQueue.list_delivery_attempts";
@@ -58,6 +64,10 @@ public class WebhookDeliveryQueueEntity {
     private OffsetDateTime createdDate;
 
     public WebhookDeliveryQueueEntity() {
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public Instant getSendAt() {
