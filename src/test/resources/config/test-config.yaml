@@ -39,6 +39,10 @@ ledgerBaseURL: ${LEDGER_URL}
 graphiteHost: ${METRICS_HOST:-localhost}
 graphitePort: ${METRICS_PORT:-8092}
 
+webhookMessageDeletionConfig:
+  maxAgeOfMessages: ${MAXIMUM_AGE_OF_MESSAGE:-7}
+  maxNumOfMessagesToExpire: ${MAXIMUM_NUMBER_OF_MESSAGES_TO_EXPIRE_PER_JOB:-6}
+
 webhookMessageSendingQueueProcessorConfig:
   numberOfThreads: ${WEBHOOK_MESSAGE_SENDING_QUEUE_NUMBER_OF_THREADS:-1}
   initialDelayInMilliseconds: ${WEBHOOK_MESSAGE_SENDING_QUEUE_INITIAL_DELAY_IN_MILLISECONDS:-50}

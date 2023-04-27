@@ -139,6 +139,10 @@ public class WebhookMessageEntity {
     @Enumerated(EnumType.STRING)
     private DeliveryStatus lastDeliveryStatus;
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Long getId() {
         return id;
     }

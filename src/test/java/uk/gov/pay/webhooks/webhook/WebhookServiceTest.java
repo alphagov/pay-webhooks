@@ -23,6 +23,7 @@ import java.time.InstantSource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,29 +57,98 @@ class WebhookServiceTest {
                 webhookDeliveryQueueDao, webhookMessageDeletionConfig);
     }
     
+    /*
+        All webhook messages should be deleted here as the number of messages falls within the MaxNumOfMessagesToExpire property
+     */
     @Test
-    public void shouldDeleteWebhookMessages() {
+    public void shouldDeleteAllWebhookMessages() {
         when(webhookMessageDeletionConfig.getMaxAgeOfMessages()).thenReturn(7);
-        when(webhookMessageDeletionConfig.getMaxNumOfMessagesToExpire()).thenReturn(2);
+        when(webhookMessageDeletionConfig.getMaxNumOfMessagesToExpire()).thenReturn(4);
         
         var webhook = new WebhookEntity();
-        when(webhookMessageDao.getWebhookMessagesOlderThan(7)).thenReturn(
-                Collections.nCopies(4, createWebhookMessageEntity(webhook)));
+        List<WebhookMessageEntity> webhookMessageEntities = List.of(createWebhookMessageEntity(webhook), createWebhookMessageEntity(webhook));
+        when(webhookMessageDao.getWebhookMessagesOlderThan(7)).thenReturn(webhookMessageEntities);
 
         when(webhookDeliveryQueueDao.getWebhookDeliveryQueueEntitiesOlderThan(7)).thenReturn(
-                Collections.nCopies(4, new WebhookDeliveryQueueEntity()));
+                Collections.nCopies(4, createWebhookDeliveryQueueEntity(webhookMessageEntities.get(0))));
 
-        webhookService.deleteWebhookMessagesOlderThan();
-        
-        var webhookMessageEntityArgumentCaptor = ArgumentCaptor.forClass(Stream.class);
-        verify(webhookMessageDao).deleteMessages(webhookMessageEntityArgumentCaptor.capture());
-        Stream<WebhookMessageEntity> capturedWebhookMessageEntityStream = webhookMessageEntityArgumentCaptor.getAllValues().get(0);
-        assertThat(capturedWebhookMessageEntityStream.collect(Collectors.toList()), hasSize(2));
+        webhookService.expireWebhookMessages();
         
         var webhookDeliveryQueueEntityArgumentCaptor = ArgumentCaptor.forClass(Stream.class);
         verify(webhookDeliveryQueueDao).deleteDeliveryQueueEntries(webhookDeliveryQueueEntityArgumentCaptor.capture());
         Stream<WebhookDeliveryQueueEntity> capturedWebhookDeliveryQEntityStream = webhookDeliveryQueueEntityArgumentCaptor.getAllValues().get(0);
+        assertThat(capturedWebhookDeliveryQEntityStream.collect(Collectors.toList()), hasSize(4));
+
+        var webhookMessageEntityArgumentCaptor = ArgumentCaptor.forClass(Stream.class);
+        verify(webhookMessageDao).deleteMessages(webhookMessageEntityArgumentCaptor.capture());
+        Stream<WebhookMessageEntity> capturedWebhookMessageEntityStream = webhookMessageEntityArgumentCaptor.getAllValues().get(0);
+        assertThat(capturedWebhookMessageEntityStream.collect(Collectors.toList()), hasSize(2));
+    }
+    
+    /*
+        This test covers the case where a webhook message has three delivery attempts (that is, three WebhookDeliveryQueueEntities, 
+        and the maxNumOfMessagesToExpire is two. In this case the webhook message cannot be deleted due to a foreign key 
+        constraint on the remaining WebhookDeliveryQueueEntity
+     */
+    @Test
+    public void shouldNotDeleteWebhookMessage() {
+        when(webhookMessageDeletionConfig.getMaxAgeOfMessages()).thenReturn(7);
+        when(webhookMessageDeletionConfig.getMaxNumOfMessagesToExpire()).thenReturn(2);
+
+        var webhook = new WebhookEntity();
+        List<WebhookMessageEntity> webhookMessageEntities = List.of(createWebhookMessageEntity(webhook));
+        when(webhookMessageDao.getWebhookMessagesOlderThan(7)).thenReturn(webhookMessageEntities);
+
+        when(webhookDeliveryQueueDao.getWebhookDeliveryQueueEntitiesOlderThan(7)).thenReturn(
+                Collections.nCopies(3, createWebhookDeliveryQueueEntity(webhookMessageEntities.get(0))));
+
+        webhookService.expireWebhookMessages();
+
+        var webhookDeliveryQueueEntityArgumentCaptor = ArgumentCaptor.forClass(Stream.class);
+        verify(webhookDeliveryQueueDao).deleteDeliveryQueueEntries(webhookDeliveryQueueEntityArgumentCaptor.capture());
+        Stream<WebhookDeliveryQueueEntity> capturedWebhookDeliveryQEntityStream = webhookDeliveryQueueEntityArgumentCaptor.getAllValues().get(0);
         assertThat(capturedWebhookDeliveryQEntityStream.collect(Collectors.toList()), hasSize(2));
+
+        var webhookMessageEntityArgumentCaptor = ArgumentCaptor.forClass(Stream.class);
+        verify(webhookMessageDao).deleteMessages(webhookMessageEntityArgumentCaptor.capture());
+        Stream<WebhookMessageEntity> capturedWebhookMessageEntityStream = webhookMessageEntityArgumentCaptor.getAllValues().get(0);
+        assertThat(capturedWebhookMessageEntityStream.collect(Collectors.toList()), hasSize(0));
+    }
+    
+    /*
+        A more complicated version of the shouldNotDeleteWebhookMessage test
+     */
+    @Test
+    public void shouldDeleteSomeWebhookMessages() {
+        when(webhookMessageDeletionConfig.getMaxAgeOfMessages()).thenReturn(7);
+        when(webhookMessageDeletionConfig.getMaxNumOfMessagesToExpire()).thenReturn(2);
+
+        var webhook = new WebhookEntity();
+        List<WebhookMessageEntity> webhookMessageEntities = List.of(createWebhookMessageEntity(webhook), createWebhookMessageEntity(webhook));
+        when(webhookMessageDao.getWebhookMessagesOlderThan(7)).thenReturn(webhookMessageEntities);
+
+        when(webhookDeliveryQueueDao.getWebhookDeliveryQueueEntitiesOlderThan(7)).thenReturn(
+                Collections.nCopies(3, createWebhookDeliveryQueueEntity(webhookMessageEntities.get(0))));
+
+        webhookService.expireWebhookMessages();
+
+        var webhookDeliveryQueueEntityArgumentCaptor = ArgumentCaptor.forClass(Stream.class);
+        verify(webhookDeliveryQueueDao).deleteDeliveryQueueEntries(webhookDeliveryQueueEntityArgumentCaptor.capture());
+        Stream<WebhookDeliveryQueueEntity> capturedWebhookDeliveryQEntityStream = webhookDeliveryQueueEntityArgumentCaptor.getAllValues().get(0);
+        assertThat(capturedWebhookDeliveryQEntityStream.collect(Collectors.toList()), hasSize(2));
+
+        var webhookMessageEntityArgumentCaptor = ArgumentCaptor.forClass(Stream.class);
+        verify(webhookMessageDao).deleteMessages(webhookMessageEntityArgumentCaptor.capture());
+        Stream<WebhookMessageEntity> capturedWebhookMessageEntityStream = webhookMessageEntityArgumentCaptor.getAllValues().get(0);
+        List<WebhookMessageEntity> deletedWebhookMessageEntity = capturedWebhookMessageEntityStream.collect(Collectors.toList());
+        assertThat(deletedWebhookMessageEntity, hasSize(1));
+        assertThat(deletedWebhookMessageEntity.get(0).getId(), is(webhookMessageEntities.get(1).getId()));
+    }
+    
+    private WebhookDeliveryQueueEntity createWebhookDeliveryQueueEntity(WebhookMessageEntity webhookMessageEntity) {
+        WebhookDeliveryQueueEntity webhookDeliveryQueueEntity = new WebhookDeliveryQueueEntity();
+        webhookDeliveryQueueEntity.setWebhookMessageEntity(webhookMessageEntity);
+        return webhookDeliveryQueueEntity;
     }
 
     private WebhookMessageEntity createWebhookMessageEntity(WebhookEntity webhook) {
@@ -86,6 +156,7 @@ class WebhookServiceTest {
         message.setWebhookEntity(webhook);
         message.setLastDeliveryStatus(DeliveryStatus.SUCCESSFUL);
         message.setCreatedDate(Instant.now());
+        message.setId(RandomGenerator.getDefault().nextLong());
         return message;
     }
 

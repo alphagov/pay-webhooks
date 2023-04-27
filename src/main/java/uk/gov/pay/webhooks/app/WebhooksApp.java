@@ -59,8 +59,7 @@ public class WebhooksApp extends Application<WebhooksConfig> {
     };
 
     @Override
-    public void run(WebhooksConfig configuration,
-                    Environment environment) {
+    public void run(WebhooksConfig configuration, Environment environment) {
         final Injector injector = Guice.createInjector(new WebhooksModule(configuration, environment, hibernate));
 
         environment.servlets().addFilter("LoggingFilter", new LoggingFilter())
@@ -121,5 +120,4 @@ public class WebhooksApp extends Application<WebhooksConfig> {
                 .build(graphiteUDP)
                 .start(GRAPHITE_SENDING_PERIOD_SECONDS, TimeUnit.SECONDS);
     }
-
 }

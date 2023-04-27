@@ -97,6 +97,19 @@ paths:
       summary: Create new webhook
       tags:
       - Webhooks
+  /v1/webhook/tasks/expire_messages:
+    post:
+      description: Task to delete webhook messages older than a default of seven days
+        (this is configurable).
+      operationId: expireWebhookMessages
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal server error
+      summary: Deletes webhook messages
+      tags:
+      - Webhooks
   /v1/webhook/{webhookExternalId}:
     get:
       operationId: getWebhookByExternalId
