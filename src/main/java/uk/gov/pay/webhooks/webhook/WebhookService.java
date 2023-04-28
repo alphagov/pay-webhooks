@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.app.WebhookMessageDeletionConfig;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
-import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
@@ -30,7 +29,6 @@ import javax.ws.rs.NotFoundException;
 import java.time.InstantSource;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static uk.gov.pay.webhooks.webhook.resource.WebhookResponse.FIELD_CALLBACK_URL;
@@ -158,32 +156,12 @@ public class WebhookService {
                 .anyMatch(internalEventNames -> internalEventNames.contains(event.eventType()));
     }
 
-    public void expireWebhookMessages() {
+    public void deleteWebhookMessages() {
         int maxAgeOfMessages = webhookMessageDeletionConfig.getMaxAgeOfMessages();
         int maxNumOfMessagesToExpire = webhookMessageDeletionConfig.getMaxNumOfMessagesToExpire();
 
-        List<WebhookMessageEntity> candidateWebhookMessagesForDeletion = webhookMessageDao.getWebhookMessagesOlderThan(maxAgeOfMessages);
-        List<WebhookDeliveryQueueEntity> candidateDeliveryQueueEntitiesForDeletion = 
-                webhookDeliveryQueueDao.getWebhookDeliveryQueueEntitiesOlderThan(maxAgeOfMessages);
-        List<Long> webhookMessageEntityIdsReferencedByCandidateDeliveryQueueEntities = 
-                candidateDeliveryQueueEntitiesForDeletion.stream().map(entity -> entity.getWebhookMessageEntity().getId()).collect(Collectors.toList());
-        
-        var webhookDeliveryQueueEntitiesToDelete = candidateDeliveryQueueEntitiesForDeletion.stream().limit(maxNumOfMessagesToExpire).toList();
-        int deliveryQueueEntitiesDeleted = webhookDeliveryQueueDao.deleteDeliveryQueueEntries(webhookDeliveryQueueEntitiesToDelete.stream());
-        LOGGER.info(format("%s webhook delivery queue entities were deleted.", deliveryQueueEntitiesDeleted));
-        
-        List<Long> webhookMessageEntityIdsReferencedByDeletedWebhookDeliveryQueueEntities = 
-                webhookDeliveryQueueEntitiesToDelete.stream().map(entity -> entity.getWebhookMessageEntity().getId()).toList();
-        webhookMessageEntityIdsReferencedByDeletedWebhookDeliveryQueueEntities.forEach(
-                webhookMessageEntityIdsReferencedByCandidateDeliveryQueueEntities::remove);
-        
-        if (webhookMessageEntityIdsReferencedByCandidateDeliveryQueueEntities.isEmpty()) {
-            // This is the case where all webhookMessageEntityIds/candidateDeliveryQueueEntitiesForDeletion were deleted, so proceed with 
-            // deleting candidateWebhookMessagesForDeletion
-            webhookMessageDao.deleteMessages(candidateWebhookMessagesForDeletion.stream());
-        } else {
-            webhookMessageDao.deleteMessages(candidateWebhookMessagesForDeletion.stream()
-                    .filter(entity -> !webhookMessageEntityIdsReferencedByCandidateDeliveryQueueEntities.contains(entity.getId())));
-        }
+        List<WebhookMessageEntity> webhookMessagesToDelete = webhookMessageDao.getWebhookMessagesOlderThan(maxAgeOfMessages);
+        int numberOfWebhookMessagesDeleted = webhookMessageDao.deleteMessages(webhookMessagesToDelete.stream().limit(maxNumOfMessagesToExpire));
+        LOGGER.info(format("%s webhook messages were deleted.", numberOfWebhookMessagesDeleted));
     }
 }

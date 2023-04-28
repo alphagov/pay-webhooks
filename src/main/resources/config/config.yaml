@@ -82,7 +82,7 @@ queueMessageReceiverConfig:
 
 webhookMessageDeletionConfig:
   maxAgeOfMessages: ${MAXIMUM_AGE_OF_MESSAGE:-7}
-  maxNumOfMessagesToExpire: ${MAXIMUM_NUMBER_OF_MESSAGES_TO_EXPIRE_PER_JOB:-7500}
+  maxNumOfMessagesToExpire: ${MAXIMUM_NUMBER_OF_MESSAGES_TO_EXPIRE_PER_JOB:-15000}
 
 webhookMessageSendingQueueProcessorConfig:
   numberOfThreads: ${WEBHOOK_MESSAGE_SENDING_QUEUE_NUMBER_OF_THREADS:-5}

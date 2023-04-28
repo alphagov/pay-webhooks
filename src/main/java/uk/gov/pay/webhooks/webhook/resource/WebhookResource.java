@@ -66,7 +66,7 @@ public class WebhookResource {
             }
     )
     public Response expireWebhookMessages() {
-        webhookService.expireWebhookMessages();
+        webhookService.deleteWebhookMessages();
         return Response.status(Response.Status.OK).build();
     }
 

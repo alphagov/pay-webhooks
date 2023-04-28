@@ -215,53 +215,6 @@ public class WebhookResourceIT {
                 .then()
                 .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
-    
-    @Test
-    public void shouldDeleteNoWebhookMessagesAndSomeDeliveryAttempts() {
-        var webhookExternalId = "a-webhook-external-id";
-        String webhookMessageExternalId = setupOneWebhookMessageWithSevenDeliveryAttempts(webhookExternalId);
-
-        given().port(port)
-                .contentType(JSON)
-                .post("/v1/webhook/tasks/expire_messages")
-                .then()
-                .statusCode(200);
-
-        given().port(port)
-                .get(format("/v1/webhook/%s/message", webhookExternalId))
-                .then()
-                .body("results.size()", is(1))
-                .body("results[0].external_id", is(webhookMessageExternalId));
-
-        given().port(port)
-                .get(format("/v1/webhook/%s/message/%s/attempt", webhookExternalId, webhookMessageExternalId))
-                .then()
-                .body("size()", is(1)); // It's 1 because 7 delivery attempts exist and maxNumOfMessagesToExpire=6
-
-    }
-
-    private String setupOneWebhookMessageWithSevenDeliveryAttempts(String webhookExternalId) {
-        app.getJdbi().withHandle(h -> h.execute(
-                "INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE')".formatted(webhookExternalId)
-        ));
-        app.getJdbi().withHandle(h -> h.execute("""
-                            INSERT INTO webhook_messages VALUES
-                            (1, 'first-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null)
-                        """
-        ));
-        app.getJdbi().withHandle(h -> h.execute("""
-                        INSERT INTO webhook_delivery_queue VALUES
-                            (1, '2022-01-01', '2022-01-01', '200', 200, 1, 'SUCCESSFUL', 1250),
-                            (2, '2022-01-02', '2022-01-01', '404', 404, 1, 'FAILED', 25),
-                            (3, '2022-01-02', '2022-01-01', '200', 404, 1, 'FAILED', 25),
-                            (4, '2022-01-02', '2022-01-01', '404', 404, 1, 'FAILED', 25),
-                            (5, '2022-01-02', '2022-01-01', '200', 404, 1, 'FAILED', 25),
-                            (6, '2022-01-02', '2022-01-01', '404', 404, 1, 'FAILED', 25),
-                            (7, '2022-01-02', '2022-01-01', null, null, 1, 'PENDING', null)
-                        """
-        ));
-        return "first-message-external-id";
-    }
 
     @Test
     public void shouldDeleteSomeWebhookMessages() {
@@ -354,11 +307,9 @@ public class WebhookResourceIT {
                             (13, '2022-01-01', '2022-01-01', '404', 404, 11, 'PENDING', null)
                         """
         ));
-        // Given maxNumOfMessagesToExpire=6, the first six webhook_delivery_queue entries will be deleted, leaving the
-        // seven which correspond to the following webhook_messages externalIds:
-        return List.of("fifth-message-external-id", "sixth-message-external-id", "seventh-message-external-id", 
-                "eighth-message-external-id", "ninth-message-external-id", "tenth-message-external-id", 
-                "eleventh-message-external-id");
+        // Given maxNumOfMessagesToExpire=6, the webhook messages with these IDs won't be deleted:
+        return List.of("seventh-message-external-id", "eighth-message-external-id", "ninth-message-external-id", 
+                "tenth-message-external-id", "eleventh-message-external-id");
     }
 
     private String createWebhookRequestBody(String callbackUrl, Boolean isLive) {
