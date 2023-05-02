@@ -219,7 +219,8 @@ public class WebhookResourceIT {
     @Test
     public void shouldDeleteSomeWebhookMessages() {
         var webhookExternalId = "a-webhook-external-id";
-        List<String> expectedWebhookExternalIdsNotDeleted = setupWebhookWithMessagesExpectedToBePartiallyDeleted(webhookExternalId);
+        WebhookMessageExternalIds webhookMessageExternalIds = setupWebhookWithMessagesExpectedToBePartiallyDeleted(webhookExternalId);
+        List<String> expectedWebhookExternalIdsNotDeleted = webhookMessageExternalIds.notDeleted;
         List<String> expectedWebhookMessageExternalIds = setupThreeWebhookMessagesThatShouldNotBeDeleted(); // maxAgeOfMessages=7 so these webhook messages should not be deleted
 
         given().port(port)
@@ -245,6 +246,12 @@ public class WebhookResourceIT {
                         .get(format("/v1/webhook/%s/message/%s/attempt", webhookExternalId, webhookMessageExternalId))
                         .then()
                         .body("size()", is(1)));
+        
+        webhookMessageExternalIds.deleted.forEach(webhookMessageExternalId ->
+                given().port(port)
+                        .get(format("/v1/webhook/%s/message/%s", webhookExternalId, webhookMessageExternalId))
+                        .then()
+                        .statusCode(Response.Status.NOT_FOUND.getStatusCode()));
     }
 
     private List<String> setupThreeWebhookMessagesThatShouldNotBeDeleted() {
@@ -271,7 +278,7 @@ public class WebhookResourceIT {
         return webhookMessageExternalIds;
     }
 
-    private List<String> setupWebhookWithMessagesExpectedToBePartiallyDeleted(String externalId) {
+    private WebhookMessageExternalIds setupWebhookWithMessagesExpectedToBePartiallyDeleted(String externalId) {
         app.getJdbi().withHandle(h -> h.execute(
                 "INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE')".formatted(externalId)
         ));
@@ -307,10 +314,12 @@ public class WebhookResourceIT {
                             (13, '2022-01-01', '2022-01-01', '404', 404, 11, 'PENDING', null)
                         """
         ));
-        // Given maxNumOfMessagesToExpire=6, the webhook messages with these IDs won't be deleted:
-        return List.of("seventh-message-external-id", "eighth-message-external-id", "ninth-message-external-id", 
-                "tenth-message-external-id", "eleventh-message-external-id");
+        return new WebhookMessageExternalIds(
+                List.of("first-message-external-id", "second-message-external-id", "third-message-external-id", "fourth-message-external-id", "fifth-message-external-id", "sixth-message-external-id"),
+                List.of("seventh-message-external-id", "eighth-message-external-id", "ninth-message-external-id", "tenth-message-external-id", "eleventh-message-external-id")); // <-- Given maxNumOfMessagesToExpire=6, the webhook messages with these IDs won't be deleted
     }
+    
+    private record WebhookMessageExternalIds(List<String> deleted, List<String> notDeleted) {}
 
     private String createWebhookRequestBody(String callbackUrl, Boolean isLive) {
        return """
