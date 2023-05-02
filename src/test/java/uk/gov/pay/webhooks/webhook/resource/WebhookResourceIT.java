@@ -224,7 +224,7 @@ public class WebhookResourceIT {
 
         given().port(port)
                 .contentType(JSON)
-                .post("/v1/webhook/tasks/expire_messages")
+                .post("/v1/webhook/tasks/delete_messages")
                 .then()
                 .statusCode(200);
 

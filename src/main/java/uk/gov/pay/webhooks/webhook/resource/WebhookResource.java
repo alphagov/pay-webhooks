@@ -55,7 +55,7 @@ public class WebhookResource {
 
     @UnitOfWork
     @POST
-    @Path("/tasks/expire_messages")
+    @Path("/tasks/delete_messages")
     @Produces(APPLICATION_JSON)
     @Operation(
             summary = "Deletes webhook messages",
