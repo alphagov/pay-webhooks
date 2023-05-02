@@ -15,7 +15,6 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import java.time.Instant;
 import java.time.InstantSource;
-import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -44,15 +43,7 @@ class WebhookMessageDaoTest {
     @Test
     public void shouldDeleteWebhookMessages() {
         database.inTransaction(() -> {
-            var webhook = new WebhookEntity();
-            webhookMessageDao.deleteMessages(Collections.nCopies(3, createWebhookMessageEntity(webhook)).stream());
-        });
-    }
-    
-    @Test
-    public void shouldGetWebhookMessagesOlderThanDays() {
-        database.inTransaction(() -> {
-            webhookMessageDao.getWebhookMessagesOlderThan(7);
+            webhookMessageDao.deleteMessages(7, 15000);
         });
     }
     

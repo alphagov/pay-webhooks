@@ -10,7 +10,6 @@ import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.EventMapper;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
-import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.message.resource.WebhookDeliveryQueueResponse;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageResponse;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageSearchResponse;
@@ -160,8 +159,7 @@ public class WebhookService {
         int maxAgeOfMessages = webhookMessageDeletionConfig.getMaxAgeOfMessages();
         int maxNumOfMessagesToExpire = webhookMessageDeletionConfig.getMaxNumOfMessagesToExpire();
 
-        List<WebhookMessageEntity> webhookMessagesToDelete = webhookMessageDao.getWebhookMessagesOlderThan(maxAgeOfMessages);
-        int numberOfWebhookMessagesDeleted = webhookMessageDao.deleteMessages(webhookMessagesToDelete.stream().limit(maxNumOfMessagesToExpire));
+        int numberOfWebhookMessagesDeleted = webhookMessageDao.deleteMessages(maxAgeOfMessages, maxNumOfMessagesToExpire);
         LOGGER.info(format("%s webhook messages were deleted.", numberOfWebhookMessagesDeleted));
     }
 }
