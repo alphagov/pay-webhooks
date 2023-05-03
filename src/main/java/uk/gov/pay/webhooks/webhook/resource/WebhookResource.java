@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.message.resource.WebhookDeliveryQueueResponse;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageResponse;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageSearchResponse;
@@ -22,6 +21,7 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -33,7 +33,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -196,11 +195,9 @@ public class WebhookResource {
     )
     public WebhookMessageSearchResponse getWebhookMessages(
             @Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("webhookExternalId") String externalId,
-            @Parameter(example = "1") @QueryParam("page") Integer page,
-            @Parameter(example = "SUCCESSFUL") @Valid @QueryParam("status") DeliveryStatus deliveryStatus
+            @Valid @BeanParam WebhookMessageSearchParams queryParams
     ) {
-        var currentPage = Optional.ofNullable(page).orElse(1);
-        return webhookService.listMessages(externalId, deliveryStatus, currentPage);
+        return webhookService.listMessages(externalId, queryParams);
     }
 
     @UnitOfWork

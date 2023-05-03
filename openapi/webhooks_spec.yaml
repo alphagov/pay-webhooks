@@ -194,7 +194,8 @@ paths:
         schema:
           type: integer
           format: int32
-      - example: SUCCESSFUL
+      - description: "If supplied, will only list messages with this delivery status"
+        example: SUCCESSFUL
         in: query
         name: status
         schema:
@@ -204,6 +205,13 @@ paths:
           - SUCCESSFUL
           - FAILED
           - WILL_NOT_SEND
+      - description: The external ID of the resource (e.g. the payment) to get messages
+          for
+        example: 2qmfui4aklat22u0jab98m0ou4
+        in: query
+        name: resource_id
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -444,10 +452,12 @@ components:
         count:
           type: integer
           format: int32
+          description: The number of results in the current page
           example: 100
         page:
           type: integer
           format: int32
+          description: The page of results
           example: 1
         results:
           type: array

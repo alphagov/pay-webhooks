@@ -103,7 +103,7 @@ public class WebhookResourceIT {
     }
 
     @Test
-    public void shouldReturnMessages() {
+    public void shouldReturnFilteredMessages() {
         var externalId = "awebhookexternalid";
         var messageExternalId = "message-external-id-1";
         setupWebhookWithMessages(externalId, messageExternalId);
@@ -111,11 +111,21 @@ public class WebhookResourceIT {
         given().port(port)
                 .contentType(JSON)
                 .queryParam("status", "FAILED")
+                .queryParam("resource_id", "transaction-external-id")
                 .get("/v1/webhook/%s/message".formatted(externalId))
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
+                .body("count", is(1))
+                .body("page", is(1))
                 .body("results.last_delivery_status[0]", is("FAILED"))
                 .body("results.latest_attempt[0].status", is("FAILED"));
+    }
+
+    @Test
+    public void shouldReturnUnfilteredMessages() {
+        var externalId = "awebhookexternalid";
+        var messageExternalId = "message-external-id-1";
+        setupWebhookWithMessages(externalId, messageExternalId);
 
         given().port(port)
                 .contentType(JSON)
@@ -125,11 +135,19 @@ public class WebhookResourceIT {
                 .body("count", is(10))
                 .body("page", is(1))
                 .body("results.size()", is(10));
+    }
 
-        given().port(port)
+    @Test
+    public void shouldReturnPage2OfMessages() {
+        var externalId = "awebhookexternalid";
+        var messageExternalId = "message-external-id-1";
+        setupWebhookWithMessages(externalId, messageExternalId);
+
+        io.restassured.response.Response response = given().port(port)
                 .contentType(JSON)
                 .queryParam("page", 2)
-                .get("/v1/webhook/%s/message".formatted(externalId))
+                .get("/v1/webhook/%s/message".formatted(externalId));
+        response
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("count", is(2))
@@ -340,7 +358,7 @@ public class WebhookResourceIT {
         app.getJdbi().withHandle(h -> h.execute("""
                             INSERT INTO webhook_messages VALUES
                             (1, '%s', '2022-01-01', 1, '2022-01-01', 1, '{}', 'transaction-external-id', 'payment', 'FAILED'),
-                            (2, 'second-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
+                            (2, 'second-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', 'transaction-external-id-2', 'payment', 'FAILED'),
                             (3, 'third-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
                             (4, 'fourth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
                             (5, 'fifth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),

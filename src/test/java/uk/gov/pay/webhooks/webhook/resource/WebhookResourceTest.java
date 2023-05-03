@@ -34,6 +34,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(DropwizardExtensionsSupport.class)
 public class WebhookResourceTest {
+    public static final ObjectMapper objectMapper = new ObjectMapper();
     WebhookService webhookService = mock(WebhookService.class);
     WebhooksConfig webhooksConfig = mock(WebhooksConfig.class);
     WebhookRequestValidator webhookRequestValidator = new WebhookRequestValidator(new CallbackUrlService(webhooksConfig));
@@ -194,7 +195,6 @@ public class WebhookResourceTest {
 
         when(webhookService.list(true, existingServiceId)).thenReturn((List.of(webhook, webhook)));
 
-        var objectMapper = new ObjectMapper();
         var response = resources
                 .target("/v1/webhook")
                 .queryParam("live", true)
@@ -261,7 +261,6 @@ public class WebhookResourceTest {
                 .queryParam("override_service_id_restriction", true)
                 .request()
                 .get();
-        var objectMapper = new ObjectMapper();
         Map<String, String> responseBody = objectMapper.readValue(response.readEntity(String.class), new TypeReference<>() {
         });
         assertThat(response.getStatus(), is(400));
@@ -275,10 +274,22 @@ public class WebhookResourceTest {
                 .queryParam("live", true)
                 .request()
                 .get();
-        var objectMapper = new ObjectMapper();
         Map<String, String> responseBody = objectMapper.readValue(response.readEntity(String.class), new TypeReference<>() {
         });
         assertThat(response.getStatus(), is(400));
         assertThat(responseBody.get("message"), is("either service_id or override_service_id_restriction query parameter must be provided"));
+    }
+
+    @Test
+    void getWebhooksMessages_shouldReturn400WhenStatusIsNotValid() throws Exception {
+        var response = resources
+                .target("/v1/webhook/a-webhook-id/message")
+                .queryParam("status", "INVALID")
+                .request()
+                .get();
+        Map<String, String> responseBody = objectMapper.readValue(response.readEntity(String.class), new TypeReference<>() {
+        });
+        assertThat(response.getStatus(), is(400));
+        assertThat(responseBody.get("message"), is("query param status must be one of [PENDING, SUCCESSFUL, FAILED, WILL_NOT_SEND]"));
     }
 }

@@ -12,9 +12,11 @@ import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
+import uk.gov.pay.webhooks.webhook.resource.WebhookMessageSearchParams;
 
 import java.time.Instant;
 import java.time.InstantSource;
+import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -46,48 +48,54 @@ class WebhookMessageDaoTest {
             webhookMessageDao.deleteMessages(7, 15000);
         });
     }
-    
-   @Test
-   public void shouldSerialiseAndDeserialiseWebhookMessage() {
+
+    @Test
+    public void shouldSerialiseAndDeserialiseWebhookMessage() {
         setup(0);
         var webhook = webhookDao.findByExternalId(webhookExternalId).get();
         var message = webhookMessageDao.get(webhook, "successful-message-external-id").get();
         assertThat(message.getExternalId(), is("successful-message-external-id"));
         assertThat(message.getWebhookEntity().getExternalId(), is(webhookExternalId));
         assertThat(message.getLastDeliveryStatus(), is(DeliveryStatus.SUCCESSFUL));
-   }
-
-   @Test
-   public void shouldListAndCountAllWithNoStatus() {
-        setup(1);
-        var webhook = webhookDao.findByExternalId(webhookExternalId).get();
-        var messages = webhookMessageDao.list(webhook, null, 1);
-        var total = webhookMessageDao.count(webhook, null);
-        assertThat(messages.size(), is(2));
-        assertThat(total, is(2L));
-   }
+    }
 
     @Test
-    public void shouldListAndCountFilteredByStatus() {
+    public void shouldListAll() {
         setup(1);
         var webhook = webhookDao.findByExternalId(webhookExternalId).get();
-        var messages = webhookMessageDao.list(webhook, DeliveryStatus.SUCCESSFUL, 1);
-        var total = webhookMessageDao.count(webhook, DeliveryStatus.SUCCESSFUL);
+
+        var searchParams = new WebhookMessageSearchParams(1, null, null);
+        var messages = webhookMessageDao.list(webhook, searchParams);
+        assertThat(messages.size(), is(2));
+    }
+
+    @Test
+    public void shouldListFilteredMessages() {
+        WebhookEntity webhook = insertWebhook();
+        String resourceExternalId = "resource-external-id";
+        WebhookMessageEntity matchedMessage = insertMessage(webhook, resourceExternalId, DeliveryStatus.SUCCESSFUL);
+        insertMessage(webhook, resourceExternalId, DeliveryStatus.FAILED);
+        insertMessage(webhook, "another-resource-external-id", DeliveryStatus.SUCCESSFUL);
+
+        var searchParams = new WebhookMessageSearchParams(1, DeliveryStatus.SUCCESSFUL, resourceExternalId);
+        var messages = webhookMessageDao.list(webhook, searchParams);
         assertThat(messages.size(), is(1));
-        assertThat(total, is(1L));
-        assertThat(messages.get(0).getExternalId(), is("successful-message-external-id"));
+        assertThat(messages.get(0).getExternalId(), is(matchedMessage.getExternalId()));
     }
 
     @Test
     public void shouldCalculateCorrectPagePosition() {
         setup(15);
         var webhook = webhookDao.findByExternalId(webhookExternalId).get();
-        var firstPage = webhookMessageDao.list(webhook, null, 1);
-        var secondPage = webhookMessageDao.list(webhook, null, 2);
-        var total = webhookMessageDao.count(webhook, null);
+
+        var firstPageParams = new WebhookMessageSearchParams(1, null, null);
+        var firstPage = webhookMessageDao.list(webhook, firstPageParams);
+
+        var secondPageParams = new WebhookMessageSearchParams(2, null, null);
+        var secondPage = webhookMessageDao.list(webhook, secondPageParams);
+
         assertThat(firstPage.size(), is(10));
         assertThat(secondPage.size(), is(6));
-        assertThat(total, is(16L));
     }
 
     private WebhookMessageEntity createWebhookMessageEntity(WebhookEntity webhook) {
@@ -98,29 +106,57 @@ class WebhookMessageDaoTest {
         return message;
     }
 
-   private void setup(int numberOfPendingMessagesToPad) {
-       var webhook = new WebhookEntity();
-       webhook.setLive(true);
-       webhook.setServiceId("real-service-id");
-       webhook.setExternalId(webhookExternalId);
+    private WebhookEntity insertWebhook() {
+        var webhook = new WebhookEntity();
+        webhook.setLive(true);
+        webhook.setServiceId("real-service-id");
+        webhook.setExternalId(webhookExternalId);
 
-       var message = new WebhookMessageEntity();
-       message.setWebhookEntity(webhook);
-       message.setLastDeliveryStatus(DeliveryStatus.SUCCESSFUL);
-       message.setExternalId("successful-message-external-id");
+        database.inTransaction(() -> {
+            webhookDao.create(webhook);
+        });
+        
+        return webhook;
+    }
+    
+    private WebhookMessageEntity insertMessage(WebhookEntity webhook, String resourceExternalId, DeliveryStatus deliveryStatus) {
+        var message = new WebhookMessageEntity();
+        message.setWebhookEntity(webhook);
+        message.setLastDeliveryStatus(deliveryStatus);
+        message.setExternalId(UUID.randomUUID().toString());
+        message.setResourceExternalId(resourceExternalId);
 
-       database.inTransaction(() -> {
-           webhookDao.create(webhook);
-           webhookMessageDao.create(message);
-           webhookDeliveryQueueDao.enqueueFrom(message, DeliveryStatus.SUCCESSFUL, Instant.now());
+        database.inTransaction(() -> {
+            webhookMessageDao.create(message);
+            webhookDeliveryQueueDao.enqueueFrom(message, DeliveryStatus.SUCCESSFUL, Instant.now());
+        });
+        
+        return message;
+    }
 
-           for (var i = 0; i < numberOfPendingMessagesToPad; i++) {
-               var padMessage = new WebhookMessageEntity();
-               padMessage.setWebhookEntity(webhook);
-               padMessage.setExternalId("padded-message-%s".formatted(i));
-               webhookMessageDao.create(padMessage);
-               webhookDeliveryQueueDao.enqueueFrom(padMessage, DeliveryStatus.PENDING, Instant.now());
-           }
-       });
-   }
+    private void setup(int numberOfPendingMessagesToPad) {
+        var webhook = new WebhookEntity();
+        webhook.setLive(true);
+        webhook.setServiceId("real-service-id");
+        webhook.setExternalId(webhookExternalId);
+
+        var message = new WebhookMessageEntity();
+        message.setWebhookEntity(webhook);
+        message.setLastDeliveryStatus(DeliveryStatus.SUCCESSFUL);
+        message.setExternalId("successful-message-external-id");
+
+        database.inTransaction(() -> {
+            webhookDao.create(webhook);
+            webhookMessageDao.create(message);
+            webhookDeliveryQueueDao.enqueueFrom(message, DeliveryStatus.SUCCESSFUL, Instant.now());
+
+            for (var i = 0; i < numberOfPendingMessagesToPad; i++) {
+                var padMessage = new WebhookMessageEntity();
+                padMessage.setWebhookEntity(webhook);
+                padMessage.setExternalId("padded-message-%s".formatted(i));
+                webhookMessageDao.create(padMessage);
+                webhookDeliveryQueueDao.enqueueFrom(padMessage, DeliveryStatus.PENDING, Instant.now());
+            }
+        });
+    }
 }

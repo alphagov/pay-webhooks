@@ -1,10 +1,12 @@
 package uk.gov.pay.webhooks.message.dao;
 
 import io.dropwizard.hibernate.AbstractDAO;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.SessionFactory;
-import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
+import org.hibernate.query.Query;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
+import uk.gov.pay.webhooks.webhook.resource.WebhookMessageSearchParams;
 
 import javax.inject.Inject;
 import java.time.OffsetDateTime;
@@ -14,11 +16,17 @@ import java.util.Optional;
 public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
 
     public static final int WEBHOOK_MESSAGES_PAGE_SIZE = 10;
+    
+    private static final String SEARCH_WEBHOOK_MESSAGES = 
+            "SELECT m from WebhookMessageEntity m " +
+                    " WHERE webhookEntity = :webhook " +
+                    " :searchExtraFields " +
+                    " ORDER BY createdDate desc";
 
     @Inject
     public WebhookMessageDao(SessionFactory factory) {
         super(factory);
-        }
+    }
 
     public WebhookMessageEntity create(WebhookMessageEntity webhookMessage) {
         persist(webhookMessage);
@@ -26,33 +34,26 @@ public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
     }
 
     public Optional<WebhookMessageEntity> get(WebhookEntity webhook, String messageId) {
-       return namedTypedQuery(WebhookMessageEntity.MESSAGE_BY_WEBHOOK_ID_AND_MESSAGE_ID)
-               .setParameter("webhook", webhook)
-               .setParameter("messageId", messageId)
-               .stream()
-               .findFirst();
+        return namedTypedQuery(WebhookMessageEntity.MESSAGE_BY_WEBHOOK_ID_AND_MESSAGE_ID)
+                .setParameter("webhook", webhook)
+                .setParameter("messageId", messageId)
+                .stream()
+                .findFirst();
     }
 
-    public List<WebhookMessageEntity> list(WebhookEntity webhook, DeliveryStatus deliveryStatus, int page) {
-        var query = deliveryStatus != null ?
-                namedTypedQuery(WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID_AND_STATUS)
-                        .setParameter("webhook", webhook)
-                        .setParameter("deliveryStatus", deliveryStatus) :
-                namedTypedQuery(WebhookMessageEntity.MESSAGES_BY_WEBHOOK_ID)
-                        .setParameter("webhook", webhook);
-        return query.setFirstResult(calculateFirstResult(page))
+    public List<WebhookMessageEntity> list(WebhookEntity webhook, WebhookMessageSearchParams params) {
+        String searchClauseTemplate = String.join(" AND ", params.getFilterTemplates());
+        searchClauseTemplate = StringUtils.isNotBlank(searchClauseTemplate) ?  "AND " + searchClauseTemplate : "";
+
+        String queryTemplate = SEARCH_WEBHOOK_MESSAGES.replace(":searchExtraFields", searchClauseTemplate);
+        Query<WebhookMessageEntity> query = query(queryTemplate);
+
+        params.getQueryMap().forEach(query::setParameter);
+        query.setParameter("webhook", webhook);
+        
+        return query.setFirstResult(calculateFirstResult(params.getPage()))
                 .setMaxResults(WEBHOOK_MESSAGES_PAGE_SIZE)
                 .getResultList();
-    }
-
-    public Long count(WebhookEntity webhook, DeliveryStatus deliveryStatus) {
-        var query = deliveryStatus != null ?
-                namedQuery(WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID_AND_STATUS)
-                        .setParameter("webhook", webhook)
-                        .setParameter("deliveryStatus", deliveryStatus) :
-                namedQuery(WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID)
-                        .setParameter("webhook", webhook);
-        return (Long) query.getSingleResult();
     }
 
     private int calculateFirstResult(int page) {
