@@ -80,6 +80,10 @@ queueMessageReceiverConfig:
   numberOfThreads: ${QUEUE_MESSAGE_RECEIVER_NUMBER_OF_THREADS:-3}
   messageRetryDelayInSeconds: ${QUEUE_MESSAGE_RETRY_DELAY_IN_SECONDS:-900}
 
+webhookMessageDeletionConfig:
+  maxAgeOfMessages: ${MAXIMUM_AGE_OF_MESSAGE:-7}
+  maxNumOfMessagesToExpire: ${MAXIMUM_NUMBER_OF_MESSAGES_TO_EXPIRE_PER_JOB:-15000}
+
 webhookMessageSendingQueueProcessorConfig:
   numberOfThreads: ${WEBHOOK_MESSAGE_SENDING_QUEUE_NUMBER_OF_THREADS:-5}
   initialDelayInMilliseconds: ${WEBHOOK_MESSAGE_SENDING_QUEUE_INITIAL_DELAY_IN_MILLISECONDS:-30000}

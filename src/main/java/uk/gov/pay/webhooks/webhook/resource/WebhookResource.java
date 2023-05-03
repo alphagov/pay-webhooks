@@ -31,6 +31,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
@@ -50,6 +51,23 @@ public class WebhookResource {
     public WebhookResource(WebhookService webhookService, WebhookRequestValidator webhookRequestValidator) {
         this.webhookService = webhookService;
         this.webhookRequestValidator = webhookRequestValidator;
+    }
+
+    @UnitOfWork
+    @POST
+    @Path("/tasks/delete_messages")
+    @Produces(APPLICATION_JSON)
+    @Operation(
+            summary = "Deletes webhook messages",
+            description = "Task to delete webhook messages older than a default of seven days (this is configurable).",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error")
+            }
+    )
+    public Response expireWebhookMessages() {
+        webhookService.deleteWebhookMessages();
+        return Response.status(Response.Status.OK).build();
     }
 
     @UnitOfWork
@@ -181,8 +199,7 @@ public class WebhookResource {
             @Parameter(example = "1") @QueryParam("page") Integer page,
             @Parameter(example = "SUCCESSFUL") @Valid @QueryParam("status") DeliveryStatus deliveryStatus
     ) {
-        var currentPage = Optional.ofNullable(page)
-                .orElse(1);
+        var currentPage = Optional.ofNullable(page).orElse(1);
         return webhookService.listMessages(externalId, deliveryStatus, currentPage);
     }
 

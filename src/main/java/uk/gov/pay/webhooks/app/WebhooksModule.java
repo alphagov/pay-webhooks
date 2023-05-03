@@ -60,6 +60,12 @@ public class WebhooksModule extends AbstractModule {
     public java.net.http.HttpClient netHttpClient() {
         return java.net.http.HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
     }
+    
+    @Provides
+    @Singleton
+    public WebhookMessageDeletionConfig webhookMessageDeletionConfig() {
+        return configuration.getWebhookMessageDeletionConfig();
+    }
 
     @Provides
     @Singleton

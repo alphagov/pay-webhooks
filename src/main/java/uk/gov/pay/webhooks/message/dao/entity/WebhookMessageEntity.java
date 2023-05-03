@@ -29,11 +29,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
 @NamedQuery(
-        name = WebhookMessageEntity.MESSAGES_OLDER_THAN_X_DAYS,
-        query = "select m from WebhookMessageEntity m where createdDate < :datetime"
-)
-
-@NamedQuery(
         name = WebhookMessageEntity.MESSAGE_BY_WEBHOOK_ID_AND_MESSAGE_ID,
         query = "select m from WebhookMessageEntity m where webhookEntity = :webhook and externalId = :messageId"
 )
@@ -66,7 +61,6 @@ import java.time.ZoneOffset;
 })
 public class WebhookMessageEntity {
 
-    public static final String MESSAGES_OLDER_THAN_X_DAYS = "WebhookMessage.messages_older_than_x_days";
     public static final String MESSAGE_BY_WEBHOOK_ID_AND_MESSAGE_ID = "WebhookMessage.message_by_webhook_id_and_message_id";
     public static final String MESSAGES_BY_WEBHOOK_ID = "WebhookMessage.messages_by_webhook_id";
     public static final String MESSAGES_BY_WEBHOOK_ID_AND_STATUS = "WebhookMessage.messages_by_webhook_id_and_status";

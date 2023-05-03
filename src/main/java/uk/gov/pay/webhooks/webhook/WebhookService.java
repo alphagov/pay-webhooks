@@ -5,13 +5,11 @@ import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.app.WebhookMessageDeletionConfig;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
-import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.EventMapper;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
-import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.message.resource.WebhookDeliveryQueueResponse;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageResponse;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageSearchResponse;
@@ -157,19 +155,11 @@ public class WebhookService {
                 .anyMatch(internalEventNames -> internalEventNames.contains(event.eventType()));
     }
 
-    public void deleteWebhookMessagesOlderThan() {
+    public void deleteWebhookMessages() {
         int maxAgeOfMessages = webhookMessageDeletionConfig.getMaxAgeOfMessages();
         int maxNumOfMessagesToExpire = webhookMessageDeletionConfig.getMaxNumOfMessagesToExpire();
-        
-        var webhookMessages = webhookMessageDao.getWebhookMessagesOlderThan(maxAgeOfMessages);
-        int webhookMessagesDeleted = webhookMessageDao.deleteMessages(
-                webhookMessages.stream().limit(maxNumOfMessagesToExpire));
-        LOGGER.info(format("%s webhook messages were deleted.", webhookMessagesDeleted));
 
-        var deliveryQueueEntities = webhookDeliveryQueueDao.getWebhookDeliveryQueueEntitiesOlderThan(maxAgeOfMessages);
-        int deliveryQueueEntitiesDeleted = webhookDeliveryQueueDao.deleteDeliveryQueueEntries(
-                deliveryQueueEntities.stream().limit(maxNumOfMessagesToExpire));
-        LOGGER.info(format("%s webhook delivery queue entities were deleted.", deliveryQueueEntitiesDeleted));
-
+        int numberOfWebhookMessagesDeleted = webhookMessageDao.deleteMessages(maxAgeOfMessages, maxNumOfMessagesToExpire);
+        LOGGER.info(format("%s webhook messages were deleted.", numberOfWebhookMessagesDeleted));
     }
 }

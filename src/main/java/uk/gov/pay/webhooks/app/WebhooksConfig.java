@@ -49,6 +49,14 @@ public class WebhooksConfig extends Configuration {
     }    
     
     @NotNull
+    @JsonProperty("webhookMessageDeletionConfig")
+    private WebhookMessageDeletionConfig webhookMessageDeletionConfig;
+
+    public WebhookMessageDeletionConfig getWebhookMessageDeletionConfig() {
+        return webhookMessageDeletionConfig;
+    }
+
+    @NotNull
     @JsonProperty("webhookMessageSendingQueueProcessorConfig")
     private WebhookMessageSendingQueueProcessorConfig webhookMessageSendingQueueProcessorConfig;
 

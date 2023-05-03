@@ -6,7 +6,6 @@ import org.mockito.ArgumentCaptor;
 import uk.gov.pay.webhooks.app.WebhookMessageDeletionConfig;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
-import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
@@ -20,17 +19,13 @@ import uk.gov.pay.webhooks.webhook.resource.CreateWebhookRequest;
 
 import java.time.Instant;
 import java.time.InstantSource;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -59,28 +54,13 @@ class WebhookServiceTest {
     @Test
     public void shouldDeleteWebhookMessages() {
         when(webhookMessageDeletionConfig.getMaxAgeOfMessages()).thenReturn(7);
-        when(webhookMessageDeletionConfig.getMaxNumOfMessagesToExpire()).thenReturn(2);
+        when(webhookMessageDeletionConfig.getMaxNumOfMessagesToExpire()).thenReturn(4);
         
-        var webhook = new WebhookEntity();
-        when(webhookMessageDao.getWebhookMessagesOlderThan(7)).thenReturn(
-                Collections.nCopies(4, createWebhookMessageEntity(webhook)));
+        webhookService.deleteWebhookMessages();
 
-        when(webhookDeliveryQueueDao.getWebhookDeliveryQueueEntitiesOlderThan(7)).thenReturn(
-                Collections.nCopies(4, new WebhookDeliveryQueueEntity()));
-
-        webhookService.deleteWebhookMessagesOlderThan();
-        
-        var webhookMessageEntityArgumentCaptor = ArgumentCaptor.forClass(Stream.class);
-        verify(webhookMessageDao).deleteMessages(webhookMessageEntityArgumentCaptor.capture());
-        Stream<WebhookMessageEntity> capturedWebhookMessageEntityStream = webhookMessageEntityArgumentCaptor.getAllValues().get(0);
-        assertThat(capturedWebhookMessageEntityStream.collect(Collectors.toList()), hasSize(2));
-        
-        var webhookDeliveryQueueEntityArgumentCaptor = ArgumentCaptor.forClass(Stream.class);
-        verify(webhookDeliveryQueueDao).deleteDeliveryQueueEntries(webhookDeliveryQueueEntityArgumentCaptor.capture());
-        Stream<WebhookDeliveryQueueEntity> capturedWebhookDeliveryQEntityStream = webhookDeliveryQueueEntityArgumentCaptor.getAllValues().get(0);
-        assertThat(capturedWebhookDeliveryQEntityStream.collect(Collectors.toList()), hasSize(2));
+        verify(webhookMessageDao).deleteMessages(7, 4);
     }
-
+    
     private WebhookMessageEntity createWebhookMessageEntity(WebhookEntity webhook) {
         var message = new WebhookMessageEntity();
         message.setWebhookEntity(webhook);

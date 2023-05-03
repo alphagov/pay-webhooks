@@ -72,12 +72,6 @@ public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEnt
                 .getResultList();
     }
 
-    public int deleteDeliveryQueueEntries(Stream<WebhookDeliveryQueueEntity> webhookDeliveryQueueEntities) {
-        return currentSession().createQuery("delete from WebhookDeliveryQueueEntity where id in :ids")
-                .setParameter("ids", webhookDeliveryQueueEntities.map(WebhookDeliveryQueueEntity::getId).collect(Collectors.toList()))
-                .executeUpdate();
-    }
-
     public List<WebhookDeliveryQueueEntity> getWebhookDeliveryQueueEntitiesOlderThan(int days) {
         Preconditions.checkArgument(days > 0, "Can only get webhook delivery queue entities older than 0 days.");
         return namedTypedQuery(WebhookDeliveryQueueEntity.ENTRIES_OLDER_THAN_X_DAYS)

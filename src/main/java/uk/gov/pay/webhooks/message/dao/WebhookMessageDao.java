@@ -1,6 +1,5 @@
 package uk.gov.pay.webhooks.message.dao;
 
-import com.google.common.base.Preconditions;
 import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
@@ -9,11 +8,8 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import javax.inject.Inject;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
 
@@ -63,16 +59,11 @@ public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
         return (page - 1) * WEBHOOK_MESSAGES_PAGE_SIZE;
     }
 
-    public List<WebhookMessageEntity> getWebhookMessagesOlderThan(int days) {
-        Preconditions.checkArgument(days > 0, "Can only get webhook messages older than 0 days.");
-        return namedTypedQuery(WebhookMessageEntity.MESSAGES_OLDER_THAN_X_DAYS)
+    public int deleteMessages(int days, int maxNumOfMessagesToDelete) {
+        return currentSession().createNativeQuery("delete from webhook_messages where id in " +
+                        "(select id from webhook_messages where created_date < :datetime limit :maxNumOfMessagesToDelete)")
                 .setParameter("datetime", OffsetDateTime.now().minusDays(days))
-                .getResultList();
-    }
-
-    public int deleteMessages(Stream<WebhookMessageEntity> webhookMessageEntities) {
-        return currentSession().createQuery("delete from WebhookMessageEntity where id in :ids")
-                .setParameter("ids", webhookMessageEntities.map(WebhookMessageEntity::getId).collect(Collectors.toList()))
+                .setParameter("maxNumOfMessagesToDelete", maxNumOfMessagesToDelete)
                 .executeUpdate();
     }
 }
