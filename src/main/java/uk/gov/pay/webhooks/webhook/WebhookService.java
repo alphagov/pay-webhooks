@@ -3,7 +3,6 @@ package uk.gov.pay.webhooks.webhook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.app.WebhookMessageDeletionConfig;
-import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
@@ -19,6 +18,7 @@ import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookStatus;
 import uk.gov.pay.webhooks.webhook.resource.CreateWebhookRequest;
+import uk.gov.pay.webhooks.webhook.resource.WebhookMessageSearchParams;
 import uk.gov.service.payments.commons.model.jsonpatch.JsonPatchOp;
 import uk.gov.service.payments.commons.model.jsonpatch.JsonPatchRequest;
 
@@ -90,13 +90,13 @@ public class WebhookService {
         return webhookDao.list(live);
     }
 
-    public WebhookMessageSearchResponse listMessages(String webhookId, DeliveryStatus status, int page) {
+    public WebhookMessageSearchResponse listMessages(String webhookId, WebhookMessageSearchParams queryParams) {
         var webhook = webhookDao.findByExternalId(webhookId).orElseThrow(NotFoundException::new);
-        var messages = webhookMessageDao.list(webhook, status, page)
+        var messages = webhookMessageDao.list(webhook, queryParams)
                 .stream()
                 .map(WebhookMessageResponse::from)
                 .toList();
-        return new WebhookMessageSearchResponse(messages.size(), page, messages);
+        return new WebhookMessageSearchResponse(messages.size(), queryParams.getPage(), messages);
     }
 
     public Optional<WebhookMessageResponse> getMessage(String webhookId, String messageId) {
