@@ -15,7 +15,6 @@ public final class WebhooksKeys {
     public static final String WEBHOOK_MESSAGE_RETRY_COUNT = "retry_count";
     public static final String STATE_TRANSITION_TO_STATE = "to_state";
     public static final String WEBHOOK_CALLBACK_URL_DOMAIN = "domain";
-    public static final String SQS_MESSAGE_ID = "sqs_message_id";
     public static final String WEBHOOK_MESSAGE_EVENT_INTERNAL_TYPE = "internal_event_type";
     public static final String WEBHOOK_MESSAGE_EVENT_TYPE = "webhook_event_type";
     public static final String WEBHOOK_MESSAGE_TIME_TO_EMIT_IN_MILLIS = "time_to_send_in_millis";
