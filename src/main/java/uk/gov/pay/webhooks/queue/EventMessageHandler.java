@@ -6,7 +6,6 @@ import net.logstash.logback.marker.Markers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.yaml.snakeyaml.error.Mark;
 import uk.gov.pay.webhooks.message.WebhookMessageService;
 import uk.gov.pay.webhooks.queue.sqs.QueueException;
 
@@ -14,15 +13,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static net.logstash.logback.argument.StructuredArguments.kv;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.ERROR;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.ERROR_MESSAGE;
-import static uk.gov.pay.webhooks.app.WebhooksKeys.JOB_BATCH_ID;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.RESOURCE_IS_LIVE;
-import static uk.gov.pay.webhooks.app.WebhooksKeys.SQS_MESSAGE_ID;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_RESOURCE_EXTERNAL_ID;
+import static uk.gov.service.payments.logging.LoggingKeys.LEDGER_EVENT_TYPE;
 import static uk.gov.service.payments.logging.LoggingKeys.MDC_REQUEST_ID_KEY;
+import static uk.gov.service.payments.logging.LoggingKeys.RESOURCE_EXTERNAL_ID;
 import static uk.gov.service.payments.logging.LoggingKeys.SERVICE_EXTERNAL_ID;
+import static uk.gov.service.payments.logging.LoggingKeys.SQS_MESSAGE_ID;
 
 public class EventMessageHandler {
 
@@ -42,14 +41,17 @@ public class EventMessageHandler {
             try {
                 MDC.put(MDC_REQUEST_ID_KEY, UUID.randomUUID().toString());
                 MDC.put(SQS_MESSAGE_ID, message.queueMessage().messageId());
+                MDC.put(RESOURCE_EXTERNAL_ID, message.eventMessageDto().resourceExternalId());
+                MDC.put(LEDGER_EVENT_TYPE, message.eventMessageDto().eventType());
                 processSingleMessage(message);
+                LOGGER.info("Successfully processed event message");
             } catch (Exception e) {
                 LOGGER.error(
                         Markers.append(ERROR_MESSAGE, e.getMessage()),
                         "Error during handling event message"
                 );
             } finally {
-                List.of(SQS_MESSAGE_ID, MDC_REQUEST_ID_KEY).forEach(MDC::remove);
+                List.of(SQS_MESSAGE_ID, MDC_REQUEST_ID_KEY, RESOURCE_EXTERNAL_ID, LEDGER_EVENT_TYPE).forEach(MDC::remove);
             }
         }
     }
