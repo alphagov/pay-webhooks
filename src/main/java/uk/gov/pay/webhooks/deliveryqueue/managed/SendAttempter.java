@@ -77,8 +77,8 @@ public class SendAttempter {
                     Markers.append(WEBHOOK_CALLBACK_URL, queueItem.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl())
                             .and(Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount))
                             .and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, url.getHost()))
-                            .and(Markers.append(WEBHOOK_MESSAGE_TIME_TO_EMIT_IN_MILLIS, Duration.between(queueItem.getCreatedDate(), instantSource.instant()).toMillis())),
-                    "Sending webhook message"
+                            .and(Markers.append(WEBHOOK_MESSAGE_TIME_TO_EMIT_IN_MILLIS, Duration.between(queueItem.getSendAt(), instantSource.instant()).toMillis())),
+                    "Sending webhook message started"
             ); 
             var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity());
 
