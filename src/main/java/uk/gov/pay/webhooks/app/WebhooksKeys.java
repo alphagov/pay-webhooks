@@ -7,7 +7,6 @@ public final class WebhooksKeys {
     public static final String WEBHOOK_EXTERNAL_ID = "webhook_external_id";
     public static final String WEBHOOK_CALLBACK_URL = "webhook_callback_url";
     public static final String WEBHOOK_MESSAGE_EXTERNAL_ID = "webhook_message_external_id";
-    public static final String WEBHOOK_MESSAGE_RESOURCE_EXTERNAL_ID = "resource_external_id";
     public static final String RESOURCE_IS_LIVE = "is_live";
     public static final String JOB_BATCH_ID = "job_id";
     public static final String ERROR = "error";

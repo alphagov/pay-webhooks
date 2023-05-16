@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static uk.gov.pay.webhooks.app.WebhooksKeys.JOB_BATCH_ID;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.RESOURCE_IS_LIVE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_EXTERNAL_ID;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_EVENT_TYPE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_EXTERNAL_ID;
-import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_RESOURCE_EXTERNAL_ID;
 import static uk.gov.service.payments.logging.LoggingKeys.MDC_REQUEST_ID_KEY;
+import static uk.gov.service.payments.logging.LoggingKeys.RESOURCE_EXTERNAL_ID;
+import static uk.gov.service.payments.logging.LoggingKeys.SERVICE_EXTERNAL_ID;
 
 public class WebhookMessagePollingService {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebhookMessagePollingService.class);
@@ -35,7 +35,7 @@ public class WebhookMessagePollingService {
         Optional<WebhookDeliveryQueueEntity> attemptCursor;
         do {
             attemptCursor = sendIfAvailable();
-        } while(attemptCursor.isPresent());
+        } while (attemptCursor.isPresent());
     }
 
     @UnitOfWork
@@ -47,9 +47,10 @@ public class WebhookMessagePollingService {
                         var webhookMessage = webhookDeliveryQueueEntity.getWebhookMessageEntity();
                         var webhook = webhookMessage.getWebhookEntity();
                         MDC.put(WEBHOOK_EXTERNAL_ID, webhook.getExternalId());
-                        MDC.put(WEBHOOK_MESSAGE_RESOURCE_EXTERNAL_ID, webhookMessage.getResourceExternalId());
+                        MDC.put(RESOURCE_EXTERNAL_ID, webhookMessage.getResourceExternalId());
                         MDC.put(WEBHOOK_MESSAGE_EXTERNAL_ID, webhookMessage.getExternalId());
                         MDC.put(WEBHOOK_MESSAGE_EVENT_TYPE, webhookMessage.getEventType().getName().getName());
+                        MDC.put(SERVICE_EXTERNAL_ID, webhook.getServiceId());
                         MDC.put(RESOURCE_IS_LIVE, String.valueOf(webhook.isLive()));
 
                         sendAttempter.attemptSend(webhookDeliveryQueueEntity);
@@ -59,7 +60,12 @@ public class WebhookMessagePollingService {
             LOGGER.error("Webhook message sender polling thread exception", e);
             return Optional.empty();
         } finally {
-            List.of(MDC_REQUEST_ID_KEY, WEBHOOK_EXTERNAL_ID, WEBHOOK_MESSAGE_RESOURCE_EXTERNAL_ID, WEBHOOK_MESSAGE_EVENT_TYPE, RESOURCE_IS_LIVE).forEach(MDC::remove);
+            List.of(MDC_REQUEST_ID_KEY,
+                    WEBHOOK_EXTERNAL_ID,
+                    RESOURCE_EXTERNAL_ID,
+                    WEBHOOK_MESSAGE_EVENT_TYPE,
+                    SERVICE_EXTERNAL_ID,
+                    RESOURCE_IS_LIVE).forEach(MDC::remove);
         }
     }
 }

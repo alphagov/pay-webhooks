@@ -16,7 +16,6 @@ import java.util.UUID;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.ERROR;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.ERROR_MESSAGE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.RESOURCE_IS_LIVE;
-import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_RESOURCE_EXTERNAL_ID;
 import static uk.gov.service.payments.logging.LoggingKeys.LEDGER_EVENT_TYPE;
 import static uk.gov.service.payments.logging.LoggingKeys.MDC_REQUEST_ID_KEY;
 import static uk.gov.service.payments.logging.LoggingKeys.RESOURCE_EXTERNAL_ID;
@@ -41,6 +40,8 @@ public class EventMessageHandler {
             try {
                 MDC.put(MDC_REQUEST_ID_KEY, UUID.randomUUID().toString());
                 MDC.put(SQS_MESSAGE_ID, message.queueMessage().messageId());
+                MDC.put(SERVICE_EXTERNAL_ID, message.eventMessageDto().serviceId());
+                MDC.put(RESOURCE_IS_LIVE, Optional.ofNullable(message.eventMessageDto().live()).map(String::valueOf).orElse(null));
                 MDC.put(RESOURCE_EXTERNAL_ID, message.eventMessageDto().resourceExternalId());
                 MDC.put(LEDGER_EVENT_TYPE, message.eventMessageDto().eventType());
                 processSingleMessage(message);
@@ -51,7 +52,12 @@ public class EventMessageHandler {
                         "Error during handling event message"
                 );
             } finally {
-                List.of(SQS_MESSAGE_ID, MDC_REQUEST_ID_KEY, RESOURCE_EXTERNAL_ID, LEDGER_EVENT_TYPE).forEach(MDC::remove);
+                List.of(MDC_REQUEST_ID_KEY,
+                        SQS_MESSAGE_ID,
+                        SERVICE_EXTERNAL_ID,
+                        RESOURCE_IS_LIVE,
+                        RESOURCE_EXTERNAL_ID,
+                        LEDGER_EVENT_TYPE).forEach(MDC::remove);
             }
         }
     }
@@ -60,9 +66,6 @@ public class EventMessageHandler {
     protected void processSingleMessage(EventMessage message) throws QueueException {
         try {
             var event = message.toInternalEvent();
-            MDC.put(SERVICE_EXTERNAL_ID, event.serviceId());
-            MDC.put(RESOURCE_IS_LIVE, Optional.ofNullable(event.live()).map(String::valueOf).orElse(null));
-            MDC.put(WEBHOOK_MESSAGE_RESOURCE_EXTERNAL_ID, event.resourceExternalId());
 
             webhookMessageService.handleInternalEvent(event);
             eventQueue.markMessageAsProcessed(message);
@@ -73,8 +76,6 @@ public class EventMessageHandler {
                     "Event message scheduled for retry"
             );
             eventQueue.scheduleMessageForRetry(message);
-        } finally {
-            List.of(SERVICE_EXTERNAL_ID, RESOURCE_IS_LIVE, WEBHOOK_MESSAGE_RESOURCE_EXTERNAL_ID).forEach(MDC::remove);
         }
     }
 }
