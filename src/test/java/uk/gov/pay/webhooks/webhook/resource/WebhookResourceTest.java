@@ -60,6 +60,7 @@ public class WebhookResourceTest {
         var json = """
                 {
                     "service_id": "some-service-id",
+                    "gateway_account_id": "100",
                     "callback_url": "https://some-callback-url.com",
                     "live": false
                 }
@@ -90,6 +91,7 @@ public class WebhookResourceTest {
         var json = """
                 {
                     "service_id": "some-service-id-that-is-way-toooooo-loooooooong",
+                    "gateway_account_id": "100",
                     "callback_url": "https://some-callback-url.com",
                     "live": false
                 }
@@ -108,6 +110,7 @@ public class WebhookResourceTest {
         var json = """
                 {
                     "service_id": "some-service-id",
+                    "gateway_account_id": "100",
                     "callback_url": "https://some-callback-url.com",
                     "live": false,
                     "subscriptions": ["nonexistent_event_type_name"]
@@ -188,6 +191,7 @@ public class WebhookResourceTest {
     @Test
     public void getWebhooksReturnsListOfWebhooks() throws JsonProcessingException {
         webhook.setServiceId("some-service-id");
+        webhook.setGatewayAccountId("100");
         webhook.setLive(true);
         webhook.setDescription("fooBar");
         webhook.addSubscription(new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED));
@@ -205,6 +209,7 @@ public class WebhookResourceTest {
         JsonNode expected = objectMapper.readTree("""
                 [{
                 	"service_id": "some-service-id",
+                	"gateway_account_id": "100",
                 	"live": true,
                 	"callback_url": null,
                 	"description": "fooBar",
@@ -214,6 +219,7 @@ public class WebhookResourceTest {
                 	"subscriptions": ["card_payment_captured"]
                 }, {
                 	"service_id": "some-service-id",
+                	"gateway_account_id": "100",
                 	"live": true,
                 	"callback_url": null,
                 	"description": "fooBar",

@@ -36,6 +36,7 @@ public class WebhookListIT {
         var json = """
                 {
                   "service_id": "test_service_id",
+                  "gateway_account_id": "100",
                   "live": false,
                   "callback_url": "https://example.com",
                   "description": "description",
@@ -62,6 +63,7 @@ public class WebhookListIT {
             assertThat(listResponse.size(),is(equalTo(1)));
             var firstItem = (LinkedHashMap) listResponse.get(0);
             assertThat(firstItem.get("service_id"), is("test_service_id"));
+            assertThat(firstItem.get("gateway_account_id"), is("100"));
     }
 
     @Test
@@ -69,6 +71,7 @@ public class WebhookListIT {
         var serviceOne = """
                 {
                   "service_id": "service_one",
+                  "gateway_account_id": "100",
                   "live": false,
                   "callback_url": "https://example.com",
                   "description": "description",
@@ -79,6 +82,7 @@ public class WebhookListIT {
         var serviceTwo = """
                 {
                   "service_id": "service_two",
+                  "gateway_account_id": "200",
                   "live": false,
                   "callback_url": "https://example.com",
                   "description": "description",

@@ -16,6 +16,8 @@ import java.util.List;
 public record WebhookResponse(
         @Schema(example = "eo29upsdkjlk3jpwjj2dfn12")
         @JsonProperty("service_id") String serviceId,
+        @Schema(example = "100")
+        @JsonProperty("gateway_account_id") String gatewayAccountId,
         @JsonProperty("live") Boolean live,
         @Schema(example = "https://example.com")
         @JsonProperty(FIELD_CALLBACK_URL) String callbackUrl,
@@ -39,6 +41,7 @@ public record WebhookResponse(
     public static WebhookResponse from(WebhookEntity webhookEntity) {
         return new WebhookResponse(
                 webhookEntity.getServiceId(),
+                webhookEntity.getGatewayAccountId(),
                 webhookEntity.isLive(),
                 webhookEntity.getCallbackUrl(),
                 webhookEntity.getDescription(),

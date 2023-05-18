@@ -94,6 +94,7 @@ public class WebhookEntity {
         entity.setDescription(createWebhookRequest.description());
         entity.setCallbackUrl(createWebhookRequest.callbackUrl());
         entity.setServiceId(createWebhookRequest.serviceId());
+        entity.setGatewayAccountId(createWebhookRequest.gatewayAccountId());
         entity.setLive(createWebhookRequest.live());
         entity.setCreatedDate(createdDate);
         entity.setStatus(WebhookStatus.ACTIVE);

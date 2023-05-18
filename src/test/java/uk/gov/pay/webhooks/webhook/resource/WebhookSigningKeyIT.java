@@ -36,6 +36,7 @@ public class WebhookSigningKeyIT {
         var json = """
                 {
                   "service_id": "test_service_id",
+                  "gateway_account_id": "100",
                   "live": false,
                   "callback_url": "https://example.com",
                   "description": "description",
