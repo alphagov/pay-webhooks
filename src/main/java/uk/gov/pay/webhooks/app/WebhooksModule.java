@@ -12,7 +12,6 @@ import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.setup.Environment;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -74,8 +73,9 @@ public class WebhooksModule extends AbstractModule {
     public CloseableHttpClient httpClient() {
         PoolingHttpClientConnectionManager poolingConnManager
                 = new PoolingHttpClientConnectionManager();
-        poolingConnManager.setMaxTotal(20);
-        poolingConnManager.setDefaultMaxPerRoute(20);
+        int connectionPoolSize = configuration.getWebhookMessageSendingQueueProcessorConfig().getHttpClientConnectionPoolSize();
+        poolingConnManager.setMaxTotal(connectionPoolSize);
+        poolingConnManager.setDefaultMaxPerRoute(connectionPoolSize);
         var timeoutInMillis = Math.toIntExact(configuration.getWebhookMessageSendingQueueProcessorConfig().getRequestTimeout().toMilliseconds());
         var config = RequestConfig.custom()
                 .setConnectTimeout(timeoutInMillis)
