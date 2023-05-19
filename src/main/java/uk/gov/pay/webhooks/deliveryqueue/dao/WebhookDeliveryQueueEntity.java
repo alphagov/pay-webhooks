@@ -30,7 +30,7 @@ import java.util.Optional;
 
 @NamedQuery(
         name = WebhookDeliveryQueueEntity.NEXT_TO_SEND,
-        query = "select m from WebhookDeliveryQueueEntity m where :send_at > send_at and delivery_status = 'PENDING'"
+        query = "select m from WebhookDeliveryQueueEntity m where :send_at > send_at and delivery_status = 'PENDING' order by send_at asc"
 )
 
 @NamedQuery(
