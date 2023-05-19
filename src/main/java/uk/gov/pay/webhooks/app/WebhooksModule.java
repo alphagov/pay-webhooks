@@ -12,9 +12,11 @@ import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.setup.Environment;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
 import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
@@ -70,6 +72,10 @@ public class WebhooksModule extends AbstractModule {
     @Provides
     @Singleton
     public CloseableHttpClient httpClient() {
+        PoolingHttpClientConnectionManager poolingConnManager
+                = new PoolingHttpClientConnectionManager();
+        poolingConnManager.setMaxTotal(20);
+        poolingConnManager.setDefaultMaxPerRoute(20);
         var timeoutInMillis = Math.toIntExact(configuration.getWebhookMessageSendingQueueProcessorConfig().getRequestTimeout().toMilliseconds());
         var config = RequestConfig.custom()
                 .setConnectTimeout(timeoutInMillis)
@@ -90,6 +96,7 @@ public class WebhooksModule extends AbstractModule {
                 .setConnectionTimeToLive(configuration.getWebhookMessageSendingQueueProcessorConfig().getConnectionPoolTimeToLive().toSeconds(), TimeUnit.SECONDS)
                 .setSSLSocketFactory(sslsf)
                 .setDefaultRequestConfig(config)
+                .setConnectionManager(poolingConnManager)
                 .build();
     }
 
