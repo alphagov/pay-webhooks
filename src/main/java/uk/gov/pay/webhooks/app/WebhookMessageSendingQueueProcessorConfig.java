@@ -7,7 +7,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 public class WebhookMessageSendingQueueProcessorConfig extends Configuration {
-    
+
     @Valid
     @NotNull
     private int threadDelayInMilliseconds;
@@ -20,6 +20,10 @@ public class WebhookMessageSendingQueueProcessorConfig extends Configuration {
     @NotNull
     private int initialDelayInMilliseconds;
 
+    @Valid
+    @NotNull
+    private int httpClientConnectionPoolSize;
+    
     @NotNull
     private Duration connectionPoolTimeToLive;
     @NotNull
@@ -37,6 +41,10 @@ public class WebhookMessageSendingQueueProcessorConfig extends Configuration {
         return initialDelayInMilliseconds;
     }
 
+    public int getHttpClientConnectionPoolSize() {
+        return httpClientConnectionPoolSize;
+    }
+    
     public Duration getConnectionPoolTimeToLive() {
         return connectionPoolTimeToLive;
     }
