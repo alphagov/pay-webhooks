@@ -145,7 +145,7 @@ public class WebhookResourceTest {
 
         var response = resources
                 .target("/v1/webhook/%s".formatted(existingWebhookId))
-                .queryParam("service_id", "aint-no-serviceid")
+                .queryParam("service_id", "some-service-id")
                 .queryParam("gateway_account_id", "200")
                 .request()
                 .get();
@@ -154,7 +154,7 @@ public class WebhookResourceTest {
     }
 
     @Test
-    public void getWebhookByIdWhenDoesNotExist404() {
+    public void getWebhookByIdWhenDoesNotExistForServiceOrGatewayAccountID404() {
         when(webhookService.findByExternalIdAndGatewayAccountId(any(String.class), any(String.class))).thenReturn(Optional.empty());
 
         var response = resources
@@ -291,6 +291,33 @@ public class WebhookResourceTest {
         });
         assertThat(response.getStatus(), is(400));
         assertThat(responseBody.get("message"), is("[service_id, gateway_account_id] or override_service_id_restriction query parameter must be provided"));
+    }
+
+    @Test
+    public void getWebhooksRequestWithLiveAndServiceWithoutGatewayAccountIdShould400() throws JsonProcessingException {
+        var response = resources
+                .target("/v1/webhook")
+                .queryParam("live", true)
+                .queryParam("service_id", existingServiceId)
+                .request()
+                .get();
+        Map<String, String> responseBody = objectMapper.readValue(response.readEntity(String.class), new TypeReference<>() {
+        });
+        assertThat(response.getStatus(), is(400));
+        assertThat(responseBody.get("message"), is("[service_id, gateway_account_id] or override_service_id_restriction query parameter must be provided"));
+    }
+
+    @Test
+    public void getWebhookRequestWithServiceWithoutGatewayAccountIdShould400() throws JsonProcessingException {
+        var response = resources
+                .target("/v1/webhook/a-webhook-id")
+                .queryParam("service_id", existingServiceId)
+                .request()
+                .get();
+        Map<String, String> responseBody = objectMapper.readValue(response.readEntity(String.class), new TypeReference<>() {
+        });
+        assertThat(response.getStatus(), is(400));
+        assertThat(responseBody.get("message"), is("[service_id, gateway_account_id] is required"));
     }
 
     @Test
