@@ -100,6 +100,7 @@ public class WebhookResource {
                                                   @PathParam("webhookExternalId") @NotNull String externalId,
                                                   @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12")
                                                   @QueryParam("service_id") String serviceId,
+                                                  @Parameter(example = "100")
                                                   @QueryParam("gateway_account_id") String gatewayAccountId,
                                                   @Parameter(description = "If false, the service_id and gateway_account_id must be specified", example = "false")
                                                   @QueryParam("override_account_or_service_id_restriction") Boolean overrideFilterRestrictions) {
