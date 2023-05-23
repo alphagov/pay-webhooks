@@ -50,12 +50,14 @@ public class WebhookDeliveryQueueIT {
     @Test
     public void webhookMessageIsEmittedForSubscribedWebhook() throws IOException, InterruptedException {
         var serviceExternalId = "a-valid-service-id";
-        dbHelper.addWebhookWithSubscription("a-valid-webhook-id", serviceExternalId, "http://localhost:%d/a-test-endpoint".formatted(app.getWireMockPort()));
+        var gatewayAccountId = "100";
+        dbHelper.addWebhookWithSubscription("a-valid-webhook-id", serviceExternalId, "http://localhost:%d/a-test-endpoint".formatted(app.getWireMockPort()), gatewayAccountId);
 
         var transaction = aTransactionFromLedgerFixture();
         var sqsMessage = anSNSToSQSEventFixture()
                 .withBody(Map.of(
                         "service_id", serviceExternalId,
+                        "gateway_account_id", gatewayAccountId,
                         "live", false,
                         "resource_external_id", transaction.getTransactionId(),
                         "timestamp", "2023-03-14T09:00:00.000000Z",
@@ -86,8 +88,9 @@ public class WebhookDeliveryQueueIT {
     @Test
     public void webhookMessageLastDeliveryStatusIsConsistent() throws InterruptedException, IOException {
         var serviceExternalId = "a-valid-service-id";
-        app.getJdbi().withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', 'webhook-external-id-succeeds', 'signing-key', '%s', false, 'http://localhost:%d/a-working-endpoint', 'description', 'ACTIVE')".formatted(serviceExternalId, app.getWireMockPort())));
-        app.getJdbi().withHandle(h -> h.execute("INSERT INTO webhooks VALUES (2, '2022-01-01', 'webhook-external-id-fails', 'signing-key', '%s', false, 'http://localhost:%d/a-failing-endpoint', 'description', 'ACTIVE')".formatted(serviceExternalId, app.getWireMockPort())));
+        var gatewayAccountId = "100";
+        app.getJdbi().withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', 'webhook-external-id-succeeds', 'signing-key', '%s', false, 'http://localhost:%d/a-working-endpoint', 'description', 'ACTIVE', '%s')".formatted(serviceExternalId, app.getWireMockPort(), gatewayAccountId)));
+        app.getJdbi().withHandle(h -> h.execute("INSERT INTO webhooks VALUES (2, '2022-01-01', 'webhook-external-id-fails', 'signing-key', '%s', false, 'http://localhost:%d/a-failing-endpoint', 'description', 'ACTIVE', '%s')".formatted(serviceExternalId, app.getWireMockPort(), gatewayAccountId)));
         app.getJdbi().withHandle(h -> h.execute("INSERT INTO webhook_subscriptions VALUES (1, (SELECT id FROM event_types WHERE name = 'card_payment_succeeded'))"));
         app.getJdbi().withHandle(h -> h.execute("INSERT INTO webhook_subscriptions VALUES (2, (SELECT id FROM event_types WHERE name = 'card_payment_succeeded'))"));
 
@@ -95,6 +98,7 @@ public class WebhookDeliveryQueueIT {
         var sqsMessage = anSNSToSQSEventFixture()
                 .withBody(Map.of(
                         "service_id", serviceExternalId,
+                        "gateway_account_id", gatewayAccountId,
                         "live", false,
                         "resource_external_id", transaction.getTransactionId(),
                         "timestamp", "2023-03-14T09:00:00.000000Z",

@@ -8,6 +8,7 @@ import java.time.Instant;
 public record InternalEvent(
         String eventType,
         String serviceId,
+        String gatewayAccountId,
         Boolean live,
         String resourceExternalId,
         String parentResourceExternalId,

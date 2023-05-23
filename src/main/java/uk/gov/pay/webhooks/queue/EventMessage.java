@@ -12,6 +12,7 @@ public record EventMessage(EventMessageDto eventMessageDto, QueueMessage queueMe
         return new InternalEvent(
                 eventMessageDto.eventType(),
                 eventMessageDto.serviceId(),
+                eventMessageDto.gatewayAccountId(),
                 eventMessageDto.live(),
                 eventMessageDto.resourceExternalId(),
                 eventMessageDto.parentResourceExternalId(),

@@ -14,8 +14,8 @@ public class DatabaseTestHelper {
         return new DatabaseTestHelper(jdbi);
     }
     
-    public void addWebhookWithSubscription(String webhookExternalId, String serviceExternalId, String callbackUrl) {
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', '%s', false, '%s', 'description', 'ACTIVE')".formatted(webhookExternalId, serviceExternalId, callbackUrl)));
+    public void addWebhookWithSubscription(String webhookExternalId, String serviceExternalId, String callbackUrl, String gatewayAccountId) {
+        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', '%s', false, '%s', 'description', 'ACTIVE', '%s')".formatted(webhookExternalId, serviceExternalId, callbackUrl, gatewayAccountId)));
         jdbi.withHandle(h -> h.execute("INSERT INTO webhook_subscriptions VALUES (1, (SELECT id FROM event_types WHERE name = 'card_payment_succeeded'))"));
     }
 

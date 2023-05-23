@@ -45,8 +45,8 @@ class WebhookMessageServiceTest {
 
     @Test
     public void shouldIgnoreEventsWithoutRequiredProperties() throws IOException, InterruptedException {
-        var eventWithProperties = new InternalEvent("PAYMENT_CREATED", "service-id", true, "resource-external-id", null, Instant.now(), "payment");
-        var eventMissingProperties = new InternalEvent("PAYMENT_CREATED", null, null, "resource-external-id", null, Instant.now(), "payment");
+        var eventWithProperties = new InternalEvent("PAYMENT_CREATED", "service-id", "100", true, "resource-external-id", null, Instant.now(), "payment");
+        var eventMissingProperties = new InternalEvent("PAYMENT_CREATED", null, null, null, "resource-external-id", null, Instant.now(), "payment");
         when(webhookService.getWebhooksSubscribedToEvent(eventWithProperties)).thenReturn(List.of());
 
         webhookMessageService.handleInternalEvent(eventWithProperties);

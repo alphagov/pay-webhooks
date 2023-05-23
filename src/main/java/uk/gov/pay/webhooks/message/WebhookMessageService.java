@@ -63,8 +63,8 @@ public class WebhookMessageService {
     }
     
     public void handleInternalEvent(InternalEvent event) throws IOException, InterruptedException {
-        if (event.live() == null || event.serviceId() == null) {
-            LOGGER.info("Ignoring event without `service_id` or `live` properties");
+        if (event.live() == null || event.serviceId() == null || event.gatewayAccountId() == null) {
+            LOGGER.info("Ignoring event without `service_id`, `live` or `gateway_account_id` properties");
             return;
         }
 

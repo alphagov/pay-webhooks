@@ -126,14 +126,14 @@ class WebhookServiceTest {
     }
     
     @Test
-    public void shouldReturnSubscribedWebhooksForGivenEventTypeServiceIdLivenessTuple() {
+    public void shouldReturnSubscribedWebhooksForGivenEventType() {
         var capturedEventType = new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED);
         var webhookSubscribedToCaptureEvent = new WebhookEntity();
         webhookSubscribedToCaptureEvent.addSubscription(capturedEventType);
         var webhookNotSubscribedToAnyEvents = new WebhookEntity();
-        when(webhookDao.list(live, serviceId))
+        when(webhookDao.listByGatewayAccountId(gatewayAccountId))
                 .thenReturn(List.of(webhookSubscribedToCaptureEvent, webhookNotSubscribedToAnyEvents));
-        var event = new InternalEvent("CAPTURE_CONFIRMED", serviceId, live, "resource_id", null, instantSource.instant(), "PAYMENT");
+        var event = new InternalEvent("CAPTURE_CONFIRMED", serviceId, gatewayAccountId, live, "resource_id", null, instantSource.instant(), "PAYMENT");
         
         var subscribedWebhooks = webhookService.getWebhooksSubscribedToEvent(event);
         

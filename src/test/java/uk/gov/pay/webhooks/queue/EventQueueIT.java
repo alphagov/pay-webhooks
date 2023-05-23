@@ -58,6 +58,7 @@ class EventQueueIT {
         var eventMessage = Map.of(
                 "sqs_message_id", "dc142884-1e4b-4e57-be93-111b692a4868",
                 "service_id", "some-service-id",
+                "gateway_account_id", "100",
                 "live", "false",
                 "resource_type", "payment",
                 "resource_external_id", "t8cj9v1lci7da7pbp99qg9olv3",
@@ -85,5 +86,6 @@ class EventQueueIT {
         List<EventMessage> result = eventQueue.retrieveEvents();
         assertFalse(result.isEmpty());
         assertThat(result.get(0).eventMessageDto().resourceType(), is("payment"));
+        assertThat(result.get(0).eventMessageDto().gatewayAccountId(), is("100"));
     }
 }
