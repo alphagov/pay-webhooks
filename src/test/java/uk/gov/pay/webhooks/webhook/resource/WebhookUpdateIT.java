@@ -35,6 +35,7 @@ public class WebhookUpdateIT {
         var json = """
                 {
                   "service_id": "test_service_id",
+                  "gateway_account_id": "100",
                   "live": false,
                   "callback_url": "https://example.com",
                   "description": "original description",
@@ -89,6 +90,7 @@ public class WebhookUpdateIT {
         var json = """
                 {
                   "service_id": "test_service_id",
+                  "gateway_account_id": "100",
                   "live": false,
                   "callback_url": "https://example.com",
                   "description": "original description",
@@ -128,6 +130,7 @@ public class WebhookUpdateIT {
         var json = """
                 {
                   "service_id": "test_service_id",
+                  "gateway_account_id": "100",
                   "live": false,
                   "callback_url": "https://example.com",
                   "description": "original description",
@@ -168,6 +171,7 @@ public class WebhookUpdateIT {
         var json = """
                 {
                   "service_id": "test_service_id",
+                  "gateway_account_id": "100",
                   "live": true,
                   "callback_url": "https://gov.uk",
                   "description": "original description",

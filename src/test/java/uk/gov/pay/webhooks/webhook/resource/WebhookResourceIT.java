@@ -50,6 +50,7 @@ public class WebhookResourceIT {
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("service_id", is("test_service_id"))
+                .body("gateway_account_id", is("100"))
                 .body("live", is(false))
                 .body("callback_url", is("https://example.com"))
                 .body("description", is("description"))
@@ -67,6 +68,7 @@ public class WebhookResourceIT {
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("service_id", is("test_service_id"))
+                .body("gateway_account_id", is("100"))
                 .body("live", is(false))
                 .body("callback_url", is("https://example.com"))
                 .body("description", is("description"))
@@ -343,6 +345,7 @@ public class WebhookResourceIT {
        return """
                 {
                   "service_id": "test_service_id",
+                  "gateway_account_id": "100",
                   "live": %s,
                   "callback_url": "%s",
                   "description": "description",
@@ -353,7 +356,7 @@ public class WebhookResourceIT {
 
     private void setupWebhookWithMessages(String externalId, String messageExternalId) {
         app.getJdbi().withHandle(h -> h.execute(
-                "INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE')".formatted(externalId)
+                "INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE', '100')".formatted(externalId)
         ));
         app.getJdbi().withHandle(h -> h.execute("""
                             INSERT INTO webhook_messages VALUES

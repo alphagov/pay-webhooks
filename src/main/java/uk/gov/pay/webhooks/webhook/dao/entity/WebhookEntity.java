@@ -56,33 +56,36 @@ public class WebhookEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "webhooks_id_seq")
     private Long id;
-    
+
     @Column(name = "created_date")
     private OffsetDateTime createdDate;
-    
+
     @Column(name = "external_id")
     private String externalId;
-    
+
     @Column(name = "service_id")
     private String serviceId;
-    
+
+    @Column(name = "gateway_account_id")
+    private String gatewayAccountId;
+
     private boolean live;
-    
+
     @Column(name = "callback_url")
     private String callbackUrl;
-    
+
     private String description;
-    
+
     @OneToMany(cascade = CascadeType.ALL)
     @JoinTable(name="webhook_subscriptions",
             joinColumns=@JoinColumn(name="webhook_id", referencedColumnName="id"),
             inverseJoinColumns=@JoinColumn(name="event_type_id", referencedColumnName="id"))
     Set<EventTypeEntity> subscriptions = new HashSet<>();
 
-    
+
     @Enumerated(EnumType.STRING)
     private WebhookStatus status;
-    
+
     @Column(name = "signing_key")
     private String signingKey;
 
@@ -91,6 +94,7 @@ public class WebhookEntity {
         entity.setDescription(createWebhookRequest.description());
         entity.setCallbackUrl(createWebhookRequest.callbackUrl());
         entity.setServiceId(createWebhookRequest.serviceId());
+        entity.setGatewayAccountId(createWebhookRequest.gatewayAccountId());
         entity.setLive(createWebhookRequest.live());
         entity.setCreatedDate(createdDate);
         entity.setStatus(WebhookStatus.ACTIVE);
@@ -109,6 +113,10 @@ public class WebhookEntity {
 
     public String getServiceId() {
         return serviceId;
+    }
+
+    public String getGatewayAccountId() {
+        return gatewayAccountId;
     }
 
     public boolean isLive() {
@@ -145,6 +153,10 @@ public class WebhookEntity {
 
     public void setServiceId(String serviceId) {
         this.serviceId = serviceId;
+    }
+
+    public void setGatewayAccountId(String gatewayAccountId) {
+        this.gatewayAccountId = gatewayAccountId;
     }
 
     public void setLive(boolean live) {

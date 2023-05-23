@@ -13,6 +13,8 @@ import java.util.List;
 public record CreateWebhookRequest(
         @Schema(example = "eo29upsdkjlk3jpwjj2dfn12")
         @JsonProperty("service_id") @NotEmpty @Size(max = 32) String serviceId,
+        @Schema(example = "100")
+        @JsonProperty("gateway_account_id") @NotEmpty String gatewayAccountId,
         @JsonProperty("live") @NotNull Boolean live,
         @Schema(example = "https://example.com")
         @JsonProperty("callback_url") @NotEmpty @Size(max = 2048) String callbackUrl,

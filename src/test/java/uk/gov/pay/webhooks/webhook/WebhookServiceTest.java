@@ -41,6 +41,7 @@ class WebhookServiceTest {
     private final WebhookMessageDeletionConfig webhookMessageDeletionConfig = mock(WebhookMessageDeletionConfig.class);
     private WebhookService webhookService;
     private final String serviceId = "test_service_id";
+    private final String gatewayAccountId = "100";
     private final String callbackUrl = "test_callback_url";
     private final boolean live = true;
     private final String description = "test_description";
@@ -77,6 +78,7 @@ class WebhookServiceTest {
         
         var createWebhookRequest = new CreateWebhookRequest(
                 serviceId,
+                gatewayAccountId,
                 live,
                 callbackUrl,
                 description,
@@ -95,6 +97,7 @@ class WebhookServiceTest {
                 is("card_payment_captured")
         );
         assertThat(captured.getServiceId(), is(serviceId));
+        assertThat(captured.getGatewayAccountId(), is(gatewayAccountId));
         assertThat(captured.getCallbackUrl(), is(callbackUrl));
         assertThat(captured.getDescription(), is(description));
         assertThat(captured.isLive(), is(live));
@@ -104,6 +107,7 @@ class WebhookServiceTest {
     public void shouldCallWebhookDaoWithOnlyRequiredAttributes() {
         var createWebhookRequest = new CreateWebhookRequest(
                 serviceId,
+                gatewayAccountId,
                 live,
                 callbackUrl,
                 null,
@@ -145,6 +149,7 @@ class WebhookServiceTest {
         
         var createWebhookRequest = new CreateWebhookRequest(
                 serviceId,
+                gatewayAccountId,
                 live,
                 callbackUrl,
                 null,
