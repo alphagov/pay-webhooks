@@ -187,5 +187,32 @@ public class WebhookDaoTest {
         response.forEach(webhookEntity -> 
                 assertThat(webhookEntity.isLive(), equalTo(false)));
     }
+
+    @Test
+    void listWebhooksByGatewayAccountId() {
+        database.inTransaction(() -> {
+            var serviceOneFirst = new WebhookEntity();
+            serviceOneFirst.setLive(true);
+            serviceOneFirst.setServiceId("service-id-1");
+            serviceOneFirst.setGatewayAccountId("100");
+            webhookDao.create(serviceOneFirst);
+
+            var serviceOneSecond = new WebhookEntity();
+            serviceOneSecond.setLive(true);
+            serviceOneSecond.setServiceId("service-id-1");
+            serviceOneSecond.setGatewayAccountId("100");
+            webhookDao.create(serviceOneSecond);
+
+            WebhookEntity serviceTwoFirst = new WebhookEntity();
+            serviceTwoFirst.setLive(true);
+            serviceTwoFirst.setServiceId("service-id-2");
+            serviceTwoFirst.setGatewayAccountId("200");
+            webhookDao.create(serviceTwoFirst);
+        });
+        var response = webhookDao.listByGatewayAccountId("100");
+        assertThat(response, iterableWithSize(2));
+        response.forEach(webhookEntity ->
+                assertThat(webhookEntity.getGatewayAccountId(), equalTo("100")));
         
+    }
 }

@@ -84,7 +84,7 @@ public class WebhookService {
 
     public List<WebhookEntity> list(boolean live, String serviceId) {
         return webhookDao.list(live, serviceId);
-    }      
+    }
 
     public List<WebhookEntity> list(boolean live) {
         return webhookDao.list(live);
@@ -142,7 +142,7 @@ public class WebhookService {
     }
 
     public List<WebhookEntity> getWebhooksSubscribedToEvent(InternalEvent event) {
-        return list(event.live(), event.serviceId())
+        return webhookDao.listByGatewayAccountId(event.gatewayAccountId())
                 .stream()
                 .filter(webhook -> webhookHasSubscriptionForEvent(webhook, event))
                 .toList();

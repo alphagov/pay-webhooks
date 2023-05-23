@@ -13,6 +13,7 @@ import java.time.Instant;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record EventMessageDto(@JsonProperty("service_id") String serviceId,
+                              @JsonProperty("gateway_account_id") String gatewayAccountId,
                               @JsonProperty("live") Boolean live,
                               @JsonProperty("timestamp") @JsonDeserialize(using = InstantDeserializer.class) Instant timestamp,
                               @JsonProperty("resource_external_id") String resourceExternalId,

@@ -44,6 +44,12 @@ public class WebhookDao extends AbstractDAO<WebhookEntity> {
         .getResultList();
     }
 
+    public List<WebhookEntity> listByGatewayAccountId(String gatewayAccountId) {
+        return namedTypedQuery(WebhookEntity.LIST_BY_GATEWAY_ACCOUNT_ID)
+                .setParameter("gatewayAccountId", gatewayAccountId)
+                .getResultList();
+    }
+
     public List<WebhookEntity> list(boolean live) {
         return  namedTypedQuery(WebhookEntity.LIST_BY_LIVE)
                 .setParameter("live", live)
