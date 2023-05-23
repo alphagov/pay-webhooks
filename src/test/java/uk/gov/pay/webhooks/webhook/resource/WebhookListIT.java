@@ -52,12 +52,9 @@ public class WebhookListIT {
                 .extract()
                 .as(Map.class);
 
-        var externalId = response.get("external_id");
-        var serviceId = response.get("service_id");
-
         var listResponse = given().port(port)
                 .contentType(JSON)
-                .get("/v1/webhook?service_id=test_service_id&live=false".formatted(externalId, serviceId))
+                .get("/v1/webhook?service_id=test_service_id&live=false&gateway_account_id=100")
                 .then()
                 .extract().as(List.class);
             assertThat(listResponse.size(),is(equalTo(1)));

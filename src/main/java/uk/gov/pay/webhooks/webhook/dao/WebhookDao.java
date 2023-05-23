@@ -29,6 +29,15 @@ public class WebhookDao extends AbstractDAO<WebhookEntity> {
                     .findFirst();
     }
 
+    public Optional<WebhookEntity> findByExternalIdAndGatewayAccountId(String webhookExternalId, String gatewayAccountId) {
+        return namedTypedQuery(WebhookEntity.GET_BY_EXTERNAL_ID_AND_GATEWAY_ACCOUNT_ID)
+                .setParameter("externalId", webhookExternalId)
+                .setParameter("gatewayAccountId", gatewayAccountId)
+                .getResultList()
+                .stream()
+                .findFirst();
+    }
+
     public Optional<WebhookEntity> findByExternalId(String webhookExternalId) {
         return namedTypedQuery(WebhookEntity.GET_BY_EXTERNAL_ID)
                 .setParameter("externalId", webhookExternalId)

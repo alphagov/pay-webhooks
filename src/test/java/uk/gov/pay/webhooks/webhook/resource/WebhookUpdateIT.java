@@ -113,13 +113,13 @@ public class WebhookUpdateIT {
 
         var externalId = response.get("external_id");
         var serviceId = response.get("service_id");
-
+        var gatewayAccountId = response.get("gateway_account_id");
 
         var mapper = new ObjectMapper();
         given().port(port)
                 .contentType(JSON)
                 .body(mapper.writeValueAsString(payload))
-                .patch(format("/v1/webhook/%s?service_id=%s", externalId, serviceId))
+                .patch(format("/v1/webhook/%s?service_id=%s&gateway_account_id=%s", externalId, serviceId, gatewayAccountId))
                 .then()
                 .statusCode(200)
                 .body("status", is("INACTIVE"));
@@ -156,11 +156,12 @@ public class WebhookUpdateIT {
 
         var externalId = response.get("external_id");
         var serviceId = response.get("service_id");
+        var gatewayAccountId = response.get("gateway_account_id");
 
         given().port(port)
                 .contentType(JSON)
                 .body(payload)
-                .patch(format("/v1/webhook/%s?service_id=%s", externalId, serviceId))
+                .patch(format("/v1/webhook/%s?service_id=%s&gateway_account_id=%s", externalId, serviceId, gatewayAccountId))
                 .then()
                 .statusCode(200)
                 .body("subscriptions", containsInAnyOrder("card_payment_captured"));
@@ -194,12 +195,13 @@ public class WebhookUpdateIT {
 
         var externalId = response.get("external_id");
         var serviceId = response.get("service_id");
+        var gatewayAccountId = response.get("gateway_account_id");
 
         var mapper = new ObjectMapper();
         given().port(port)
                 .contentType(JSON)
                 .body(mapper.writeValueAsString(payload))
-                .patch(format("/v1/webhook/%s?service_id=%s", externalId, serviceId))
+                .patch(format("/v1/webhook/%s?service_id=%s&gateway_account_id=%s", externalId, serviceId, gatewayAccountId))
                 .then()
                 .statusCode(400)
                 .body("error_identifier", is("CALLBACK_URL_NOT_ON_ALLOW_LIST"));

@@ -10,6 +10,7 @@ import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import java.time.Instant;
+import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.any;
@@ -52,6 +53,21 @@ public class WebhookDaoTest {
     @Test
     public void returnsEmptyListIfNoWebhooksFound() {
         assertThat(webhookDao.list(true, "not-real-service-id"), iterableWithSize(0));
+    }
+
+    @Test
+    void getsWebhookByExternalIDAndGatewayAccountID() {
+        var webhookEntity = new WebhookEntity();
+        webhookEntity.setExternalId("external-id");
+        webhookEntity.setLive(true);
+        webhookEntity.setServiceId("real-service-id");
+        webhookEntity.setGatewayAccountId("100");
+        database.inTransaction(() -> {
+            webhookDao.create(webhookEntity);
+        });
+
+        assertThat(webhookDao.findByExternalIdAndGatewayAccountId("external-id", "100"), is(Optional.of(webhookEntity)));
+        assertThat(webhookDao.findByExternalIdAndGatewayAccountId("external-id", "200"), is(Optional.empty()));
     }
     
     @Test

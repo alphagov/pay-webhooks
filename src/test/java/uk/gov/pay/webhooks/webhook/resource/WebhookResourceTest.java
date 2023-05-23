@@ -40,6 +40,7 @@ public class WebhookResourceTest {
     WebhookRequestValidator webhookRequestValidator = new WebhookRequestValidator(new CallbackUrlService(webhooksConfig));
     String existingWebhookId = "existing_webhook_id";
     String existingServiceId = "some-service-id";
+    String existingGatewayAccountId = "100";
 
     public final ResourceExtension resources = ResourceExtension.builder()
             .addResource(new WebhookResource(webhookService, webhookRequestValidator))
@@ -126,11 +127,12 @@ public class WebhookResourceTest {
 
     @Test
     public void getWebhookByIdWhenWebhookExists() {
-        when(webhookService.findByExternalIdAndServiceId(eq(existingWebhookId), eq(existingServiceId))).thenReturn(Optional.of(webhook));
+        when(webhookService.findByExternalIdAndGatewayAccountId(eq(existingWebhookId), eq(existingGatewayAccountId))).thenReturn(Optional.of(webhook));
 
         var response = resources
                 .target("/v1/webhook/%s".formatted(existingWebhookId))
                 .queryParam("service_id", existingServiceId)
+                .queryParam("gateway_account_id", existingGatewayAccountId)
                 .request()
                 .get();
 
@@ -138,12 +140,13 @@ public class WebhookResourceTest {
     }
 
     @Test
-    public void getWebhookByIdWhenWebhookExistsAndServiceIdIncorrect404() {
-        when(webhookService.findByExternalIdAndServiceId(eq(existingWebhookId), eq(existingServiceId))).thenReturn(Optional.of(webhook));
+    public void getWebhookByIdWhenWebhookExistsAndGatewayAccountIdIncorrect404() {
+        when(webhookService.findByExternalIdAndGatewayAccountId(eq(existingWebhookId), eq(existingGatewayAccountId))).thenReturn(Optional.of(webhook));
 
         var response = resources
                 .target("/v1/webhook/%s".formatted(existingWebhookId))
                 .queryParam("service_id", "aint-no-serviceid")
+                .queryParam("gateway_account_id", "200")
                 .request()
                 .get();
 
@@ -152,11 +155,12 @@ public class WebhookResourceTest {
 
     @Test
     public void getWebhookByIdWhenDoesNotExist404() {
-        when(webhookService.findByExternalIdAndServiceId(any(String.class), any(String.class))).thenReturn(Optional.empty());
+        when(webhookService.findByExternalIdAndGatewayAccountId(any(String.class), any(String.class))).thenReturn(Optional.empty());
 
         var response = resources
                 .target("/v1/webhook/%s".formatted("aint_no_webhook"))
                 .queryParam("service_id", "aint_no_service_id")
+                .queryParam("gateway_account_id", "200")
                 .request()
                 .get();
 
@@ -191,18 +195,19 @@ public class WebhookResourceTest {
     @Test
     public void getWebhooksReturnsListOfWebhooks() throws JsonProcessingException {
         webhook.setServiceId("some-service-id");
-        webhook.setGatewayAccountId("100");
+        webhook.setGatewayAccountId(existingGatewayAccountId);
         webhook.setLive(true);
         webhook.setDescription("fooBar");
         webhook.addSubscription(new EventTypeEntity(EventTypeName.CARD_PAYMENT_CAPTURED));
         webhook.setCreatedDate(Instant.parse("2007-12-03T10:15:30.00Z"));
 
-        when(webhookService.list(true, existingServiceId)).thenReturn((List.of(webhook, webhook)));
+        when(webhookService.listByGatewayAccountId(existingGatewayAccountId)).thenReturn((List.of(webhook, webhook)));
 
         var response = resources
                 .target("/v1/webhook")
                 .queryParam("live", true)
                 .queryParam("service_id", existingServiceId)
+                .queryParam("gateway_account_id", existingGatewayAccountId)
                 .request()
                 .get();
         assertThat(response.getStatus(), is(200));
@@ -235,12 +240,13 @@ public class WebhookResourceTest {
 
     @Test
     public void getWebhooksReturnsEmptyListIfNoResults() {
-        when(webhookService.list(true, existingServiceId)).thenReturn((List.of()));
+        when(webhookService.listByGatewayAccountId(existingGatewayAccountId)).thenReturn((List.of()));
 
         var response = resources
                 .target("/v1/webhook")
                 .queryParam("live", true)
                 .queryParam("service_id", existingServiceId)
+                .queryParam("gateway_account_id", existingGatewayAccountId)
                 .request()
                 .get();
         assertThat(response.getStatus(), is(200));
@@ -263,6 +269,7 @@ public class WebhookResourceTest {
         var response = resources
                 .target("/v1/webhook")
                 .queryParam("service_id", existingServiceId)
+                .queryParam("gateway_account_id", existingGatewayAccountId)
                 .queryParam("live", true)
                 .queryParam("override_service_id_restriction", true)
                 .request()
@@ -270,7 +277,7 @@ public class WebhookResourceTest {
         Map<String, String> responseBody = objectMapper.readValue(response.readEntity(String.class), new TypeReference<>() {
         });
         assertThat(response.getStatus(), is(400));
-        assertThat(responseBody.get("message"), is("service_id not permitted when using override_service_id_restriction"));
+        assertThat(responseBody.get("message"), is("[service_id, gateway_account_id] not permitted when using override_service_id_restriction"));
     }
 
     @Test
@@ -283,7 +290,7 @@ public class WebhookResourceTest {
         Map<String, String> responseBody = objectMapper.readValue(response.readEntity(String.class), new TypeReference<>() {
         });
         assertThat(response.getStatus(), is(400));
-        assertThat(responseBody.get("message"), is("either service_id or override_service_id_restriction query parameter must be provided"));
+        assertThat(responseBody.get("message"), is("[service_id, gateway_account_id] or override_service_id_restriction query parameter must be provided"));
     }
 
     @Test
