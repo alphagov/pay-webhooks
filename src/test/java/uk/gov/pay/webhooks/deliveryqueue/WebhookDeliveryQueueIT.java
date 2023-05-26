@@ -74,7 +74,7 @@ public class WebhookDeliveryQueueIT {
 
         wireMock.verify(
                 exactly(1),
-                postRequestedFor(urlEqualTo("/a-test-endpoint")).withRequestBody(matchingJsonPath("$.resource_id", equalTo(transaction.getTransactionId())))
+                postRequestedFor(urlEqualTo("/a-test-endpoint")).withRequestBody(matchingJsonPath("$.resource.payment_id", equalTo(transaction.getTransactionId())))
         );
 
         given().port(app.getAppRule().getLocalPort())

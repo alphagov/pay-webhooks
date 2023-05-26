@@ -12,11 +12,12 @@ import uk.gov.pay.webhooks.ledger.LedgerService;
 import uk.gov.pay.webhooks.ledger.model.LedgerTransaction;
 import uk.gov.service.payments.commons.testing.pact.consumers.PactProviderRule;
 import uk.gov.service.payments.commons.testing.pact.consumers.Pacts;
+import uk.gov.service.payments.logging.RestClientLoggingFilter;
 
-import java.io.IOException;
-import java.net.http.HttpClient;
-import java.time.Duration;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,19 +31,26 @@ public class LedgerServiceConsumerTest {
 
     @Mock
     WebhooksConfig configuration;
-    
+
     private LedgerService ledgerService;
-    
+
     @Before
     public void setUp() {
         when(configuration.getLedgerBaseUrl()).thenReturn(ledgerRule.getUrl());
-        ledgerService = new LedgerService(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build(), configuration);
+
+        ClientBuilder clientBuilder = ClientBuilder.newBuilder();
+        Client client = clientBuilder.build();
+
+        clientBuilder.connectTimeout(5, TimeUnit.SECONDS);
+        client.register(RestClientLoggingFilter.class);
+
+        ledgerService = new LedgerService(client, configuration);
     }
 
     @Test
     @PactVerification("ledger")
     @Pacts(pacts = {"webhooks-ledger-get-payment-transaction"})
-    public void getTransaction_shouldSerialiseLedgerPaymentTransactionCorrectly() throws IOException, InterruptedException {
+    public void getTransaction_shouldSerialiseLedgerPaymentTransactionCorrectly() {
         String externalId = "e8eq11mi2ndmauvb51qsg8hccn";
         Optional<LedgerTransaction> mayBeTransaction = ledgerService.getTransaction(externalId);
 
