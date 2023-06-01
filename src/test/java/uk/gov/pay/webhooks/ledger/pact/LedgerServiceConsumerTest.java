@@ -7,6 +7,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import uk.gov.pay.webhooks.app.InternalRestClientConfig;
+import uk.gov.pay.webhooks.app.InternalRestClientFactory;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
 import uk.gov.pay.webhooks.ledger.LedgerService;
 import uk.gov.pay.webhooks.ledger.model.LedgerTransaction;
@@ -31,20 +33,17 @@ public class LedgerServiceConsumerTest {
 
     @Mock
     WebhooksConfig configuration;
+    @Mock
+    InternalRestClientConfig internalRestClientConfig;
 
     private LedgerService ledgerService;
 
     @Before
     public void setUp() {
+        when(internalRestClientConfig.isDisabledSecureConnection()).thenReturn(true);
         when(configuration.getLedgerBaseUrl()).thenReturn(ledgerRule.getUrl());
 
-        ClientBuilder clientBuilder = ClientBuilder.newBuilder();
-        Client client = clientBuilder.build();
-
-        clientBuilder.connectTimeout(5, TimeUnit.SECONDS);
-        client.register(RestClientLoggingFilter.class);
-
-        ledgerService = new LedgerService(client, configuration);
+        ledgerService = new LedgerService(InternalRestClientFactory.buildClient(internalRestClientConfig), configuration);
     }
 
     @Test

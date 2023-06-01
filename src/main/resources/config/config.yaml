@@ -61,6 +61,9 @@ database:
 
 ledgerBaseURL: ${LEDGER_URL}
 
+internalRestClientConfig:
+  disabledSecureConnection: ${DISABLE_INTERNAL_HTTPS:-false}
+
 graphiteHost: ${METRICS_HOST:-localhost}
 graphitePort: ${METRICS_PORT:-8092}
 

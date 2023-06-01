@@ -60,14 +60,8 @@ public class WebhooksModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public Client netHttpClient() {
-        ClientBuilder clientBuilder = ClientBuilder.newBuilder();
-        Client client = clientBuilder.build();
-
-        clientBuilder.connectTimeout(5, TimeUnit.SECONDS);
-        client.register(RestClientLoggingFilter.class);
-
-        return client;
+    public Client internalRestClient() {
+        return InternalRestClientFactory.buildClient(configuration.getInternalRestClientConfig());
     }
     
     @Provides
