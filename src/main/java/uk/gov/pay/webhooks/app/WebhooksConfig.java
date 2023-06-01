@@ -44,10 +44,17 @@ public class WebhooksConfig extends Configuration {
     @JsonProperty("queueMessageReceiverConfig")
     private QueueMessageReceiverConfig queueMessageReceiverConfig;
 
+    @NotNull
+    private InternalRestClientConfig internalRestClientConfig;
+
     public QueueMessageReceiverConfig getQueueMessageReceiverConfig() {
         return queueMessageReceiverConfig;
-    }    
-    
+    }
+
+    public InternalRestClientConfig getInternalRestClientConfig() {
+        return internalRestClientConfig;
+    }
+
     @NotNull
     @JsonProperty("webhookMessageDeletionConfig")
     private WebhookMessageDeletionConfig webhookMessageDeletionConfig;

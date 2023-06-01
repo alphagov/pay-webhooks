@@ -20,9 +20,11 @@ import org.apache.http.ssl.SSLContexts;
 import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
 import uk.gov.pay.webhooks.util.IdGenerator;
+import uk.gov.service.payments.logging.RestClientLoggingFilter;
 
 import javax.inject.Singleton;
-import java.time.Duration;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import java.time.InstantSource;
 import java.util.concurrent.TimeUnit;
 
@@ -58,8 +60,8 @@ public class WebhooksModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public java.net.http.HttpClient netHttpClient() {
-        return java.net.http.HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+    public Client internalRestClient() {
+        return InternalRestClientFactory.buildClient(configuration.getInternalRestClientConfig());
     }
     
     @Provides
