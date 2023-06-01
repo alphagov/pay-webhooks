@@ -20,11 +20,8 @@ import org.apache.http.ssl.SSLContexts;
 import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
 import uk.gov.pay.webhooks.util.IdGenerator;
-import uk.gov.service.payments.logging.RestClientLoggingFilter;
-
 import javax.inject.Singleton;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import java.time.InstantSource;
 import java.util.concurrent.TimeUnit;
 
@@ -85,14 +82,24 @@ public class WebhooksModule extends AbstractModule {
                 .setSocketTimeout(timeoutInMillis)
                 .setCookieSpec(CookieSpecs.STANDARD)
                 .build();
-
+        
         var sslsf = new SSLConnectionSocketFactory(
                 SSLContexts.createDefault(),
                 new String[] { "TLSv1.2", "TLSv1.3" },
                 null,
                 SSLConnectionSocketFactory.getDefaultHostnameVerifier()
         );
-
+        
+        IdleConnectionMonitorThread staleMonitor
+                = new IdleConnectionMonitorThread(poolingConnManager, configuration.getWebhookMessageSendingQueueProcessorConfig().getConnectionPoolIdleConnectionTimeToLive().toSeconds());
+        staleMonitor.start();
+        try {
+            staleMonitor.join(1000);
+        }
+        catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+        
         return HttpClientBuilder.create()
                 .useSystemProperties()
                 .setConnectionTimeToLive(configuration.getWebhookMessageSendingQueueProcessorConfig().getConnectionPoolTimeToLive().toSeconds(), TimeUnit.SECONDS)

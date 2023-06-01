@@ -23,9 +23,13 @@ public class WebhookMessageSendingQueueProcessorConfig extends Configuration {
     @Valid
     @NotNull
     private int httpClientConnectionPoolSize;
-    
+
+    @NotNull
+    private Duration connectionPoolIdleConnectionTimeToLive;
+            
     @NotNull
     private Duration connectionPoolTimeToLive;
+    
     @NotNull
     private Duration requestTimeout;
 
@@ -43,6 +47,10 @@ public class WebhookMessageSendingQueueProcessorConfig extends Configuration {
 
     public int getHttpClientConnectionPoolSize() {
         return httpClientConnectionPoolSize;
+    }
+
+    public Duration getConnectionPoolIdleConnectionTimeToLive() {
+        return connectionPoolIdleConnectionTimeToLive;
     }
     
     public Duration getConnectionPoolTimeToLive() {
