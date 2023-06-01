@@ -90,7 +90,7 @@ public class WebhookResource {
     @GET
     @Path("/{webhookExternalId}")
     @Operation(
-            summary = "Get webhook by external ID and service ID (query param)",
+            summary = "Get webhook by external ID, service ID and gateway account ID (query param)",
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = WebhookResponse.class))),
                     @ApiResponse(responseCode = "404", description = "Not found")
@@ -100,12 +100,14 @@ public class WebhookResource {
                                                   @PathParam("webhookExternalId") @NotNull String externalId,
                                                   @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12")
                                                   @QueryParam("service_id") String serviceId,
-                                                  @Parameter(description = "If false, the service_id must be specified", example = "false")
+                                                  @Parameter(example = "100")
+                                                  @QueryParam("gateway_account_id") String gatewayAccountId,
+                                                  @Parameter(description = "If false, the service_id and gateway_account_id must be specified", example = "false")
                                                   @QueryParam("override_account_or_service_id_restriction") Boolean overrideFilterRestrictions) {
-        if (!Boolean.TRUE.equals(overrideFilterRestrictions) && serviceId == null) {
-            throw new BadRequestException("[service_id] is required");
+        if (!Boolean.TRUE.equals(overrideFilterRestrictions) && (serviceId == null || gatewayAccountId == null)) {
+            throw new BadRequestException("[service_id, gateway_account_id] is required");
         }
-        var webhook = Boolean.TRUE.equals(overrideFilterRestrictions) ? webhookService.findByExternalId(externalId) : webhookService.findByExternalIdAndServiceId(externalId, serviceId);
+        var webhook = Boolean.TRUE.equals(overrideFilterRestrictions) ? webhookService.findByExternalId(externalId) : webhookService.findByExternalIdAndGatewayAccountId(externalId, gatewayAccountId);
         return webhook
                 .map(WebhookResponse::from)
                 .orElseThrow(NotFoundException::new);
@@ -124,10 +126,12 @@ public class WebhookResource {
     )
     public SigningKeyResponse getSigningKeyByExternalId(@Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg")
                                                         @PathParam("webhookExternalId") @NotNull String externalId,
+                                                        @Parameter(example = "100")
+                                                        @QueryParam("gateway_account_id") @NotNull String gatewayAccountId,
                                                         @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12")
                                                         @QueryParam("service_id") @NotNull String serviceId) {
         return webhookService
-                .findByExternalIdAndServiceId(externalId, serviceId)
+                .findByExternalIdAndGatewayAccountId(externalId, gatewayAccountId)
                 .map(WebhookEntity::getSigningKey)
                 .map(SigningKeyResponse::new)
                 .orElseThrow(NotFoundException::new);
@@ -145,9 +149,11 @@ public class WebhookResource {
     )
     public SigningKeyResponse regenerateSigningKey(@Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg")
                                                    @PathParam("webhookExternalId") @NotNull String externalId,
+                                                   @Parameter(example = "100")
+                                                   @QueryParam("gateway_account_id") @NotNull String gatewayAccountId,
                                                    @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12")
                                                    @QueryParam("service_id") @NotNull String serviceId) {
-        return webhookService.regenerateSigningKey(externalId, serviceId)
+        return webhookService.regenerateSigningKey(externalId, gatewayAccountId)
                 .map(WebhookEntity::getSigningKey)
                 .map(SigningKeyResponse::new)
                 .orElseThrow(NotFoundException::new);
@@ -166,17 +172,19 @@ public class WebhookResource {
                                              @NotNull @QueryParam("live") Boolean live,
                                              @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12", description = "Service external ID. Required when override_service_id_restriction is not `true`")
                                              @QueryParam("service_id") String service_id,
+                                             @Parameter(example = "100", description = "Gateway account ID. Required when override_service_id_restriction is not `true`")
+                                             @QueryParam("gateway_account_id") String gatewayAccountId,
                                              @Parameter(example = "true", description = "Set to true to list all webhooks. if 'true', service_id is not permitted")
                                              @QueryParam("override_service_id_restriction") boolean overrideServiceIdRestriction) {
-        if (service_id != null && overrideServiceIdRestriction) {
-            throw new BadRequestException("service_id not permitted when using override_service_id_restriction");
+        if ((service_id != null || gatewayAccountId != null) && overrideServiceIdRestriction) {
+            throw new BadRequestException("[service_id, gateway_account_id] not permitted when using override_service_id_restriction");
         }
 
-        if (service_id == null && !overrideServiceIdRestriction) {
-            throw new BadRequestException("either service_id or override_service_id_restriction query parameter must be provided");
+        if ((service_id == null || gatewayAccountId == null) && !overrideServiceIdRestriction) {
+            throw new BadRequestException("[service_id, gateway_account_id] or override_service_id_restriction query parameter must be provided");
         }
 
-        List<WebhookEntity> results = overrideServiceIdRestriction ? webhookService.list(live) : webhookService.list(live, service_id);
+        List<WebhookEntity> results = overrideServiceIdRestriction ? webhookService.list(live) : webhookService.listByGatewayAccountId(gatewayAccountId);
 
         return results
                 .stream()
@@ -246,13 +254,14 @@ public class WebhookResource {
     )
     public WebhookResponse updateWebhook(@Parameter(example = "gh0d0923jpsjdf0923jojlsfgkw3seg") @PathParam("webhookExternalId") @NotNull String externalId,
                                          @Parameter(example = "eo29upsdkjlk3jpwjj2dfn12") @QueryParam("service_id") @NotNull String serviceId,
+                                         @Parameter(example = "100") @QueryParam("gateway_account_id") @NotNull String gatewayAccountId,
                                          @ArraySchema(schema = @Schema(example = "{" +
                                                  "                            \"path\": \"description\"," +
                                                  "                            \"op\": \"replace\"," +
                                                  "                            \"value\": \"new description\"" +
                                                  "                        }"))
                                                  JsonNode payload) {
-        var webhook = webhookService.findByExternalIdAndServiceId(externalId, serviceId).orElseThrow(NotFoundException::new);
+        var webhook = webhookService.findByExternalIdAndGatewayAccountId(externalId, gatewayAccountId).orElseThrow(NotFoundException::new);
         webhookRequestValidator.validate(payload, webhook.isLive());
         List<JsonPatchRequest> patchRequests = StreamSupport.stream(payload.spliterator(), false)
                 .map(JsonPatchRequest::from)

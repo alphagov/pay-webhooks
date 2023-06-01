@@ -61,10 +61,11 @@ public class WebhookResourceIT {
 
         var externalId = response.get("external_id");
         var serviceId = response.get("service_id");
+        var gatewayAccountId = response.get("gateway_account_id");
 
         given().port(port)
                 .contentType(JSON)
-                .get("/v1/webhook/%s?service_id=%s".formatted(externalId, serviceId))
+                .get("/v1/webhook/%s?service_id=%s&gateway_account_id=%s".formatted(externalId, serviceId, gatewayAccountId))
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("service_id", is("test_service_id"))
@@ -231,7 +232,7 @@ public class WebhookResourceIT {
     public void notFoundShouldReturn404() {
         given().port(port)
                 .contentType(JSON)
-                .get("/v1/webhook/not-real-external-id?service_id=not-real-service-id")
+                .get("/v1/webhook/not-real-external-id?service_id=not-real-service-id&gateway_account_id=100")
                 .then()
                 .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }

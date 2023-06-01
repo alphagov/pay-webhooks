@@ -31,6 +31,11 @@ import java.util.Set;
 )
 
 @NamedQuery(
+        name = WebhookEntity.GET_BY_EXTERNAL_ID_AND_GATEWAY_ACCOUNT_ID,
+        query = "select p from WebhookEntity p where externalId = :externalId and gatewayAccountId = :gatewayAccountId"
+)
+
+@NamedQuery(
         name = WebhookEntity.GET_BY_EXTERNAL_ID,
         query = "select p from WebhookEntity p where externalId = :externalId"
 )
@@ -54,6 +59,7 @@ import java.util.Set;
 @Table(name = "webhooks")
 public class WebhookEntity {
     public static final String GET_BY_EXTERNAL_ID_AND_SERVICE_ID = "Webhook.get_webhook_by_external_id_and_service_id";
+    public static final String GET_BY_EXTERNAL_ID_AND_GATEWAY_ACCOUNT_ID = "Webhook.get_webhook_by_external_id_and_gateway_account_id";
     public static final String GET_BY_EXTERNAL_ID = "Webhook.get_webhook_by_external_id";
     public static final String LIST_BY_LIVE_AND_SERVICE_ID = "Webhook.list_webhooks_by_live_and_service_id";
     public static final String LIST_BY_GATEWAY_ACCOUNT_ID = "Webhook.list_webhooks_by_gateway_account_id";

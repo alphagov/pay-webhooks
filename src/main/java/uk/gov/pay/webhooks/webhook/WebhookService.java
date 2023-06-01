@@ -77,6 +77,10 @@ public class WebhookService {
     public Optional<WebhookEntity> findByExternalIdAndServiceId(String externalId, String serviceId) {
         return webhookDao.findByExternalIdAndServiceId(externalId, serviceId);
     }
+    
+    public Optional<WebhookEntity> findByExternalIdAndGatewayAccountId(String externalId, String gatewayAccountId) {
+        return webhookDao.findByExternalIdAndGatewayAccountId(externalId, gatewayAccountId);
+    }
 
     public Optional<WebhookEntity> findByExternalId(String externalId) {
         return webhookDao.findByExternalId(externalId);
@@ -88,6 +92,10 @@ public class WebhookService {
 
     public List<WebhookEntity> list(boolean live) {
         return webhookDao.list(live);
+    }
+    
+    public List<WebhookEntity> listByGatewayAccountId(String gatewayAccountId) {
+        return webhookDao.listByGatewayAccountId(gatewayAccountId);
     }
 
     public WebhookMessageSearchResponse listMessages(String webhookId, WebhookMessageSearchParams queryParams) {
@@ -112,8 +120,8 @@ public class WebhookService {
                 .toList();
     }
 
-    public Optional<WebhookEntity> regenerateSigningKey(String externalId, String serviceId) {
-         return webhookDao.findByExternalIdAndServiceId(externalId, serviceId).map(webhookEntity -> { 
+    public Optional<WebhookEntity> regenerateSigningKey(String externalId, String gatewayAccountId) {
+         return webhookDao.findByExternalIdAndGatewayAccountId(externalId, gatewayAccountId).map(webhookEntity -> { 
           webhookEntity.setSigningKey(idGenerator.newWebhookSigningKey(webhookEntity.isLive()));
              return webhookEntity;
          });

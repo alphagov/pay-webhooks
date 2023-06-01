@@ -54,10 +54,11 @@ public class WebhookSigningKeyIT {
 
         var externalId = response.get("external_id");
         var serviceId = response.get("service_id");
+        var gatewayAccountId = response.get("gateway_account_id");
         
         var signingKeyResponse = given().port(port)
                 .contentType(JSON)
-                .get("/v1/webhook/%s/signing-key?service_id=%s".formatted(externalId, serviceId))
+                .get("/v1/webhook/%s/signing-key?service_id=%s&gateway_account_id=%s".formatted(externalId, serviceId, gatewayAccountId))
                 .then()
                 .statusCode(200)
                 .body("signing_key", startsWith("webhook_test_"))
@@ -69,7 +70,7 @@ public class WebhookSigningKeyIT {
 
         var regeneratePostResponse = given().port(port)
                 .contentType(JSON)
-                .post("/v1/webhook/%s/signing-key?service_id=%s".formatted(externalId, serviceId))
+                .post("/v1/webhook/%s/signing-key?service_id=%s&gateway_account_id=%s".formatted(externalId, serviceId, gatewayAccountId))
                 .then()
                 .statusCode(200)
                 .body("signing_key", not(originalSigningKey))
@@ -82,7 +83,7 @@ public class WebhookSigningKeyIT {
 
         given().port(port)
                 .contentType(JSON)
-                .get("/v1/webhook/%s/signing-key?service_id=%s".formatted(externalId, serviceId))
+                .get("/v1/webhook/%s/signing-key?service_id=%s&gateway_account_id=%s".formatted(externalId, serviceId, gatewayAccountId))
                 .then()
                 .statusCode(200)
                 .body("signing_key", equalTo(regeneratedSigningKey));

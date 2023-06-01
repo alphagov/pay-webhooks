@@ -54,6 +54,13 @@ paths:
         name: service_id
         schema:
           type: string
+      - description: Gateway account ID. Required when override_service_id_restriction
+          is not `true`
+        example: 100
+        in: query
+        name: gateway_account_id
+        schema:
+          type: string
       - description: "Set to true to list all webhooks. if 'true', service_id is not\
           \ permitted"
         example: true
@@ -125,7 +132,12 @@ paths:
         name: service_id
         schema:
           type: string
-      - description: "If false, the service_id must be specified"
+      - example: 100
+        in: query
+        name: gateway_account_id
+        schema:
+          type: string
+      - description: "If false, the service_id and gateway_account_id must be specified"
         example: false
         in: query
         name: override_account_or_service_id_restriction
@@ -140,7 +152,8 @@ paths:
           description: OK
         "404":
           description: Not found
-      summary: Get webhook by external ID and service ID (query param)
+      summary: "Get webhook by external ID, service ID and gateway account ID (query\
+        \ param)"
       tags:
       - Webhooks
     patch:
@@ -156,6 +169,12 @@ paths:
       - example: eo29upsdkjlk3jpwjj2dfn12
         in: query
         name: service_id
+        required: true
+        schema:
+          type: string
+      - example: 100
+        in: query
+        name: gateway_account_id
         required: true
         schema:
           type: string
@@ -286,6 +305,12 @@ paths:
         required: true
         schema:
           type: string
+      - example: 100
+        in: query
+        name: gateway_account_id
+        required: true
+        schema:
+          type: string
       - example: eo29upsdkjlk3jpwjj2dfn12
         in: query
         name: service_id
@@ -310,6 +335,12 @@ paths:
       - example: gh0d0923jpsjdf0923jojlsfgkw3seg
         in: path
         name: webhookExternalId
+        required: true
+        schema:
+          type: string
+      - example: 100
+        in: query
+        name: gateway_account_id
         required: true
         schema:
           type: string
