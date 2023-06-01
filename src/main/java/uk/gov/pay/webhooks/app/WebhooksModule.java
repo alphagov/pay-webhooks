@@ -20,11 +20,9 @@ import org.apache.http.ssl.SSLContexts;
 import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
 import uk.gov.pay.webhooks.util.IdGenerator;
-import uk.gov.service.payments.logging.RestClientLoggingFilter;
 
 import javax.inject.Singleton;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import java.time.InstantSource;
 import java.util.concurrent.TimeUnit;
 
@@ -63,21 +61,28 @@ public class WebhooksModule extends AbstractModule {
     public Client internalRestClient() {
         return InternalRestClientFactory.buildClient(configuration.getInternalRestClientConfig());
     }
-    
+
     @Provides
     @Singleton
     public WebhookMessageDeletionConfig webhookMessageDeletionConfig() {
         return configuration.getWebhookMessageDeletionConfig();
     }
 
-    @Provides
     @Singleton
-    public CloseableHttpClient httpClient() {
+    @Provides
+    public PoolingHttpClientConnectionManager getConnectionPoolManager() {
+        int connectionPoolSize = configuration.getWebhookMessageSendingQueueProcessorConfig().getHttpClientConnectionPoolSize();
         PoolingHttpClientConnectionManager poolingConnManager
                 = new PoolingHttpClientConnectionManager();
-        int connectionPoolSize = configuration.getWebhookMessageSendingQueueProcessorConfig().getHttpClientConnectionPoolSize();
         poolingConnManager.setMaxTotal(connectionPoolSize);
         poolingConnManager.setDefaultMaxPerRoute(connectionPoolSize);
+
+        return poolingConnManager;
+    }
+
+    @Provides
+    @Singleton
+    public CloseableHttpClient httpClient(PoolingHttpClientConnectionManager poolingConnManager) {
         var timeoutInMillis = Math.toIntExact(configuration.getWebhookMessageSendingQueueProcessorConfig().getRequestTimeout().toMilliseconds());
         var config = RequestConfig.custom()
                 .setConnectTimeout(timeoutInMillis)
@@ -88,7 +93,7 @@ public class WebhooksModule extends AbstractModule {
 
         var sslsf = new SSLConnectionSocketFactory(
                 SSLContexts.createDefault(),
-                new String[] { "TLSv1.2", "TLSv1.3" },
+                new String[]{"TLSv1.2", "TLSv1.3"},
                 null,
                 SSLConnectionSocketFactory.getDefaultHostnameVerifier()
         );
