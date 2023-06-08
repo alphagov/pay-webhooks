@@ -80,6 +80,8 @@ public class WebhooksApp extends Application<WebhooksConfig> {
             environment.lifecycle().manage(injector.getInstance(QueueMessageReceiver.class));
             environment.lifecycle().manage(injector.getInstance(WebhookMessageSendingQueueProcessor.class));
         }
+
+        environment.lifecycle().manage(injector.getInstance(IdleConnectionMonitor.class));
         initialiseMetrics(configuration, environment);
     }
 

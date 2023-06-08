@@ -20,6 +20,7 @@ import org.apache.http.ssl.SSLContexts;
 import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
 import uk.gov.pay.webhooks.util.IdGenerator;
+
 import javax.inject.Singleton;
 import javax.ws.rs.client.Client;
 import java.time.InstantSource;
@@ -60,21 +61,28 @@ public class WebhooksModule extends AbstractModule {
     public Client internalRestClient() {
         return InternalRestClientFactory.buildClient(configuration.getInternalRestClientConfig());
     }
-    
+
     @Provides
     @Singleton
     public WebhookMessageDeletionConfig webhookMessageDeletionConfig() {
         return configuration.getWebhookMessageDeletionConfig();
     }
 
-    @Provides
     @Singleton
-    public CloseableHttpClient httpClient() {
+    @Provides
+    public PoolingHttpClientConnectionManager getConnectionPoolManager() {
+        int connectionPoolSize = configuration.getWebhookMessageSendingQueueProcessorConfig().getHttpClientConnectionPoolSize();
         PoolingHttpClientConnectionManager poolingConnManager
                 = new PoolingHttpClientConnectionManager();
-        int connectionPoolSize = configuration.getWebhookMessageSendingQueueProcessorConfig().getHttpClientConnectionPoolSize();
         poolingConnManager.setMaxTotal(connectionPoolSize);
         poolingConnManager.setDefaultMaxPerRoute(connectionPoolSize);
+
+        return poolingConnManager;
+    }
+
+    @Provides
+    @Singleton
+    public CloseableHttpClient httpClient(PoolingHttpClientConnectionManager poolingConnManager) {
         var timeoutInMillis = Math.toIntExact(configuration.getWebhookMessageSendingQueueProcessorConfig().getRequestTimeout().toMilliseconds());
         var config = RequestConfig.custom()
                 .setConnectTimeout(timeoutInMillis)
@@ -82,24 +90,14 @@ public class WebhooksModule extends AbstractModule {
                 .setSocketTimeout(timeoutInMillis)
                 .setCookieSpec(CookieSpecs.STANDARD)
                 .build();
-        
+
         var sslsf = new SSLConnectionSocketFactory(
                 SSLContexts.createDefault(),
-                new String[] { "TLSv1.2", "TLSv1.3" },
+                new String[]{"TLSv1.2", "TLSv1.3"},
                 null,
                 SSLConnectionSocketFactory.getDefaultHostnameVerifier()
         );
-        
-        IdleConnectionMonitorThread staleMonitor
-                = new IdleConnectionMonitorThread(poolingConnManager, configuration.getWebhookMessageSendingQueueProcessorConfig().getConnectionPoolIdleConnectionTimeToLive().toSeconds());
-        staleMonitor.start();
-        try {
-            staleMonitor.join(1000);
-        }
-        catch (InterruptedException ex) {
-            ex.printStackTrace();
-        }
-        
+
         return HttpClientBuilder.create()
                 .useSystemProperties()
                 .setConnectionTimeToLive(configuration.getWebhookMessageSendingQueueProcessorConfig().getConnectionPoolTimeToLive().toSeconds(), TimeUnit.SECONDS)
