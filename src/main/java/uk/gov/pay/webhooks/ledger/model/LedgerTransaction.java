@@ -49,6 +49,7 @@ public class LedgerTransaction {
     private String refundedByUserEmail;
     private String parentTransactionId;
     private String serviceId;
+    private String transactionType;
     private AuthorisationSummary authorisationSummary;
 
     public LedgerTransaction() {
@@ -299,6 +300,10 @@ public class LedgerTransaction {
 
     public AuthorisationSummary getAuthorisationSummary() {
         return authorisationSummary;
+    }
+
+    public String getTransactionType() {
+        return transactionType;
     }
 
     public void setAuthorisationSummary(AuthorisationSummary authorisationSummary) {

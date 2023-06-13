@@ -96,23 +96,11 @@ public class WebhookMessageService {
     }
 
     private Optional<WebhookMessageEntity> buildWebhookMessage(WebhookEntity webhook, InternalEvent event, LedgerTransaction ledgerTransaction) {
-        return switch (event.resourceType()) {
-            case "payment" -> {
-                JsonNode resource = objectMapper.valueToTree(PaymentApiRepresentation.of(ledgerTransaction));
-                yield Optional.of(buildWebhookMessageEntity(webhook, event, resource));
-            }
-            case "refund" -> {
-                JsonNode resource = objectMapper.valueToTree(RefundApiRepresentation.of(ledgerTransaction));
-                yield Optional.of(buildWebhookMessageEntity(webhook, event, resource));
-            }
-            default -> {
-                LOGGER.info("Ignoring unsupported resource type %s".formatted(event.resourceType()));
-                yield Optional.empty();
-            }
-        };
+        JsonNode resource = objectMapper.valueToTree(PaymentApiRepresentation.of(ledgerTransaction));
+        return Optional.of(buildWebhookMessageEntity(webhook, event, resource, ledgerTransaction));
     }
 
-    private WebhookMessageEntity buildWebhookMessageEntity(WebhookEntity webhook, InternalEvent event, JsonNode resource) {
+    private WebhookMessageEntity buildWebhookMessageEntity(WebhookEntity webhook, InternalEvent event, JsonNode resource, LedgerTransaction ledgerTransaction) {
         var webhookMessageEntity = new WebhookMessageEntity();
         webhookMessageEntity.setExternalId(idGenerator.newExternalId());
         webhookMessageEntity.setCreatedDate(instantSource.instant());
@@ -120,8 +108,8 @@ public class WebhookMessageService {
         webhookMessageEntity.setEventDate(event.timestamp());
         webhookMessageEntity.setEventType(eventTypeDao.findByName(EventMapper.getWebhookEventNameFor(event.eventType())).orElseThrow(IllegalArgumentException::new));
         webhookMessageEntity.setResource(resource);
-        webhookMessageEntity.setResourceExternalId(event.resourceExternalId());
-        webhookMessageEntity.setResourceType(event.resourceType());
+        webhookMessageEntity.setResourceExternalId(getResourceIdForEvent(event));
+        webhookMessageEntity.setResourceType(ledgerTransaction.getTransactionType());
         return webhookMessageEntity;
     }
 

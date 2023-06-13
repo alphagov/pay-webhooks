@@ -52,7 +52,6 @@ public class WebhookDeliveryQueueIT {
         var serviceExternalId = "a-valid-service-id";
         var gatewayAccountId = "100";
         dbHelper.addWebhookWithSubscription("a-valid-webhook-id", serviceExternalId, "http://localhost:%d/a-test-endpoint".formatted(app.getWireMockPort()), gatewayAccountId);
-
         var transaction = aTransactionFromLedgerFixture();
         var sqsMessage = anSNSToSQSEventFixture()
                 .withBody(Map.of(
@@ -83,6 +82,40 @@ public class WebhookDeliveryQueueIT {
                 .then()
                 .body("results[0].latest_attempt.status", is("SUCCESSFUL"))
                 .body("results[0].last_delivery_status", is("SUCCESSFUL"));
+    }
+
+    @Test
+    public void webhookMessageIsEmittedForSubscribedWebhook_forChildPaymentEvents() throws IOException, InterruptedException {
+        var serviceExternalId = "a-valid-service-id";
+        var gatewayAccountId = "100";
+        dbHelper.addWebhookWithSubscription("a-valid-webhook-id", serviceExternalId, "http://localhost:%d/a-test-endpoint".formatted(app.getWireMockPort()), gatewayAccountId);
+
+        var transaction = aTransactionFromLedgerFixture();
+        var sqsMessage = anSNSToSQSEventFixture()
+                .withBody(Map.of(
+                        "service_id", serviceExternalId,
+                        "gateway_account_id", gatewayAccountId,
+                        "live", false,
+                        "resource_external_id", "refund-external-id",
+                        "parent_resource_external_id", transaction.getTransactionId(),
+                        "timestamp", "2023-03-14T09:00:00.000000Z",
+                        "resource_type", "refund",
+                        "event_type", "REFUND_SUCCEEDED",
+                        "sqs_message_id", "dc142884-1e4b-4e57-be93-111b692a4868"
+                ));
+
+        // the payment, rather than the child resource (refund) is requested from ledger
+        ledgerStub.returnLedgerTransaction(transaction);
+        wireMock.stubFor(post("/a-test-endpoint").willReturn(ResponseDefinitionBuilder.okForJson("{}")));
+
+        app.getSqsClient().sendMessage(SqsTestDocker.getQueueUrl("event-queue"), sqsMessage.build());
+        Thread.sleep(1000);
+
+        // resource body is appropriately formatted as a payment
+        wireMock.verify(
+                exactly(1),
+                postRequestedFor(urlEqualTo("/a-test-endpoint")).withRequestBody(matchingJsonPath("$.resource.payment_id", equalTo(transaction.getTransactionId())))
+        );
     }
 
     @Test
