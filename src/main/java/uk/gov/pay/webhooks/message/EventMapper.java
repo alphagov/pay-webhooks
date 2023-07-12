@@ -22,6 +22,7 @@ public class EventMapper {
             entry("CANCELLED_BY_EXTERNAL_SERVICE", EventTypeName.CARD_PAYMENT_FAILED),
             entry("CANCELLED_BY_USER", EventTypeName.CARD_PAYMENT_FAILED),
             entry("CANCELLED_BY_EXPIRATION", EventTypeName.CARD_PAYMENT_EXPIRED),
+            entry("PAYMENT_EXPIRED", EventTypeName.CARD_PAYMENT_EXPIRED),
             entry("CAPTURE_CONFIRMED", EventTypeName.CARD_PAYMENT_CAPTURED),
             entry("REFUND_SUCCEEDED", EventTypeName.CARD_PAYMENT_REFUNDED)
     );
