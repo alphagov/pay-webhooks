@@ -6,6 +6,8 @@ import io.dropwizard.db.DataSourceFactory;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.net.URI;
+import java.util.Optional;
 import java.util.Set;
 
 public class WebhooksConfig extends Configuration {
@@ -46,6 +48,9 @@ public class WebhooksConfig extends Configuration {
 
     @NotNull
     private InternalRestClientConfig internalRestClientConfig;
+
+    @JsonProperty("ecsContainerMetadataUriV4")
+    private URI ecsContainerMetadataUriV4;
 
     public QueueMessageReceiverConfig getQueueMessageReceiverConfig() {
         return queueMessageReceiverConfig;
@@ -93,5 +98,9 @@ public class WebhooksConfig extends Configuration {
 
     public Set<String> getLiveDataAllowDomains() {
         return liveDataAllowDomains;
+    }
+
+    public Optional<URI> getEcsContainerMetadataUriV4() {
+        return Optional.ofNullable(ecsContainerMetadataUriV4);
     }
 }
