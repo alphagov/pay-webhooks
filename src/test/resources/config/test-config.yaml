@@ -76,3 +76,5 @@ queueMessageReceiverConfig:
   messageRetryDelayInSeconds: ${QUEUE_MESSAGE_RETRY_DELAY_IN_SECONDS:-1}
 
 liveDataAllowDomains: ["gov.uk"]
+
+ecsContainerMetadataUriV4: ${ECS_CONTAINER_METADATA_URI_V4:-}

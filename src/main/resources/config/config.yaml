@@ -2,6 +2,9 @@ server:
   applicationConnectors:
     - type: http
       port: ${PORT:-8080}
+  adminConnectors:
+    - type: http
+      port: ${ADMIN_PORT:-0}
   requestLog:
     appenders:
       - type: console
@@ -100,3 +103,5 @@ webhookMessageSendingQueueProcessorConfig:
   idleConnectionMonitorThreadDelayInMilliseconds: ${WEBHOOK_MESSAGE_SENDING_QUEUE_IDLE_CONNECTION_MONITOR_THREAD_DELAY_IN_MILLISECONDS:-1000}
 
 liveDataAllowDomains: ["gov.uk"]
+
+ecsContainerMetadataUriV4: ${ECS_CONTAINER_METADATA_URI_V4:-}

@@ -20,6 +20,7 @@
         <pay-java-commons.version>1.0.20230720152355</pay-java-commons.version>
         <swagger-version>2.2.14</swagger-version>
         <pact.version>4.6.1</pact.version>
+        <prometheus.version>0.16.0</prometheus.version>
         <PACT_BROKER_URL/>
         <PACT_BROKER_USERNAME/>
         <PACT_BROKER_PASSWORD/>
@@ -154,6 +155,21 @@
         </dependency>
 
         <!-- Main dependencies that need explicit versions -->
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient</artifactId>
+            <version>${prometheus.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_servlet</artifactId>
+            <version>${prometheus.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_dropwizard</artifactId>
+            <version>${prometheus.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.vladmihalcea</groupId>
             <artifactId>hibernate-types-55</artifactId>
