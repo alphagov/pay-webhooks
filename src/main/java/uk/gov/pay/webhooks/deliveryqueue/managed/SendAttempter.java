@@ -18,8 +18,9 @@ import uk.gov.pay.webhooks.validations.CallbackUrlDomainNotOnAllowListException;
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
-import java.net.URI;
+import java.net.URL;
 import java.net.http.HttpTimeoutException;
 import java.security.InvalidKeyException;
 import java.time.Duration;
@@ -70,8 +71,14 @@ public class SendAttempter {
         var retryCount = webhookDeliveryQueueDao.countFailed(queueItem.getWebhookMessageEntity());
         Instant start = instantSource.instant();
 
-        var url = URI.create(webhook.getCallbackUrl());
+        URL url = null;
         
+        try {
+            url = new URL(webhook.getCallbackUrl().strip());
+        } catch (MalformedURLException e) {
+            handleGenericException(queueItem, retryCount, start, e);
+        }
+
         try {
 
             LOGGER.info(
@@ -108,14 +115,18 @@ public class SendAttempter {
             );
             handleResponse(queueItem, DeliveryStatus.WILL_NOT_SEND, null, "Violates security rules", retryCount, start);
         } catch (Exception e) {
-            // handle all exceptions at this level to make sure that the retry mechanism is allowed to work as designed
-            // allowing errors passed this point (not guaranteeing an update) would allow perpetual failures 
-            LOGGER.warn(
-                    Markers.append(ERROR_MESSAGE, e.getMessage()),
-                    "Unexpected exception thrown by request"
-            );
-            handleResponse(queueItem, DeliveryStatus.FAILED, null, "Unknown error", retryCount, start);
+            handleGenericException(queueItem, retryCount, start, e);
         }
+    }
+
+    private void handleGenericException(WebhookDeliveryQueueEntity queueItem, Long retryCount, Instant start, Exception e) {
+        // handle all exceptions at this level to make sure that the retry mechanism is allowed to work as designed
+        // allowing errors passed this point (not guaranteeing an update) would allow perpetual failures 
+        LOGGER.warn(
+                Markers.append(ERROR_MESSAGE, e.getMessage()),
+                "Unexpected exception thrown by request"
+        );
+        handleResponse(queueItem, DeliveryStatus.FAILED, null, "Unknown error", retryCount, start);
     }
 
     private void handleResponse(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity,
@@ -133,7 +144,7 @@ public class SendAttempter {
                                 String reason, 
                                 Long retryCount, 
                                 Instant startTime,
-                                Optional<URI> domain) {
+                                Optional<URL> domain) {
         var responseTime = Duration.between(startTime, instantSource.instant());
         
         LogstashMarker logstashMarker = Markers.append(HTTP_STATUS, statusCode)
