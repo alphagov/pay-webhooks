@@ -77,22 +77,6 @@ public class WebhooksConfig extends Configuration {
     }
     
     @NotNull
-    @JsonProperty("graphiteHost")
-    private String graphiteHost;
-    
-    public String getGraphiteHost() {
-        return graphiteHost;
-    }
-
-    @NotNull
-    @JsonProperty("graphitePort")
-    private String graphitePort;
-    
-    public String getGraphitePort() {
-        return graphitePort;
-    }
-
-    @NotNull
     @JsonProperty("liveDataAllowDomains")
     private Set<String> liveDataAllowDomains;
 
