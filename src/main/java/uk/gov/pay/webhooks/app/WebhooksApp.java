@@ -51,7 +51,7 @@ public class WebhooksApp extends Application<WebhooksConfig> {
     }
     
     private static final String SERVICE_METRICS_NODE = "webhooks";
-    private static final int METRICS_COLLECTION_PERIOD_SECONDS = 10;
+    private static final int METRICS_COLLECTION_PERIOD_SECONDS = 30;
 
     private final HibernateBundle<WebhooksConfig> hibernate = new HibernateBundle<>(
             WebhookEntity.class,
