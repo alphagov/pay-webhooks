@@ -39,9 +39,6 @@ ledgerBaseURL: ${LEDGER_URL}
 internalRestClientConfig:
   disabledSecureConnection: ${DISABLE_INTERNAL_HTTPS:-true}
 
-graphiteHost: ${METRICS_HOST:-localhost}
-graphitePort: ${METRICS_PORT:-8092}
-
 webhookMessageDeletionConfig:
   maxAgeOfMessages: ${MAXIMUM_AGE_OF_MESSAGE:-7}
   maxNumOfMessagesToExpire: ${MAXIMUM_NUMBER_OF_MESSAGES_TO_EXPIRE_PER_JOB:-6}

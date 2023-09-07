@@ -1,8 +1,5 @@
 package uk.gov.pay.webhooks.app;
 
-import com.codahale.metrics.graphite.GraphiteReporter;
-import com.codahale.metrics.graphite.GraphiteSender;
-import com.codahale.metrics.graphite.GraphiteUDP;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import io.dropwizard.Application;
@@ -54,7 +51,7 @@ public class WebhooksApp extends Application<WebhooksConfig> {
     }
     
     private static final String SERVICE_METRICS_NODE = "webhooks";
-    private static final int GRAPHITE_SENDING_PERIOD_SECONDS = 10;
+    private static final int METRICS_COLLECTION_PERIOD_SECONDS = 30;
 
     private final HibernateBundle<WebhooksConfig> hibernate = new HibernateBundle<>(
             WebhookEntity.class,
@@ -122,9 +119,8 @@ public class WebhooksApp extends Application<WebhooksConfig> {
                 .scheduledExecutorService("metricscollector")
                 .threads(1)
                 .build()
-                .scheduleAtFixedRate(metricsService::updateMetricData, 0, GRAPHITE_SENDING_PERIOD_SECONDS / 2, TimeUnit.SECONDS);
+                .scheduleAtFixedRate(metricsService::updateMetricData, 0, METRICS_COLLECTION_PERIOD_SECONDS / 2, TimeUnit.SECONDS);
 
-        initialiseGraphiteMetrics(configuration, environment);
         configuration.getEcsContainerMetadataUriV4().ifPresent(uri -> initialisePrometheusMetrics(environment, uri));
     }
 
@@ -133,15 +129,5 @@ public class WebhooksApp extends Application<WebhooksConfig> {
         CollectorRegistry collectorRegistry = new CollectorRegistry();
         collectorRegistry.register(new DropwizardExports(environment.metrics(), new PrometheusDefaultLabelSampleBuilder(ecsContainerMetadataUri)));
         environment.admin().addServlet("prometheusMetrics", new MetricsServlet(collectorRegistry)).addMapping("/metrics");
-    }
-
-    private void initialiseGraphiteMetrics(WebhooksConfig configuration, Environment environment) {
-        GraphiteSender graphiteUDP = new GraphiteUDP(configuration.getGraphiteHost(), Integer.parseInt(configuration.getGraphitePort()));
-        GraphiteReporter.forRegistry(environment.metrics())
-                .prefixedWith(SERVICE_METRICS_NODE)
-                .convertRatesTo(TimeUnit.MINUTES)
-                .convertDurationsTo(TimeUnit.MILLISECONDS)
-                .build(graphiteUDP)
-                .start(GRAPHITE_SENDING_PERIOD_SECONDS, TimeUnit.SECONDS);
     }
 }
