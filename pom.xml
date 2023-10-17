@@ -33,7 +33,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava-bom</artifactId>
-                <version>32.1.2-jre</version>
+                <version>32.1.3-jre</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
