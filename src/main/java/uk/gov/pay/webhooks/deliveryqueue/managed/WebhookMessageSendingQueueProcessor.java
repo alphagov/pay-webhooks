@@ -2,7 +2,7 @@ package uk.gov.pay.webhooks.deliveryqueue.managed;
 
 import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.lifecycle.Managed;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
