@@ -1,7 +1,7 @@
 package uk.gov.pay.webhooks.deliveryqueue.managed;
 
 import com.codahale.metrics.MetricRegistry;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 import net.logstash.logback.marker.LogstashMarker;
 import net.logstash.logback.marker.Markers;
 import org.apache.http.NoHttpResponseException;

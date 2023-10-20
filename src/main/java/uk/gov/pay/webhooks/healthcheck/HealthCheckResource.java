@@ -2,7 +2,7 @@ package uk.gov.pay.webhooks.healthcheck;
 
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.ImmutableMap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,8 +21,6 @@ import java.util.SortedMap;
 import java.util.stream.Collectors;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 import static org.apache.commons.lang3.StringUtils.defaultString;
 
 @Path("/")

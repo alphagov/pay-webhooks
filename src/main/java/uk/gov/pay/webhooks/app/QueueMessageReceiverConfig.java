@@ -1,6 +1,6 @@
 package uk.gov.pay.webhooks.app;
 
-import io.dropwizard.Configuration;
+import io.dropwizard.core.Configuration;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
