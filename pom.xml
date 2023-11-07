@@ -40,7 +40,7 @@
             <dependency>
                 <groupId>io.dropwizard.metrics</groupId>
                 <artifactId>metrics-bom</artifactId>
-                <version>4.2.21</version>
+                <version>4.2.22</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
