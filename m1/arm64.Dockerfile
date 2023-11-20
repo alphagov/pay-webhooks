@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jre@sha256:52aa3cfd024bc60bea6385fd8a4da8af8769af026628d56a34f7ff3977c168a6
+FROM eclipse-temurin:11-jre@sha256:b4f65e8cfe697471f7aa84139df33240e0829025d699a771c4a6a88d8eec07fc
 
 ARG DNS_TTL=15
 
@@ -9,9 +9,9 @@ RUN echo networkaddress.cache.ttl=$DNS_TTL >> "$JAVA_HOME/conf/security/java.sec
 
 RUN apt-get update && apt-get install -y tini wget
 
-# Add RDS CA certificates to the default truststore
-RUN wget -qO - https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem       | keytool -import -cacerts -storepass changeit -noprompt -alias rds-ca-2019-root \
- && wget -qO - https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem | keytool -import -cacerts -storepass changeit -noprompt -alias rds-combined-ca-bundle
+COPY import_aws_rds_cert_bundles.sh /
+RUN /import_aws_rds_cert_bundles.sh
+RUN rm /import_aws_rds_cert_bundles.sh
 
 ENV PORT 8080
 ENV ADMIN_PORT 8081
