@@ -170,8 +170,7 @@ public class WebhookResourceIT {
     @Test
     public void shouldReturnAndCountEmptyMessages() {
         var externalId = "a-valid-webhook-id";
-        app.getJdbi().withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE')".formatted(externalId)));
-
+        dbHelper.shouldReturnAndCountEmptyMessagesWebhooksInsert(externalId);
         given().port(port)
                 .contentType(JSON)
                 .get("/v1/webhook/%s/message".formatted(externalId))
@@ -279,62 +278,15 @@ public class WebhookResourceIT {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String date = df.format(Date.from(OffsetDateTime.now().minusDays(1).toInstant()));
         List<String> webhookMessageExternalIds = List.of("thirteenth-message-external-id", "fourteenth-message-external-id", "fifteenth-message-external-id");
-        app.getJdbi().withHandle(h -> h.execute("""
-                            INSERT INTO webhook_messages VALUES
-                            (13, '%s', '%s', 1, '%s', 1, '{}', 'transaction-external-id', 'payment', 'FAILED'),
-                            (14, '%s', '%s', 1, '%s', 1, '{}', null, null, null),
-                            (15, '%s', '%s', 1, '%s', 1, '{}', null, null, null)
-                        """.formatted(
-                                webhookMessageExternalIds.get(0), date, date, 
-                                webhookMessageExternalIds.get(1), date, date, 
-                                webhookMessageExternalIds.get(2), date, date)
-        ));
-        app.getJdbi().withHandle(h -> h.execute("""
-                        INSERT INTO webhook_delivery_queue VALUES
-                            (15, '%s', '%s', '200', 200, 13, 'SUCCESSFUL', 1250),
-                            (16, '%s', '%s', '404', 404, 14, 'FAILED', 25),
-                            (17, '%s', '%s', null, null, 15, 'PENDING', null)
-                        """.formatted(date, date, date, date, date, date)
-        ));
+        dbHelper.setupThreeWebhookMessagesThatShouldNotBeDeletedWebhookMessagesInsert(webhookMessageExternalIds,date);
+        dbHelper.setupThreeWebhookMessagesThatShouldNotBeDeletedWebhookDeliveryQueueInsert(date);
         return webhookMessageExternalIds;
     }
 
     private WebhookMessageExternalIds setupWebhookWithMessagesExpectedToBePartiallyDeleted(String externalId) {
-        app.getJdbi().withHandle(h -> h.execute(
-                "INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE')".formatted(externalId)
-        ));
-        app.getJdbi().withHandle(h -> h.execute("""
-                            INSERT INTO webhook_messages VALUES
-                            (1, 'first-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', 'transaction-external-id', 'payment', 'FAILED'),
-                            (2, 'second-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (3, 'third-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (4, 'fourth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (5, 'fifth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (6, 'sixth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (7, 'seventh-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (8, 'eighth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (9, 'ninth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (10, 'tenth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (11, 'eleventh-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null)
-                        """
-        ));
-        app.getJdbi().withHandle(h -> h.execute("""
-                        INSERT INTO webhook_delivery_queue VALUES
-                            (1, '2022-01-01', '2022-01-01', '200', 200, 1, 'SUCCESSFUL', 1250),
-                            (2, '2022-01-02', '2022-01-01', '404', 404, 1, 'FAILED', 25),
-                            (3, '2022-01-02', '2022-01-01', null, null, 1, 'PENDING', null),
-                            (4, '2022-01-01', '2022-01-01', '404', 404, 2, 'PENDING', null),
-                            (5, '2022-01-01', '2022-01-01', '404', 404, 3, 'PENDING', null),
-                            (6, '2022-01-01', '2022-01-01', '404', 404, 4, 'PENDING', null),
-                            (7, '2022-01-01', '2022-01-01', '404', 404, 5, 'PENDING', null),
-                            (8, '2022-01-01', '2022-01-01', '404', 404, 6, 'PENDING', null),
-                            (9, '2022-01-01', '2022-01-01', '404', 404, 7, 'PENDING', null),
-                            (10, '2022-01-01', '2022-01-01', '404', 404, 8, 'PENDING', null),
-                            (11, '2022-01-01', '2022-01-01', '404', 404, 9, 'PENDING', null),
-                            (12, '2022-01-01', '2022-01-01', '404', 404, 10, 'PENDING', null),
-                            (13, '2022-01-01', '2022-01-01', '404', 404, 11, 'PENDING', null)
-                        """
-        ));
+        dbHelper.setupWebhookWithMessagesExpectedToBePartiallyDeletedWebhooksInsert(externalId);
+        dbHelper.setupWebhookWithMessagesExpectedToBePartiallyDeletedWebhookMessagesInsert();
+        dbHelper.setupWebhookWithMessagesExpectedToBePartiallyDeletedWebhookDeliveryQueueInsert();
         return new WebhookMessageExternalIds(
                 List.of("first-message-external-id", "second-message-external-id", "third-message-external-id", "fourth-message-external-id", "fifth-message-external-id", "sixth-message-external-id"),
                 List.of("seventh-message-external-id", "eighth-message-external-id", "ninth-message-external-id", "tenth-message-external-id", "eleventh-message-external-id")); // <-- Given maxNumOfMessagesToExpire=6, the webhook messages with these IDs won't be deleted
@@ -356,42 +308,8 @@ public class WebhookResourceIT {
     }
 
     private void setupWebhookWithMessages(String externalId, String messageExternalId) {
-        app.getJdbi().withHandle(h -> h.execute(
-                "INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE', '100')".formatted(externalId)
-        ));
-        app.getJdbi().withHandle(h -> h.execute("""
-                            INSERT INTO webhook_messages VALUES
-                            (1, '%s', '2022-01-01', 1, '2022-01-01', 1, '{}', 'transaction-external-id', 'payment', 'FAILED'),
-                            (2, 'second-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', 'transaction-external-id-2', 'payment', 'FAILED'),
-                            (3, 'third-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (4, 'fourth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (5, 'fifth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (6, 'sixth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (7, 'seventh-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (8, 'eighth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (9, 'ninth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (10, 'tenth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (11, 'eleventh-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null),
-                            (12, 'twelfth-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', null, null, null)
-                        """.formatted(messageExternalId)
-        ));
-        app.getJdbi().withHandle(h -> h.execute("""
-                        INSERT INTO webhook_delivery_queue VALUES
-                            (1, '2022-01-01', '2022-01-01', '200', 200, 1, 'SUCCESSFUL', 1250),
-                            (2, '2022-01-02', '2022-01-01', '404', 404, 1, 'FAILED', 25),
-                            (3, '2022-01-02', '2022-01-01', null, null, 1, 'PENDING', null),
-                            (4, '2022-01-01', '2022-01-01', '404', 404, 2, 'PENDING', null),
-                            (5, '2022-01-01', '2022-01-01', '404', 404, 3, 'PENDING', null),
-                            (6, '2022-01-01', '2022-01-01', '404', 404, 4, 'PENDING', null),
-                            (7, '2022-01-01', '2022-01-01', '404', 404, 5, 'PENDING', null),
-                            (8, '2022-01-01', '2022-01-01', '404', 404, 6, 'PENDING', null),
-                            (9, '2022-01-01', '2022-01-01', '404', 404, 7, 'PENDING', null),
-                            (10, '2022-01-01', '2022-01-01', '404', 404, 8, 'PENDING', null),
-                            (11, '2022-01-01', '2022-01-01', '404', 404, 9, 'PENDING', null),
-                            (12, '2022-01-01', '2022-01-01', '404', 404, 10, 'PENDING', null),
-                            (13, '2022-01-01', '2022-01-01', '404', 404, 11, 'PENDING', null),
-                            (14, '2022-01-01', '2022-01-01', '404', 404, 12, 'PENDING', null)
-                        """
-        ));
+        dbHelper.setupWebhookWithMessagesWebHooksInsert(externalId);
+        dbHelper.setupWebhookWithMessagesWebhookMessagesInsert(messageExternalId);
+        dbHelper.setupWebhookWithMessagesWebhookDeliveryQueueInsert();
     }
 }

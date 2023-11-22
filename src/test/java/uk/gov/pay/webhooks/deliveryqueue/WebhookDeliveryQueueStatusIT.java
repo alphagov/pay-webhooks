@@ -25,6 +25,6 @@ public class WebhookDeliveryQueueStatusIT {
     @EnumSource(value = DeliveryStatus.class)
     public void deliveryStatusEnumIsConsistentWithDatabase(DeliveryStatus status) {
         dbHelper.addDeliveryStatusEnumIsConsistentWithDatabase();
-        assertDoesNotThrow(() -> dbHelper.executeSql("INSERT INTO webhook_delivery_queue VALUES (1, '2022-01-01', '2022-01-01', '200', 200, 1, '%s', 1250)".formatted(status)));
+        assertDoesNotThrow(() -> dbHelper.addDeliveryStatusEnumIsConsistentWithDatabaseWebHookDeliveryQueueInsert(status));
     }
 }
