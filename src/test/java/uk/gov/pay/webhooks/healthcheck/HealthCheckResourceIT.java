@@ -33,7 +33,7 @@ class HealthCheckResourceIT {
     @Test
     void healthCheckShouldReturn503WhenDBAndSqsQueueDown() throws InterruptedException {
         PostgresTestDocker.shutDown();
-        app.getSqsClient().deleteQueue("event-queue");
+        app.getSqsClient().deleteQueue(SqsTestDocker.getQueueUrl("event-queue"));
 
         RestAssured.given().port(app.getAppRule().getLocalPort())
                 .contentType(ContentType.JSON)
