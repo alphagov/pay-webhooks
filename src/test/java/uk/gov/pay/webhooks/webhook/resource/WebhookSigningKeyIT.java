@@ -28,7 +28,7 @@ public class WebhookSigningKeyIT {
     @BeforeEach
     public void setUp() {
         dbHelper = DatabaseTestHelper.aDatabaseTestHelper(app.getJdbi());
-        dbHelper.truncateAllData();
+        dbHelper.truncateAllWebhooksData();
     }
     
     @Test

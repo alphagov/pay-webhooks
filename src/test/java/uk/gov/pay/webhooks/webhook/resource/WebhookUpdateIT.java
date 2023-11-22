@@ -27,7 +27,7 @@ public class WebhookUpdateIT {
     @BeforeEach
     public void setUp() {
         dbHelper = DatabaseTestHelper.aDatabaseTestHelper(app.getJdbi());
-        dbHelper.truncateAllData();
+        dbHelper.truncateAllWebhooksData();
     }
 
     @Test

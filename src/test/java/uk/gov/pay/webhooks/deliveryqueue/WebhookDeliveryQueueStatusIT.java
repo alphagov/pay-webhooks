@@ -18,13 +18,14 @@ public class WebhookDeliveryQueueStatusIT {
     @BeforeEach
     public void setUp() {
         dbHelper = DatabaseTestHelper.aDatabaseTestHelper(app.getJdbi());
-        dbHelper.truncateAllData();
+        dbHelper.truncateAllWebhooksData();
     }
 
     @ParameterizedTest
     @EnumSource(value = DeliveryStatus.class)
     public void deliveryStatusEnumIsConsistentWithDatabase(DeliveryStatus status) {
-        dbHelper.addDeliveryStatusEnumIsConsistentWithDatabase();
-        assertDoesNotThrow(() -> dbHelper.addDeliveryStatusEnumIsConsistentWithDatabaseWebHookDeliveryQueueInsert(status));
+        dbHelper.addWebhooksDeliveryStatusEnumIsConsistentWithDatabase();
+        dbHelper.addWebhookMessagesDeliveryStatusEnumIsConsistentWithDatabase();
+        assertDoesNotThrow(() -> dbHelper.addWebhookDeliveryStatusQueueEnumIsConsistentWithDatabase(status));
     }
 }

@@ -43,7 +43,7 @@ public class WebhookDeliveryQueueIT {
     @BeforeEach
     public void setUp() {
         dbHelper = DatabaseTestHelper.aDatabaseTestHelper(app.getJdbi());
-        dbHelper.truncateAllData();
+        dbHelper.truncateAllWebhooksData();
     }
 
     @Test
@@ -122,6 +122,7 @@ public class WebhookDeliveryQueueIT {
         var serviceExternalId = "a-valid-service-id";
         var gatewayAccountId = "100";
         dbHelper.addWebhookMessageLastDeliveryStatusIsConsistent(serviceExternalId,gatewayAccountId,app.getWireMockPort());
+        dbHelper.addWebhookSubscriptionsMessageLastDeliveryStatusIsConsistent();
         
         var transaction = aTransactionFromLedgerFixture();
         var sqsMessage = anSNSToSQSEventFixture()

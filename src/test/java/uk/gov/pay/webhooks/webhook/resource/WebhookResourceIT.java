@@ -36,7 +36,7 @@ public class WebhookResourceIT {
     @BeforeEach
     public void setUp() {
         dbHelper = DatabaseTestHelper.aDatabaseTestHelper(app.getJdbi());
-        dbHelper.truncateAllData();
+        dbHelper.truncateAllWebhooksData();
     }
 
     @Test
@@ -170,7 +170,7 @@ public class WebhookResourceIT {
     @Test
     public void shouldReturnAndCountEmptyMessages() {
         var externalId = "a-valid-webhook-id";
-        dbHelper.shouldReturnAndCountEmptyMessagesWebhooksInsert(externalId);
+        dbHelper.addWebhooksForReturnAndCountEmptyMessages(externalId);
         given().port(port)
                 .contentType(JSON)
                 .get("/v1/webhook/%s/message".formatted(externalId))
@@ -278,15 +278,15 @@ public class WebhookResourceIT {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String date = df.format(Date.from(OffsetDateTime.now().minusDays(1).toInstant()));
         List<String> webhookMessageExternalIds = List.of("thirteenth-message-external-id", "fourteenth-message-external-id", "fifteenth-message-external-id");
-        dbHelper.setupThreeWebhookMessagesThatShouldNotBeDeletedWebhookMessagesInsert(webhookMessageExternalIds,date);
-        dbHelper.setupThreeWebhookMessagesThatShouldNotBeDeletedWebhookDeliveryQueueInsert(date);
+        dbHelper.addThreeWebhookMessagesThatShouldNotBeDeleted(webhookMessageExternalIds,date);
+        dbHelper.addThreeWebhookDeliveryQueueThatShouldNotBeDeleted(date);
         return webhookMessageExternalIds;
     }
 
     private WebhookMessageExternalIds setupWebhookWithMessagesExpectedToBePartiallyDeleted(String externalId) {
-        dbHelper.setupWebhookWithMessagesExpectedToBePartiallyDeletedWebhooksInsert(externalId);
-        dbHelper.setupWebhookWithMessagesExpectedToBePartiallyDeletedWebhookMessagesInsert();
-        dbHelper.setupWebhookWithMessagesExpectedToBePartiallyDeletedWebhookDeliveryQueueInsert();
+        dbHelper.addWebhookWithMessagesExpectedToBePartiallyDeleted(externalId);
+        dbHelper.addWebhookMessagesExpectedToBePartiallyDeleted();
+        dbHelper.addWebhookDeliveryQueueWithMessagesExpectedToBePartiallyDeleted();
         return new WebhookMessageExternalIds(
                 List.of("first-message-external-id", "second-message-external-id", "third-message-external-id", "fourth-message-external-id", "fifth-message-external-id", "sixth-message-external-id"),
                 List.of("seventh-message-external-id", "eighth-message-external-id", "ninth-message-external-id", "tenth-message-external-id", "eleventh-message-external-id")); // <-- Given maxNumOfMessagesToExpire=6, the webhook messages with these IDs won't be deleted
@@ -308,8 +308,8 @@ public class WebhookResourceIT {
     }
 
     private void setupWebhookWithMessages(String externalId, String messageExternalId) {
-        dbHelper.setupWebhookWithMessagesWebHooksInsert(externalId);
-        dbHelper.setupWebhookWithMessagesWebhookMessagesInsert(messageExternalId);
-        dbHelper.setupWebhookWithMessagesWebhookDeliveryQueueInsert();
+        dbHelper.addWebhook(externalId);
+        dbHelper.addWebhookMessages(messageExternalId);
+        dbHelper.addWebhookDeliveryQueueWithMessages();
     }
 }
