@@ -42,7 +42,7 @@ public class DatabaseTestHelper {
         jdbi.withHandle(h -> h.execute("""
                     INSERT INTO webhook_subscriptions VALUES
                     (1, (SELECT id FROM event_types WHERE name = 'card_payment_succeeded')),
-                    (2, (SELECT id FROM event_types WHERE name = 'card_payment_refunded'))
+                    (1, (SELECT id FROM event_types WHERE name = 'card_payment_refunded'))
                 """
         ));
     }
