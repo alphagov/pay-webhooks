@@ -285,7 +285,7 @@ public class WebhookResourceIT {
 
     private WebhookMessageExternalIds setupWebhookWithMessagesExpectedToBePartiallyDeleted(String externalId) {
         dbHelper.addWebhookV2(externalId);
-        dbHelper.addWebhook();
+        dbHelper.addWebhookMessagesExpectedToBePartiallyDeleted();
         dbHelper.addWebhookDeliveryQueueWithMessagesExpectedToBePartiallyDeleted();
         return new WebhookMessageExternalIds(
                 List.of("first-message-external-id", "second-message-external-id", "third-message-external-id", "fourth-message-external-id", "fifth-message-external-id", "sixth-message-external-id"),

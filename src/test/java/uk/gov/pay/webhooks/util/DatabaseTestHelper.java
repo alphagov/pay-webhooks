@@ -86,7 +86,7 @@ public class DatabaseTestHelper {
         ));
     }
 
-    public void addWebhookV2() {
+    public void addWebhookMessagesExpectedToBePartiallyDeleted() {
         jdbi.withHandle(h -> h.execute("""
                     INSERT INTO webhook_messages VALUES
                     (1, 'first-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', 'transaction-external-id', 'payment', 'FAILED'),
