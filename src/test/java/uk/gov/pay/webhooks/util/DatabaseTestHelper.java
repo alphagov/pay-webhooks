@@ -34,12 +34,7 @@ public class DatabaseTestHelper {
                 serviceExternalId, wireMockPort, gatewayAccountId)
         ));
     }
-
-    public void addWebhookV1(String externalId) {
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE', '100')".formatted(externalId)));
-    }
-
-    public void addWebhookV2(String externalId) {
+    public void addWebhook(String externalId) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE')".formatted(externalId)));
     }
 
