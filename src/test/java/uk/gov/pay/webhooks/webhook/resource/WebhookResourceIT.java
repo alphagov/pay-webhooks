@@ -109,7 +109,7 @@ public class WebhookResourceIT {
     public void shouldReturnFilteredMessages() {
         var externalId = "awebhookexternalid";
         var messageExternalId = "message-external-id-1";
-        setupWebhookWithMessages(externalId, messageExternalId);
+        setupWebhookWithMessages(messageExternalId);
 
         given().port(port)
                 .contentType(JSON)
@@ -128,7 +128,7 @@ public class WebhookResourceIT {
     public void shouldReturnUnfilteredMessages() {
         var externalId = "awebhookexternalid";
         var messageExternalId = "message-external-id-1";
-        setupWebhookWithMessages(externalId, messageExternalId);
+        setupWebhookWithMessages(messageExternalId);
 
         given().port(port)
                 .contentType(JSON)
@@ -144,7 +144,7 @@ public class WebhookResourceIT {
     public void shouldReturnPage2OfMessages() {
         var externalId = "awebhookexternalid";
         var messageExternalId = "message-external-id-1";
-        setupWebhookWithMessages(externalId, messageExternalId);
+        setupWebhookWithMessages(messageExternalId);
 
         io.restassured.response.Response response = given().port(port)
                 .contentType(JSON)
@@ -170,7 +170,7 @@ public class WebhookResourceIT {
     @Test
     public void shouldReturnAndCountEmptyMessages() {
         var externalId = "a-valid-webhook-id";
-        dbHelper.addWebhooksForReturnAndCountEmptyMessages(externalId);
+        dbHelper.addWebhook();
         given().port(port)
                 .contentType(JSON)
                 .get("/v1/webhook/%s/message".formatted(externalId))
@@ -185,7 +185,7 @@ public class WebhookResourceIT {
     public void shouldReturnMessageAttempts() {
         var externalId = "awebhookexternalid";
         var messageExternalId = "message-external-id-1";
-        setupWebhookWithMessages(externalId, messageExternalId);
+        setupWebhookWithMessages(messageExternalId);
 
         given().port(port)
                 .contentType(JSON)
@@ -199,7 +199,7 @@ public class WebhookResourceIT {
     public void shouldReturnMessageDetail() {
         var externalId = "awebhookexternalid";
         var messageExternalId = "message-external-id-1";
-        setupWebhookWithMessages(externalId, messageExternalId);
+        setupWebhookWithMessages(messageExternalId);
 
         given().port(port)
                 .contentType(JSON)
@@ -218,7 +218,7 @@ public class WebhookResourceIT {
     public void shouldReturn404ForMessageNotFound() {
         var externalId = "awebhookexternalid";
         var messageExternalId = "message-external-id-1";
-        setupWebhookWithMessages(externalId, messageExternalId);
+        setupWebhookWithMessages(messageExternalId);
 
         given().port(port)
                 .contentType(JSON)
@@ -239,7 +239,7 @@ public class WebhookResourceIT {
     @Test
     public void shouldDeleteSomeWebhookMessages() {
         var webhookExternalId = "a-webhook-external-id";
-        WebhookMessageExternalIds webhookMessageExternalIds = setupWebhookWithMessagesExpectedToBePartiallyDeleted(webhookExternalId);
+        WebhookMessageExternalIds webhookMessageExternalIds = setupWebhookWithMessagesExpectedToBePartiallyDeleted();
         List<String> expectedWebhookExternalIdsNotDeleted = webhookMessageExternalIds.notDeleted;
         List<String> expectedWebhookMessageExternalIds = setupThreeWebhookMessagesThatShouldNotBeDeleted(); // maxAgeOfMessages=7 so these webhook messages should not be deleted
 
@@ -283,8 +283,8 @@ public class WebhookResourceIT {
         return webhookMessageExternalIds;
     }
 
-    private WebhookMessageExternalIds setupWebhookWithMessagesExpectedToBePartiallyDeleted(String externalId) {
-        dbHelper.addWebhookWithMessagesExpectedToBePartiallyDeleted(externalId);
+    private WebhookMessageExternalIds setupWebhookWithMessagesExpectedToBePartiallyDeleted() {
+        dbHelper.addWebhook();
         dbHelper.addWebhookMessagesExpectedToBePartiallyDeleted();
         dbHelper.addWebhookDeliveryQueueWithMessagesExpectedToBePartiallyDeleted();
         return new WebhookMessageExternalIds(
@@ -307,8 +307,8 @@ public class WebhookResourceIT {
                 """.formatted(isLive, callbackUrl);
     }
 
-    private void setupWebhookWithMessages(String externalId, String messageExternalId) {
-        dbHelper.addWebhook(externalId);
+    private void setupWebhookWithMessages(String messageExternalId) {
+        dbHelper.addWebhook();
         dbHelper.addWebhookMessages(messageExternalId);
         dbHelper.addWebhookDeliveryQueueWithMessages();
     }
