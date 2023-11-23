@@ -308,7 +308,7 @@ public class WebhookResourceIT {
     }
 
     private void setupWebhookWithMessages(String externalId, String messageExternalId) {
-        dbHelper.addWebhookV1(externalId);
+        dbHelper.addWebhookV2(externalId);
         dbHelper.addWebhookMessages(messageExternalId);
         dbHelper.addWebhookDeliveryQueueWithMessages();
     }
