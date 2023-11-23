@@ -109,7 +109,7 @@ public class WebhookResourceIT {
     public void shouldReturnFilteredMessages() {
         var externalId = "awebhookexternalid";
         var messageExternalId = "message-external-id-1";
-        setupWebhookWithMessages(messageExternalId);
+        setupWebhookWithMessages(externalId,messageExternalId);
 
         given().port(port)
                 .contentType(JSON)
@@ -128,7 +128,7 @@ public class WebhookResourceIT {
     public void shouldReturnUnfilteredMessages() {
         var externalId = "awebhookexternalid";
         var messageExternalId = "message-external-id-1";
-        setupWebhookWithMessages(messageExternalId);
+        setupWebhookWithMessages(externalId,messageExternalId);
 
         given().port(port)
                 .contentType(JSON)
@@ -144,7 +144,7 @@ public class WebhookResourceIT {
     public void shouldReturnPage2OfMessages() {
         var externalId = "awebhookexternalid";
         var messageExternalId = "message-external-id-1";
-        setupWebhookWithMessages(messageExternalId);
+        setupWebhookWithMessages(externalId,messageExternalId);
 
         io.restassured.response.Response response = given().port(port)
                 .contentType(JSON)
@@ -185,7 +185,7 @@ public class WebhookResourceIT {
     public void shouldReturnMessageAttempts() {
         var externalId = "awebhookexternalid";
         var messageExternalId = "message-external-id-1";
-        setupWebhookWithMessages(messageExternalId);
+        setupWebhookWithMessages(externalId,messageExternalId);
 
         given().port(port)
                 .contentType(JSON)
@@ -199,7 +199,7 @@ public class WebhookResourceIT {
     public void shouldReturnMessageDetail() {
         var externalId = "awebhookexternalid";
         var messageExternalId = "message-external-id-1";
-        setupWebhookWithMessages(messageExternalId);
+        setupWebhookWithMessages(externalId,messageExternalId);
 
         given().port(port)
                 .contentType(JSON)
@@ -218,7 +218,7 @@ public class WebhookResourceIT {
     public void shouldReturn404ForMessageNotFound() {
         var externalId = "awebhookexternalid";
         var messageExternalId = "message-external-id-1";
-        setupWebhookWithMessages(messageExternalId);
+        setupWebhookWithMessages(externalId,messageExternalId);
 
         given().port(port)
                 .contentType(JSON)
@@ -307,8 +307,8 @@ public class WebhookResourceIT {
                 """.formatted(isLive, callbackUrl);
     }
 
-    private void setupWebhookWithMessages(String messageExternalId) {
-        dbHelper.addWebhook();
+    private void setupWebhookWithMessages(String externalId,String messageExternalId) {
+        dbHelper.addWebhookWithMessage(externalId);
         dbHelper.addWebhookMessages(messageExternalId);
         dbHelper.addWebhookDeliveryQueueWithMessages();
     }
