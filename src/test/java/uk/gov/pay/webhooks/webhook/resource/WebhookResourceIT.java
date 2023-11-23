@@ -239,7 +239,7 @@ public class WebhookResourceIT {
     @Test
     public void shouldDeleteSomeWebhookMessages() {
         var webhookExternalId = "a-webhook-external-id";
-        WebhookMessageExternalIds webhookMessageExternalIds = setupWebhookWithMessagesExpectedToBePartiallyDeleted();
+        WebhookMessageExternalIds webhookMessageExternalIds = setupWebhookWithMessagesExpectedToBePartiallyDeleted(webhookExternalId);
         List<String> expectedWebhookExternalIdsNotDeleted = webhookMessageExternalIds.notDeleted;
         List<String> expectedWebhookMessageExternalIds = setupThreeWebhookMessagesThatShouldNotBeDeleted(); // maxAgeOfMessages=7 so these webhook messages should not be deleted
 
@@ -283,8 +283,8 @@ public class WebhookResourceIT {
         return webhookMessageExternalIds;
     }
 
-    private WebhookMessageExternalIds setupWebhookWithMessagesExpectedToBePartiallyDeleted() {
-        dbHelper.addWebhook();
+    private WebhookMessageExternalIds setupWebhookWithMessagesExpectedToBePartiallyDeleted(String externalId) {
+        dbHelper.addWebhookSetupWebhookWithMessagesExpectedToBePartiallyDeleted(externalId);
         dbHelper.addWebhookMessagesExpectedToBePartiallyDeleted();
         dbHelper.addWebhookDeliveryQueueWithMessagesExpectedToBePartiallyDeleted();
         return new WebhookMessageExternalIds(
@@ -307,7 +307,7 @@ public class WebhookResourceIT {
                 """.formatted(isLive, callbackUrl);
     }
 
-    private void setupWebhookWithMessages(String externalId,String messageExternalId) {
+    private void setupWebhookWithMessages(String externalId, String messageExternalId) {
         dbHelper.addWebhookWithMessage(externalId);
         dbHelper.addWebhookMessages(messageExternalId);
         dbHelper.addWebhookDeliveryQueueWithMessages();
