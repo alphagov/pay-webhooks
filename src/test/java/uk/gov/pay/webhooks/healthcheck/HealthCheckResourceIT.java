@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import uk.gov.pay.extension.AppWithPostgresAndSqsExtension;
 import uk.gov.pay.rule.PostgresTestDocker;
+import uk.gov.pay.rule.SqsTestDocker;
 
 import static org.hamcrest.Matchers.equalTo;
 
