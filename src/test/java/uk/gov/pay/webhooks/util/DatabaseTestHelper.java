@@ -19,10 +19,11 @@ public class DatabaseTestHelper {
     public static DatabaseTestHelper aDatabaseTestHelper(Jdbi jdbi) {
         return new DatabaseTestHelper(jdbi);
     }
-    
+
     public void addWebhook(String webhookExternalId, String serviceExternalId, String callbackUrl, String gatewayAccountId) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', '%s', false, '%s', 'description', 'ACTIVE', '%s')".formatted(webhookExternalId, serviceExternalId, callbackUrl, gatewayAccountId)));
     }
+
     public void addWebhookMessageLastDeliveryStatusIsConsistent(String serviceExternalId, String gatewayAccountId, int wireMockPort) {
         jdbi.withHandle(h -> h.execute("""
                     INSERT INTO webhooks VALUES
@@ -33,22 +34,19 @@ public class DatabaseTestHelper {
                 serviceExternalId, wireMockPort, gatewayAccountId)
         ));
     }
-    public void addWebhookWithMessage(String externalId) {
+
+    public void addWebhookWithMessageV1(String externalId) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE', '100')".formatted(externalId)));
     }
 
-    public void addWebhookSetupWebhookWithMessagesExpectedToBePartiallyDeleted(String externalId) {
+    public void addWebhookWithMessageV2(String externalId) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE')".formatted(externalId)));
     }
 
     public void addWebhook() {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', 'webhook-external-id', 'signing-key', 'service-id', true, 'https://callback-url.test', 'description', 'ACTIVE')"));
     }
-   
-    public void addWebhookShouldReturnAndCountEmptyMessages(String externalId) {
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE')".formatted(externalId)));
-    }
-
+    
     public void addWebhookSubscription() {
         jdbi.withHandle(h -> h.execute("""
                     INSERT INTO webhook_subscriptions VALUES
@@ -57,6 +55,7 @@ public class DatabaseTestHelper {
                 """
         ));
     }
+
     public void addWebhookSubscriptionsMessageLastDeliveryStatusIsConsistent() {
         jdbi.withHandle(h -> h.execute("""
                     INSERT INTO webhook_subscriptions VALUES
@@ -65,7 +64,7 @@ public class DatabaseTestHelper {
                 """
         ));
     }
-  
+
     public void addWebhookDeliveryStatusEnumIsConsistentWithDatabase() {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhook_messages VALUES (1, 'message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', 'transaction-external-id', 'payment')"));
     }
@@ -73,6 +72,7 @@ public class DatabaseTestHelper {
     public void addWebhookMessagesDeliveryStatusEnumIsConsistent(DeliveryStatus status) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhook_messages VALUES (1, 'message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', 'transaction-external-id', 'payment', '%s')".formatted(status)));
     }
+
     public void addThreeWebhookMessagesThatShouldNotBeDeleted(List<String> webhookMessageExternalIds, String date) {
         jdbi.withHandle(h -> h.execute("""
                     INSERT INTO webhook_messages VALUES
@@ -85,7 +85,8 @@ public class DatabaseTestHelper {
                 webhookMessageExternalIds.get(2), date, date)
         ));
     }
-    public void addWebhookMessagesExpectedToBePartiallyDeleted() {
+
+    public void addWebhookWithMessageV2() {
         jdbi.withHandle(h -> h.execute("""
                     INSERT INTO webhook_messages VALUES
                     (1, 'first-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', 'transaction-external-id', 'payment', 'FAILED'),
@@ -102,6 +103,7 @@ public class DatabaseTestHelper {
                 """
         ));
     }
+
     public void addWebhookMessages(String messageExternalId) {
         jdbi.withHandle(h -> h.execute("""
                     INSERT INTO webhook_messages VALUES
@@ -120,9 +122,11 @@ public class DatabaseTestHelper {
                 """.formatted(messageExternalId)
         ));
     }
+
     public void addWebhookDeliveryQueueStatusEnumIsConsistentWithDatabase(DeliveryStatus status) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhook_delivery_queue VALUES (1, '2022-01-01', '2022-01-01', '200', 200, 1, '%s', 1250)".formatted(status)));
     }
+
     public void addThreeWebhookDeliveryQueueThatShouldNotBeDeleted(String date) {
         jdbi.withHandle(h -> h.execute("""
                 INSERT INTO webhook_delivery_queue VALUES
@@ -132,6 +136,7 @@ public class DatabaseTestHelper {
                 """.formatted(date, date, date, date, date, date)
         ));
     }
+
     public void addWebhookDeliveryQueueWithMessagesExpectedToBePartiallyDeleted() {
         jdbi.withHandle(h -> h.execute("""
                 INSERT INTO webhook_delivery_queue VALUES
@@ -172,6 +177,7 @@ public class DatabaseTestHelper {
                 """
         ));
     }
+
     public void truncateAllWebhooksData() {
         jdbi.withHandle(h -> h.createScript(
                 "TRUNCATE TABLE webhooks CASCADE; "

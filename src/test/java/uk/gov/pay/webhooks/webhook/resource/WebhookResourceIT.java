@@ -170,7 +170,7 @@ public class WebhookResourceIT {
     @Test
     public void shouldReturnAndCountEmptyMessages() {
         var externalId = "a-valid-webhook-id";
-        dbHelper.addWebhookShouldReturnAndCountEmptyMessages(externalId);
+        dbHelper.addWebhookWithMessageV2(externalId);
         given().port(port)
                 .contentType(JSON)
                 .get("/v1/webhook/%s/message".formatted(externalId))
@@ -284,8 +284,8 @@ public class WebhookResourceIT {
     }
 
     private WebhookMessageExternalIds setupWebhookWithMessagesExpectedToBePartiallyDeleted(String externalId) {
-        dbHelper.addWebhookSetupWebhookWithMessagesExpectedToBePartiallyDeleted(externalId);
-        dbHelper.addWebhookMessagesExpectedToBePartiallyDeleted();
+        dbHelper.addWebhookWithMessageV2(externalId);
+        dbHelper.addWebhookWithMessageV2();
         dbHelper.addWebhookDeliveryQueueWithMessagesExpectedToBePartiallyDeleted();
         return new WebhookMessageExternalIds(
                 List.of("first-message-external-id", "second-message-external-id", "third-message-external-id", "fourth-message-external-id", "fifth-message-external-id", "sixth-message-external-id"),
@@ -308,7 +308,7 @@ public class WebhookResourceIT {
     }
 
     private void setupWebhookWithMessages(String externalId, String messageExternalId) {
-        dbHelper.addWebhookWithMessage(externalId);
+        dbHelper.addWebhookWithMessageV1(externalId);
         dbHelper.addWebhookMessages(messageExternalId);
         dbHelper.addWebhookDeliveryQueueWithMessages();
     }
