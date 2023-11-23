@@ -4,7 +4,6 @@ import org.jdbi.v3.core.Jdbi;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 
 import java.util.List;
-import java.util.Optional;
 
 /*
   Group methods referencing same database tables together for ease of maintenance and future refactor .
@@ -37,8 +36,13 @@ public class DatabaseTestHelper {
     public void addWebhookWithMessage(String externalId) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE', '100')".formatted(externalId)));
     }
+
     public void addWebhook() {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', 'webhook-external-id', 'signing-key', 'service-id', true, 'https://callback-url.test', 'description', 'ACTIVE')"));
+    }
+   
+    public void addWebhookShouldReturnAndCountEmptyMessages(String externalId) {
+        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE')".formatted(externalId)));
     }
 
     public void addWebhookSubscription() {
@@ -58,7 +62,11 @@ public class DatabaseTestHelper {
         ));
     }
   
-    public void addWebhookMessagesDeliveryStatusEnumIsConsistent(Optional<DeliveryStatus> status) {
+    public void addWebhookDeliveryStatusEnumIsConsistentWithDatabase() {
+        jdbi.withHandle(h -> h.execute("INSERT INTO webhook_messages VALUES (1, 'message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', 'transaction-external-id', 'payment')"));
+    }
+
+    public void addWebhookMessagesDeliveryStatusEnumIsConsistent(DeliveryStatus status) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhook_messages VALUES (1, 'message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', 'transaction-external-id', 'payment', '%s')".formatted(status)));
     }
     public void addThreeWebhookMessagesThatShouldNotBeDeleted(List<String> webhookMessageExternalIds, String date) {

@@ -27,7 +27,7 @@ public class WebhookDeliveryQueueStatusIT {
     @EnumSource(value = DeliveryStatus.class)
     public void deliveryStatusEnumIsConsistentWithDatabase(DeliveryStatus status) {
         dbHelper.addWebhook();
-        dbHelper.addWebhookMessagesDeliveryStatusEnumIsConsistent(Optional.empty());
+        dbHelper.addWebhookDeliveryStatusEnumIsConsistentWithDatabase();
         assertDoesNotThrow(() -> dbHelper.addWebhookDeliveryQueueStatusEnumIsConsistentWithDatabase(status));
     }
 }

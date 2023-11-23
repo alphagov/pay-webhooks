@@ -8,8 +8,6 @@ import uk.gov.pay.extension.AppWithPostgresAndSqsExtension;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.util.DatabaseTestHelper;
 
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 
@@ -26,7 +24,7 @@ public class WebhookMessageIT {
 
     @ParameterizedTest
     @EnumSource(value = DeliveryStatus.class)
-    public void deliveryStatusEnumIsConsistentWithWebhookMessageLastDeliveryStatus(Optional<DeliveryStatus> status) {
+    public void deliveryStatusEnumIsConsistentWithWebhookMessageLastDeliveryStatus(DeliveryStatus status) {
         dbHelper.addWebhook();
         assertDoesNotThrow(() -> dbHelper.addWebhookMessagesDeliveryStatusEnumIsConsistent(status));
     }

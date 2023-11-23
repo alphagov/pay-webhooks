@@ -170,7 +170,7 @@ public class WebhookResourceIT {
     @Test
     public void shouldReturnAndCountEmptyMessages() {
         var externalId = "a-valid-webhook-id";
-        dbHelper.addWebhook();
+        dbHelper.addWebhookShouldReturnAndCountEmptyMessages(externalId);
         given().port(port)
                 .contentType(JSON)
                 .get("/v1/webhook/%s/message".formatted(externalId))
