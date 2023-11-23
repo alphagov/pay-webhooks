@@ -35,11 +35,11 @@ public class DatabaseTestHelper {
         ));
     }
 
-    public void addWebhookWithMessageV1(String externalId) {
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE', '100')".formatted(externalId)));
+    public void addWebhookV1(String externalId) {
+        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE')".formatted(externalId)));
     }
 
-    public void addWebhookWithMessageV2(String externalId) {
+    public void addWebhookV2(String externalId) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE')".formatted(externalId)));
     }
 
@@ -86,7 +86,7 @@ public class DatabaseTestHelper {
         ));
     }
 
-    public void addWebhookWithMessageV2() {
+    public void addWebhookV2() {
         jdbi.withHandle(h -> h.execute("""
                     INSERT INTO webhook_messages VALUES
                     (1, 'first-message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', 'transaction-external-id', 'payment', 'FAILED'),
