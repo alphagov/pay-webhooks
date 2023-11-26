@@ -130,7 +130,7 @@ public class WebhookDeliveryQueueIT {
         dbHelper.addWebhookSubscription(1,"card_payment_succeeded");
         dbHelper.addWebhookSubscription(2,"card_payment_succeeded");
 */
-        dbHelper.webhookMessageLastDeliveryStatusIsConsistent();
+        dbHelper.webhookMessageLastDeliveryStatusIsConsistent(serviceExternalId,app.getWireMockPort(), gatewayAccountId);
         
         var transaction = aTransactionFromLedgerFixture();
         var sqsMessage = anSNSToSQSEventFixture()
