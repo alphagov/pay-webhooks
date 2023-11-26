@@ -47,10 +47,10 @@ public class DatabaseTestHelper {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhook_messages VALUES (1, 'message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', 'transaction-external-id', 'payment')"));
     }
 
-    public void addWebhookMessage(int webhookMessageId, String externalId, String createdDate, int webhookId, String eventDate, int eventType, String resource, String resourceExternalId, String resourceType, String status) {
+    public void addWebhookMessage(int webhookMessageId, String externalId, String createdDate, int webhookId, String eventDate, int eventType, String resource, String resourceExternalId, String resourceType, DeliveryStatus status) {
         jdbi.withHandle(h -> h.execute("""
-                INSERT INTO webhook_messages VALUES 
-                ('%d', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s')"
+                INSERT INTO webhook_messages VALUES
+                ('%d', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s')
                 """.formatted(
                 webhookMessageId,
                 externalId,

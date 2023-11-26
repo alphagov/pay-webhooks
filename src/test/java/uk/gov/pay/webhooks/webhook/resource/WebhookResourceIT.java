@@ -279,7 +279,7 @@ public class WebhookResourceIT {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String date = df.format(Date.from(OffsetDateTime.now().minusDays(1).toInstant()));
         List<String> webhookMessageExternalIds = List.of("thirteenth-message-external-id", "fourteenth-message-external-id", "fifteenth-message-external-id");
-        dbHelper.addWebhookMessage(13, webhookMessageExternalIds.get(0), date, 1, date, 1, "{}", "transaction-external-id", "payment", "FAILED");
+        dbHelper.addWebhookMessage(13, webhookMessageExternalIds.get(0), date, 1, date, 1, "{}", "transaction-external-id", "payment", DeliveryStatus.valueOf("FAILED"));
         dbHelper.addWebhookMessage(14, webhookMessageExternalIds.get(1), date, 1, date, 1, "{}", null, null, null);
         dbHelper.addWebhookMessage(15, webhookMessageExternalIds.get(2), date, 1, date, 1, "{}", null, null, null);
         dbHelper.addWebhookDeliveryQueueMessage(15, date, date, "200", 200, 13, DeliveryStatus.valueOf("SUCCESSFUL"), "1250");
@@ -290,7 +290,7 @@ public class WebhookResourceIT {
 
     private WebhookMessageExternalIds setupWebhookWithMessagesExpectedToBePartiallyDeleted(String externalId) {
         dbHelper.addWebhook(externalId);
-        dbHelper.addWebhookMessage(1, "first-message-external-id", "2022-01-01", 1, "2022-01-01", 1,"{}", "transaction-external-id", "payment", "FAILED");
+        dbHelper.addWebhookMessage(1, "first-message-external-id", "2022-01-01", 1, "2022-01-01", 1,"{}", "transaction-external-id", "payment", DeliveryStatus.valueOf("FAILED"));
         //dbHelper.addWebhookMessages(1,10);
         dbHelper.addWebhookMessagesExpectedToBePartiallyDeleted();
         /* dbHelper.addWebhookDeliveryQueueMessage(1, "2022-01-01", "2022-01-01", "200", 200, 1, DeliveryStatus.valueOf("SUCCESSFUL"), "1250");
@@ -331,8 +331,8 @@ public class WebhookResourceIT {
 
     private void setupWebhookWithMessages(String externalId, String messageExternalId) {
         dbHelper.addWebhook(externalId);
-        dbHelper.addWebhookMessage(1, messageExternalId, "2022-01-01", 1, "2022-01-01", 1, "{}", "transaction-external-id", "payment", "FAILED");
-        dbHelper.addWebhookMessage(2, "second-message-external-id", "2022-01-01", 1, "2022-01-01", 1, "{}", "transaction-external-id-2", "payment", "FAILED");
+        dbHelper.addWebhookMessage(1, messageExternalId, "2022-01-01", 1, "2022-01-01", 1, "{}", "transaction-external-id", "payment", DeliveryStatus.valueOf("FAILED"));
+        dbHelper.addWebhookMessage(2, "second-message-external-id", "2022-01-01", 1, "2022-01-01", 1, "{}", "transaction-external-id-2", "payment", DeliveryStatus.valueOf("FAILED"));
         //dbHelper.addWebhookMessages(3,10);
         dbHelper.addWebhookMessages();
         /*dbHelper.addWebhookDeliveryQueueMessage(1, "2022-01-01", "2022-01-01", "200", 200, 1, DeliveryStatus.valueOf("SUCCESSFUL"), "1250");
