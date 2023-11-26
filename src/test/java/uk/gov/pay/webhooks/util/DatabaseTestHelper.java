@@ -99,7 +99,7 @@ public class DatabaseTestHelper {
     public void addWebhookDeliveryQueueMessage(int id, String sentDate, String createdDate, String deliveryResult, int statusCode, int webhookMessageId, String deliveryStatus, String deliveryCode) {
         jdbi.withHandle(h -> h.execute("""
                 INSERT INTO webhook_delivery_queue VALUES
-                    ('%d', '%s', '%s', '%s', '%d', '%d', '%s', '%d')
+                    ('%s', '%s', '%s', '%s', '%d', '%d', '%s', '%d')
                 """.formatted(id, sentDate, createdDate, deliveryResult, statusCode, webhookMessageId, deliveryStatus, deliveryCode)
         ));
     }
