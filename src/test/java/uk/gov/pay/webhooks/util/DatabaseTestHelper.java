@@ -40,7 +40,7 @@ public class DatabaseTestHelper {
     }
 
     public void addWebhookSubscription(int webhookSubscriptionId, String event) {
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhook_subscriptions VALUES ('%d', (SELECT id FROM event_types WHERE name = '%s')".formatted(webhookSubscriptionId, event)));
+        jdbi.withHandle(h -> h.execute("INSERT INTO webhook_subscriptions VALUES ('%d', (SELECT id FROM event_types WHERE name = '%s'))".formatted(webhookSubscriptionId, event)));
     }
 
     public void addWebhookDeliveryStatusEnumIsConsistentWithDatabase() {
