@@ -96,7 +96,7 @@ public class DatabaseTestHelper {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhook_delivery_queue VALUES (1, '2022-01-01', '2022-01-01', '200', 200, 1, '%s', 1250)".formatted(status)));
     }
 
-    public void addWebhookDeliveryQueueMessage(int id, String sentDate, String createdDate, String deliveryResult, String statusCode, int webhookMessageId, String deliveryStatus, String deliveryCode) {
+    public void addWebhookDeliveryQueueMessage(int id, String sentDate, String createdDate, String deliveryResult, int statusCode, int webhookMessageId, String deliveryStatus, String deliveryCode) {
         jdbi.withHandle(h -> h.execute("""
                 INSERT INTO webhook_delivery_queue VALUES
                     ('%d', '%s', '%s', '%s', '%d', '%d', '%s', '%d')
