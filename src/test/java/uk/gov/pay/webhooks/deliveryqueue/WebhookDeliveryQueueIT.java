@@ -125,11 +125,13 @@ public class WebhookDeliveryQueueIT {
     public void webhookMessageLastDeliveryStatusIsConsistent() throws InterruptedException, IOException {
         var serviceExternalId = "a-valid-service-id";
         var gatewayAccountId = "100";
-        dbHelper.addWebhook(1,"webhook-external-id-succeeds",serviceExternalId,app.getWireMockPort(), gatewayAccountId);
+       /* dbHelper.addWebhook(1,"webhook-external-id-succeeds",serviceExternalId,app.getWireMockPort(), gatewayAccountId);
         dbHelper.addWebhook(2,"webhook-external-id-fails",serviceExternalId,app.getWireMockPort(), gatewayAccountId);
         dbHelper.addWebhookSubscription(1,"card_payment_succeeded");
         dbHelper.addWebhookSubscription(2,"card_payment_succeeded");
-
+*/
+        dbHelper.webhookMessageLastDeliveryStatusIsConsistent();
+        
         var transaction = aTransactionFromLedgerFixture();
         var sqsMessage = anSNSToSQSEventFixture()
                 .withBody(Map.of(
