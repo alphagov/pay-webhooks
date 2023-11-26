@@ -3,6 +3,8 @@ package uk.gov.pay.webhooks.util;
 import org.jdbi.v3.core.Jdbi;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 
+import java.util.List;
+
 /*
   Group methods referencing same database tables together for ease of maintenance and future refactor .
   e.g. webhooks database table inserts are arranged at the top of the file.
@@ -62,6 +64,19 @@ public class DatabaseTestHelper {
                 resourceExternalId,
                 resourceType,
                 status)
+        ));
+    }
+    
+    public void addWebhookMessage(List<String> webhookMessageExternalIds, String date){
+        jdbi.withHandle(h -> h.execute("""
+                            INSERT INTO webhook_messages VALUES
+                            (13, '%s', '%s', 1, '%s', 1, '{}', 'transaction-external-id', 'payment', 'FAILED'),
+                            (14, '%s', '%s', 1, '%s', 1, '{}', null, null, null),
+                            (15, '%s', '%s', 1, '%s', 1, '{}', null, null, null)
+                        """.formatted(
+                webhookMessageExternalIds.get(0), date, date,
+                webhookMessageExternalIds.get(1), date, date,
+                webhookMessageExternalIds.get(2), date, date)
         ));
     }
 
