@@ -26,6 +26,6 @@ public class WebhookMessageIT {
     @EnumSource(value = DeliveryStatus.class)
     public void deliveryStatusEnumIsConsistentWithWebhookMessageLastDeliveryStatus(DeliveryStatus status) {
         dbHelper.addWebhook();
-        assertDoesNotThrow(() -> dbHelper.addWebhookMessagesDeliveryStatusEnumIsConsistent(status));
+        assertDoesNotThrow(() -> dbHelper.addWebhookMessage(1, "message-external-id", "2022-01-01", 1, "2022-01-01", 1, "{}", "transaction-external-id", "payment",status));
     }
 }

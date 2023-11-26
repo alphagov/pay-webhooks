@@ -51,7 +51,9 @@ public class WebhookDeliveryQueueIT {
         var serviceExternalId = "a-valid-service-id";
         var gatewayAccountId = "100";
         dbHelper.addWebhook("a-valid-webhook-id", serviceExternalId, "http://localhost:%d/a-test-endpoint".formatted(app.getWireMockPort()), gatewayAccountId);
-        dbHelper.addWebhookSubscription();
+        dbHelper.addWebhookSubscription(1, "card_payment_succeeded");
+        dbHelper.addWebhookSubscription(1, "card_payment_refunded");
+
         var transaction = aTransactionFromLedgerFixture();
         var sqsMessage = anSNSToSQSEventFixture()
                 .withBody(Map.of(
@@ -89,7 +91,8 @@ public class WebhookDeliveryQueueIT {
         var serviceExternalId = "a-valid-service-id";
         var gatewayAccountId = "100";
         dbHelper.addWebhook("a-valid-webhook-id", serviceExternalId, "http://localhost:%d/a-test-endpoint".formatted(app.getWireMockPort()), gatewayAccountId);
-        dbHelper.addWebhookSubscription();
+        dbHelper.addWebhookSubscription(1, "card_payment_succeeded");
+        dbHelper.addWebhookSubscription(1, "card_payment_refunded");
         var transaction = aTransactionFromLedgerFixture();
         var sqsMessage = anSNSToSQSEventFixture()
                 .withBody(Map.of(
@@ -122,9 +125,11 @@ public class WebhookDeliveryQueueIT {
     public void webhookMessageLastDeliveryStatusIsConsistent() throws InterruptedException, IOException {
         var serviceExternalId = "a-valid-service-id";
         var gatewayAccountId = "100";
-        dbHelper.addWebhookMessageLastDeliveryStatusIsConsistent(serviceExternalId,gatewayAccountId,app.getWireMockPort());
-        dbHelper.addWebhookSubscriptionsMessageLastDeliveryStatusIsConsistent();
-        
+        dbHelper.addWebhook(1,"webhook-external-id-succeeds",serviceExternalId,app.getWireMockPort(), gatewayAccountId);
+        dbHelper.addWebhook(2,"webhook-external-id-fails",serviceExternalId,app.getWireMockPort(), gatewayAccountId);
+        dbHelper.addWebhookSubscription(1,"card_payment_succeeded");
+        dbHelper.addWebhookSubscription(2,"card_payment_succeeded");
+
         var transaction = aTransactionFromLedgerFixture();
         var sqsMessage = anSNSToSQSEventFixture()
                 .withBody(Map.of(
