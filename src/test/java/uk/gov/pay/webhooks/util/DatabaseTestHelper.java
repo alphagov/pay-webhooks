@@ -104,6 +104,48 @@ public class DatabaseTestHelper {
         ));
     }
 
+
+    public void addWebhookDeliveryQueueWithMessagesExpectedToBePartiallyDeleted() {
+        jdbi.withHandle(h -> h.execute("""
+                INSERT INTO webhook_delivery_queue VALUES
+                    (1, '2022-01-01', '2022-01-01', '200', 200, 1, 'SUCCESSFUL', 1250),
+                    (2, '2022-01-02', '2022-01-01', '404', 404, 1, 'FAILED', 25),
+                    (3, '2022-01-02', '2022-01-01', null, null, 1, 'PENDING', null),
+                    (4, '2022-01-01', '2022-01-01', '404', 404, 2, 'PENDING', null),
+                    (5, '2022-01-01', '2022-01-01', '404', 404, 3, 'PENDING', null),
+                    (6, '2022-01-01', '2022-01-01', '404', 404, 4, 'PENDING', null),
+                    (7, '2022-01-01', '2022-01-01', '404', 404, 5, 'PENDING', null),
+                    (8, '2022-01-01', '2022-01-01', '404', 404, 6, 'PENDING', null),
+                    (9, '2022-01-01', '2022-01-01', '404', 404, 7, 'PENDING', null),
+                    (10, '2022-01-01', '2022-01-01', '404', 404, 8, 'PENDING', null),
+                    (11, '2022-01-01', '2022-01-01', '404', 404, 9, 'PENDING', null),
+                    (12, '2022-01-01', '2022-01-01', '404', 404, 10, 'PENDING', null),
+                    (13, '2022-01-01', '2022-01-01', '404', 404, 11, 'PENDING', null)
+                """
+        ));
+    }
+
+    public void addWebhookDeliveryQueueWithMessages() {
+        jdbi.withHandle(h -> h.execute("""
+                INSERT INTO webhook_delivery_queue VALUES
+                    (1, '2022-01-01', '2022-01-01', '200', 200, 1, 'SUCCESSFUL', 1250),
+                    (2, '2022-01-02', '2022-01-01', '404', 404, 1, 'FAILED', 25),
+                    (3, '2022-01-02', '2022-01-01', null, null, 1, 'PENDING', null),
+                    (4, '2022-01-01', '2022-01-01', '404', 404, 2, 'PENDING', null),
+                    (5, '2022-01-01', '2022-01-01', '404', 404, 3, 'PENDING', null),
+                    (6, '2022-01-01', '2022-01-01', '404', 404, 4, 'PENDING', null),
+                    (7, '2022-01-01', '2022-01-01', '404', 404, 5, 'PENDING', null),
+                    (8, '2022-01-01', '2022-01-01', '404', 404, 6, 'PENDING', null),
+                    (9, '2022-01-01', '2022-01-01', '404', 404, 7, 'PENDING', null),
+                    (10, '2022-01-01', '2022-01-01', '404', 404, 8, 'PENDING', null),
+                    (11, '2022-01-01', '2022-01-01', '404', 404, 9, 'PENDING', null),
+                    (12, '2022-01-01', '2022-01-01', '404', 404, 10, 'PENDING', null),
+                    (13, '2022-01-01', '2022-01-01', '404', 404, 11, 'PENDING', null),
+                    (14, '2022-01-01', '2022-01-01', '404', 404, 12, 'PENDING', null)
+                """
+        ));
+    }
+    
     public void truncateAllWebhooksData() {
         jdbi.withHandle(h -> h.createScript(
                 "TRUNCATE TABLE webhooks CASCADE; "

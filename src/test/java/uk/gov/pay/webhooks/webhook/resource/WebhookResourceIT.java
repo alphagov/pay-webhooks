@@ -292,7 +292,7 @@ public class WebhookResourceIT {
         dbHelper.addWebhook(externalId);
         dbHelper.addWebhookMessage(1, "first-message-external-id", "2022-01-01", 1, "2022-01-01", 1,"{}", "transaction-external-id", "payment", "FAILED");
         //dbHelper.addWebhookMessages(1,10);
-        dbHelper.addWebhookMessagesExpectedToBePartiallyDeleted();
+       /* dbHelper.addWebhookMessagesExpectedToBePartiallyDeleted();
         dbHelper.addWebhookDeliveryQueueMessage(1, "2022-01-01", "2022-01-01", "200", 200, 1, DeliveryStatus.valueOf("SUCCESSFUL"), "1250");
         dbHelper.addWebhookDeliveryQueueMessage(2, "2022-01-02", "2022-01-01", "404", 404, 1, DeliveryStatus.valueOf("FAILED"), "25");
         dbHelper.addWebhookDeliveryQueueMessage(3, "2022-01-02", "2022-01-01", null, 0, 1, DeliveryStatus.valueOf("PENDING"), null);
@@ -306,7 +306,8 @@ public class WebhookResourceIT {
         dbHelper.addWebhookDeliveryQueueMessage(11, "2022-01-01", "2022-01-01", "404", 404, 9, DeliveryStatus.valueOf("PENDING"), null);
         dbHelper.addWebhookDeliveryQueueMessage(12, "2022-01-01", "2022-01-01", "404", 404, 10, DeliveryStatus.valueOf("PENDING"), null);
         dbHelper.addWebhookDeliveryQueueMessage(13, "2022-01-01", "2022-01-01", "404", 404, 11, DeliveryStatus.valueOf("PENDING"), null);
-        
+        */
+        dbHelper.addWebhookDeliveryQueueWithMessagesExpectedToBePartiallyDeleted();
         return new WebhookMessageExternalIds(
                 List.of("first-message-external-id", "second-message-external-id", "third-message-external-id", "fourth-message-external-id", "fifth-message-external-id", "sixth-message-external-id"),
                 List.of("seventh-message-external-id", "eighth-message-external-id", "ninth-message-external-id", "tenth-message-external-id", "eleventh-message-external-id")); // <-- Given maxNumOfMessagesToExpire=6, the webhook messages with these IDs won't be deleted
@@ -334,7 +335,7 @@ public class WebhookResourceIT {
         dbHelper.addWebhookMessage(2, "second-message-external-id", "2022-01-01", 1, "2022-01-01", 1, "{}", "transaction-external-id-2", "payment", "FAILED");
         //dbHelper.addWebhookMessages(3,10);
         dbHelper.addWebhookMessages();
-        dbHelper.addWebhookDeliveryQueueMessage(1, "2022-01-01", "2022-01-01", "200", 200, 1, DeliveryStatus.valueOf("SUCCESSFUL"), "1250");
+        /*dbHelper.addWebhookDeliveryQueueMessage(1, "2022-01-01", "2022-01-01", "200", 200, 1, DeliveryStatus.valueOf("SUCCESSFUL"), "1250");
         dbHelper.addWebhookDeliveryQueueMessage(2, "2022-01-02", "2022-01-01", "404", 404, 1, DeliveryStatus.valueOf("FAILED"), "25");
         dbHelper.addWebhookDeliveryQueueMessage(3, "2022-01-02", "2022-01-01", null, 0, 1, DeliveryStatus.valueOf("PENDING"), null);
         dbHelper.addWebhookDeliveryQueueMessage(4, "2022-01-01", "2022-01-01", "404", 404, 2, DeliveryStatus.valueOf("PENDING"), null);
@@ -348,6 +349,7 @@ public class WebhookResourceIT {
         dbHelper.addWebhookDeliveryQueueMessage(12, "2022-01-01", "2022-01-01", "404", 404, 10, DeliveryStatus.valueOf("PENDING"), null);
         dbHelper.addWebhookDeliveryQueueMessage(13, "2022-01-01", "2022-01-01", "404", 404, 11, DeliveryStatus.valueOf("PENDING"), null);
         dbHelper.addWebhookDeliveryQueueMessage(14, "2022-01-01", "2022-01-01", "404", 404, 12, DeliveryStatus.valueOf("PENDING"), null);
-
+*/
+        dbHelper.addWebhookDeliveryQueueWithMessages();
     }
 }
