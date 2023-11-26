@@ -292,8 +292,8 @@ public class WebhookResourceIT {
         dbHelper.addWebhook(externalId);
         dbHelper.addWebhookMessage(1, "first-message-external-id", "2022-01-01", 1, "2022-01-01", 1,"{}", "transaction-external-id", "payment", "FAILED");
         //dbHelper.addWebhookMessages(1,10);
-       /* dbHelper.addWebhookMessagesExpectedToBePartiallyDeleted();
-        dbHelper.addWebhookDeliveryQueueMessage(1, "2022-01-01", "2022-01-01", "200", 200, 1, DeliveryStatus.valueOf("SUCCESSFUL"), "1250");
+        dbHelper.addWebhookMessagesExpectedToBePartiallyDeleted();
+        /* dbHelper.addWebhookDeliveryQueueMessage(1, "2022-01-01", "2022-01-01", "200", 200, 1, DeliveryStatus.valueOf("SUCCESSFUL"), "1250");
         dbHelper.addWebhookDeliveryQueueMessage(2, "2022-01-02", "2022-01-01", "404", 404, 1, DeliveryStatus.valueOf("FAILED"), "25");
         dbHelper.addWebhookDeliveryQueueMessage(3, "2022-01-02", "2022-01-01", null, 0, 1, DeliveryStatus.valueOf("PENDING"), null);
         dbHelper.addWebhookDeliveryQueueMessage(4, "2022-01-01", "2022-01-01", "404", 404, 2, DeliveryStatus.valueOf("PENDING"), null);
