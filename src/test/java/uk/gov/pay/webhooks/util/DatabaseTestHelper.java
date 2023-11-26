@@ -48,8 +48,21 @@ public class DatabaseTestHelper {
     }
 
     public void addWebhookMessage(int webhookMessageId, String externalId, String createdDate, int webhookId, String eventDate, int eventType, String resource, String resourceExternalId, String resourceType, String status) {
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhook_messages VALUES ('%d', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s')".
-                formatted(webhookMessageId, externalId, createdDate, webhookId, eventDate, eventType, resource, resourceExternalId, resourceType, status)));
+        jdbi.withHandle(h -> h.execute("""
+                INSERT INTO webhook_messages VALUES 
+                ('%d', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s')"
+                """.formatted(
+                webhookMessageId,
+                externalId,
+                createdDate,
+                webhookId,
+                eventDate,
+                eventType,
+                resource,
+                resourceExternalId,
+                resourceType,
+                status)
+        ));
     }
 
     public void addWebhookMessages(int startIdIndex, int recordCount) {
@@ -145,7 +158,7 @@ public class DatabaseTestHelper {
                 """
         ));
     }
-    
+
     public void truncateAllWebhooksData() {
         jdbi.withHandle(h -> h.createScript(
                 "TRUNCATE TABLE webhooks CASCADE; "
