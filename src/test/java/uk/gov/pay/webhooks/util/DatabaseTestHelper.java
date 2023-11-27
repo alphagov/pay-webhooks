@@ -68,9 +68,6 @@ public class DatabaseTestHelper {
                 formatted(date, date, date, date, date, date)
         ));
     }
-    public void addWebhookDeliveryQueueStatusEnumIsConsistentWithDatabase(DeliveryStatus status) {
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhook_delivery_queue VALUES (1, '2022-01-01', '2022-01-01', '200', 200, 1, '%s', 1250)".formatted(status)));
-    }
 
     public void addWebhookDeliveryQueueMessage(int id, String sentDate, String createdDate, String deliveryResult, int statusCode, int webhookMessageId, DeliveryStatus deliveryStatus, int deliveryCode) {
         jdbi.withHandle(h -> h.execute("""

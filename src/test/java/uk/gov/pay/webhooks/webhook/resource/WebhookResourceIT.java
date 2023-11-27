@@ -300,11 +300,11 @@ public class WebhookResourceIT {
         //dbHelper.addWebhookMessage(14, webhookMessageExternalIds.get(1), date, 2, date, 1, "{}", null, null, null);
         //dbHelper.addWebhookMessage(15, webhookMessageExternalIds.get(2), date, 3, date, 1, "{}", null, null, null);
         
-   /*     dbHelper.addWebhookDeliveryQueueMessage(15, date, date, "200", 200, 13, DeliveryStatus.valueOf("SUCCESSFUL"), "1250");
-        dbHelper.addWebhookDeliveryQueueMessage(16, date, date, "404", 404, 14, DeliveryStatus.valueOf("FAILED"), "25");
-        dbHelper.addWebhookDeliveryQueueMessage(17, date, date, null, 0, 15, DeliveryStatus.valueOf("PENDING"), null);
-*/        
-        dbHelper.addThreeWebhookMessagesThatShouldNotBeDeleted(date);
+        dbHelper.addWebhookDeliveryQueueMessage(15, date, date, "200", 200, 13, DeliveryStatus.valueOf("SUCCESSFUL"), 1250);
+        dbHelper.addWebhookDeliveryQueueMessage(16, date, date, "404", 404, 14, DeliveryStatus.valueOf("FAILED"), 25);
+        dbHelper.addWebhookDeliveryQueueMessage(17, date, date, null, 404, 15, DeliveryStatus.valueOf("PENDING"), 25);
+        
+        //dbHelper.addThreeWebhookMessagesThatShouldNotBeDeleted(date);
         return webhookMessageExternalIds;
     }
 
