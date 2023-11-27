@@ -130,8 +130,26 @@ public class WebhookDeliveryQueueIT {
         dbHelper.addWebhookSubscription(1,"card_payment_succeeded");
         dbHelper.addWebhookSubscription(2,"card_payment_succeeded");
 */
-        dbHelper.webhookMessageLastDeliveryStatusIsConsistent(serviceExternalId,app.getWireMockPort(), gatewayAccountId);
-        
+        //dbHelper.webhookMessageLastDeliveryStatusIsConsistent(serviceExternalId,app.getWireMockPort(), gatewayAccountId);
+        //("INSERT INTO webhooks VALUES (1, '2022-01-01', 'webhook-external-id-succeeds', 'signing-key', '%s', false, 'http://localhost:%d/a-working-endpoint', 'description', 'ACTIVE', '%s')".formatted(serviceExternalId, port, gatewayAccountId)));
+
+        dbHelper.addWebhook(1,
+                "webhook-external-id-succeeds",
+                serviceExternalId,
+                "http://localhost:"+app.getWireMockPort()+"/a-working-endpoint",
+                gatewayAccountId
+                );
+
+        dbHelper.addWebhook(2,
+                "webhook-external-id-fails",
+                serviceExternalId,
+                "http://localhost:"+app.getWireMockPort()+"/a-failing-endpoint",
+                gatewayAccountId
+        );
+
+        dbHelper.addWebhookSubscription(1,"card_payment_succeeded");
+        dbHelper.addWebhookSubscription(2,"card_payment_succeeded");
+
         var transaction = aTransactionFromLedgerFixture();
         var sqsMessage = anSNSToSQSEventFixture()
                 .withBody(Map.of(
