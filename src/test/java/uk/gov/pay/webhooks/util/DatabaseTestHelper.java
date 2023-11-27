@@ -29,6 +29,10 @@ public class DatabaseTestHelper {
     public void addWebhook(String webhookExternalId, String serviceExternalId, String callbackUrl, String gatewayAccountId) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', '%s', false, '%s', 'description', 'ACTIVE', '%s')".formatted(webhookExternalId, serviceExternalId, callbackUrl, gatewayAccountId)));
     }
+    public void addWebhook(int webhookId, String webhookExternalId, String serviceExternalId, String endpointUrl, String gatewayAccountId) {
+        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES ('%d', '2022-01-01', '%s', 'signing-key', '%s', false, '%s', 'description', 'ACTIVE', '%s')"
+                .formatted(webhookId, webhookExternalId, serviceExternalId, endpointUrl, gatewayAccountId)));
+    }
     public void addWebhookSubscription(int webhookSubscriptionId, String event) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhook_subscriptions VALUES ('%d', (SELECT id FROM event_types WHERE name = '%s'))".formatted(webhookSubscriptionId, event)));
     }
@@ -49,7 +53,6 @@ public class DatabaseTestHelper {
                 status)
         ));
     }
-
     public void addWebhookMessage(List<String> webhookMessageExternalIds, String date) {
         jdbi.withHandle(h -> h.execute("""
                     INSERT INTO webhook_messages VALUES
@@ -62,24 +65,11 @@ public class DatabaseTestHelper {
                 webhookMessageExternalIds.get(2), date, date)
         ));
     }
-
     public void addWebhookMessages(int startIdIndex, int recordCount) {
         for (int i = startIdIndex; i <= recordCount; i++) {
             addWebhookMessage(i + 1, (i + 1) + "-message-external-id", "2022-01-01", 1, "2022-01-01", 1, "{}", null, null, null);
         }
     }
-
-    public void addWebhook(int webhookId, String externalId, String serviceExternalId, String endpointUrl, String gatewayAccountId) {
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES ('%d', '2022-01-01', '%s', 'signing-key', '%s', false, '%s', 'description', 'ACTIVE', '%s')"
-                .formatted(webhookId, externalId, serviceExternalId, endpointUrl, gatewayAccountId)));
-    }
-    public void webhookMessageLastDeliveryStatusIsConsistentXXXXXXX(String serviceExternalId, int port, String gatewayAccountId) {
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', 'webhook-external-id-succeeds', 'signing-key', '%s', false, 'http://localhost:%d/a-working-endpoint', 'description', 'ACTIVE', '%s')".formatted(serviceExternalId, port, gatewayAccountId)));
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (2, '2022-01-01', 'webhook-external-id-fails', 'signing-key', '%s', false, 'http://localhost:%d/a-failing-endpoint', 'description', 'ACTIVE', '%s')".formatted(serviceExternalId, port, gatewayAccountId)));
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhook_subscriptions VALUES (1, (SELECT id FROM event_types WHERE name = 'card_payment_succeeded'))"));
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhook_subscriptions VALUES (2, (SELECT id FROM event_types WHERE name = 'card_payment_succeeded'))"));
-    }
-
     public void addThreeWebhookMessagesThatShouldNotBeDeleted(String date) {
         jdbi.withHandle(h -> h.execute("""
                 INSERT INTO webhook_delivery_queue VALUES
@@ -91,7 +81,6 @@ public class DatabaseTestHelper {
                 formatted(date, date, date, date, date, date)
         ));
     }
-
     public void addWebhookMessagesExpectedToBePartiallyDeleted() {
         jdbi.withHandle(h -> h.execute("""
                     INSERT INTO webhook_messages VALUES

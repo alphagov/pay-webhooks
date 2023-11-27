@@ -279,11 +279,12 @@ public class WebhookResourceIT {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String date = df.format(Date.from(OffsetDateTime.now().minusDays(1).toInstant()));
         List<String> webhookMessageExternalIds = List.of("thirteenth-message-external-id", "fourteenth-message-external-id", "fifteenth-message-external-id");
-       /* dbHelper.addWebhookMessage(13, webhookMessageExternalIds.get(0), date, 1, date, 1, "{}", "transaction-external-id", "payment", DeliveryStatus.valueOf("FAILED"));
+
+        // dbHelper.addWebhookMessage(webhookMessageExternalIds,date);
+
+        dbHelper.addWebhookMessage(13, webhookMessageExternalIds.get(0), date, 1, date, 1, "{}", "transaction-external-id", "payment", DeliveryStatus.valueOf("FAILED"));
         dbHelper.addWebhookMessage(14, webhookMessageExternalIds.get(1), date, 1, date, 1, "{}", null, null, null);
         dbHelper.addWebhookMessage(15, webhookMessageExternalIds.get(2), date, 1, date, 1, "{}", null, null, null);
-*/
-        dbHelper.addWebhookMessage(webhookMessageExternalIds,date);
         
    /*     dbHelper.addWebhookDeliveryQueueMessage(15, date, date, "200", 200, 13, DeliveryStatus.valueOf("SUCCESSFUL"), "1250");
         dbHelper.addWebhookDeliveryQueueMessage(16, date, date, "404", 404, 14, DeliveryStatus.valueOf("FAILED"), "25");
