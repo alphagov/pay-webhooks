@@ -373,7 +373,7 @@ public class WebhookResourceIT {
                 "eleventh-message-external-id",
                 "twelfth-message-external-id"
         );
-        dbHelper.addWebhookMessage(2, 11, externalIdList, "2022-01-01", 1, "2022-01-01", 1,"{}", null, null, DeliveryStatus.valueOf("PENDING"));
+        dbHelper.addWebhookMessage(2, 12, externalIdList, "2022-01-01", 1, "2022-01-01", 1,"{}", null, null, DeliveryStatus.valueOf("PENDING"));
 
         dbHelper.addWebhookDeliveryQueueMessage(1, "2022-01-01", "2022-01-01", "200", 200, 1, DeliveryStatus.valueOf("SUCCESSFUL"), 1250);
         dbHelper.addWebhookDeliveryQueueMessage(2, "2022-01-02", "2022-01-01", "404", 404, 1, DeliveryStatus.valueOf("FAILED"), 25);
