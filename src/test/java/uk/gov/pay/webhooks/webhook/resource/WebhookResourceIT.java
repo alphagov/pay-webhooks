@@ -325,19 +325,19 @@ public class WebhookResourceIT {
         //dbHelper.addWebhookMessages(1,10);
         //dbHelper.addWebhookMessagesExpectedToBePartiallyDeleted();
         
-        dbHelper.addWebhookDeliveryQueueMessage(1, "2022-01-01", "2022-01-01", "200", 200, 1, DeliveryStatus.valueOf("SUCCESSFUL"), "1250");
-        dbHelper.addWebhookDeliveryQueueMessage(2, "2022-01-02", "2022-01-01", "404", 404, 1, DeliveryStatus.valueOf("FAILED"), "25");
-        dbHelper.addWebhookDeliveryQueueMessage(3, "2022-01-02", "2022-01-01", null, 404, 1, DeliveryStatus.valueOf("PENDING"), null);
-        dbHelper.addWebhookDeliveryQueueMessage(4, "2022-01-01", "2022-01-01", "404", 404, 2, DeliveryStatus.valueOf("PENDING"), null);
-        dbHelper.addWebhookDeliveryQueueMessage(5, "2022-01-01", "2022-01-01", "404", 404, 3, DeliveryStatus.valueOf("PENDING"), null);
-        dbHelper.addWebhookDeliveryQueueMessage(6, "2022-01-01", "2022-01-01", "404", 404, 4, DeliveryStatus.valueOf("PENDING"), null);
-        dbHelper.addWebhookDeliveryQueueMessage(7, "2022-01-01", "2022-01-01", "404", 404, 5, DeliveryStatus.valueOf("PENDING"), null);
-        dbHelper.addWebhookDeliveryQueueMessage(8, "2022-01-01", "2022-01-01", "404", 404, 6, DeliveryStatus.valueOf("PENDING"), null);
-        dbHelper.addWebhookDeliveryQueueMessage(9, "2022-01-01", "2022-01-01", "404", 404, 7, DeliveryStatus.valueOf("PENDING"), null);
-        dbHelper.addWebhookDeliveryQueueMessage(10, "2022-01-01", "2022-01-01", "404", 404, 8, DeliveryStatus.valueOf("PENDING"), null);
-        dbHelper.addWebhookDeliveryQueueMessage(11, "2022-01-01", "2022-01-01", "404", 404, 9, DeliveryStatus.valueOf("PENDING"), null);
-        dbHelper.addWebhookDeliveryQueueMessage(12, "2022-01-01", "2022-01-01", "404", 404, 10, DeliveryStatus.valueOf("PENDING"), null);
-        dbHelper.addWebhookDeliveryQueueMessage(13, "2022-01-01", "2022-01-01", "404", 404, 11, DeliveryStatus.valueOf("PENDING"), null);
+        dbHelper.addWebhookDeliveryQueueMessage(1, "2022-01-01", "2022-01-01", "200", 200, 1, DeliveryStatus.valueOf("SUCCESSFUL"), 1250);
+        dbHelper.addWebhookDeliveryQueueMessage(2, "2022-01-02", "2022-01-01", "404", 404, 1, DeliveryStatus.valueOf("FAILED"), 25);
+        dbHelper.addWebhookDeliveryQueueMessage(3, "2022-01-02", "2022-01-01", null, 404, 1, DeliveryStatus.valueOf("PENDING"), 25);
+        dbHelper.addWebhookDeliveryQueueMessage(4, "2022-01-01", "2022-01-01", "404", 404, 2, DeliveryStatus.valueOf("PENDING"), 25);
+        dbHelper.addWebhookDeliveryQueueMessage(5, "2022-01-01", "2022-01-01", "404", 404, 3, DeliveryStatus.valueOf("PENDING"), 25);
+        dbHelper.addWebhookDeliveryQueueMessage(6, "2022-01-01", "2022-01-01", "404", 404, 4, DeliveryStatus.valueOf("PENDING"), 25);
+        dbHelper.addWebhookDeliveryQueueMessage(7, "2022-01-01", "2022-01-01", "404", 404, 5, DeliveryStatus.valueOf("PENDING"), 25);
+        dbHelper.addWebhookDeliveryQueueMessage(8, "2022-01-01", "2022-01-01", "404", 404, 6, DeliveryStatus.valueOf("PENDING"), 25);
+        dbHelper.addWebhookDeliveryQueueMessage(9, "2022-01-01", "2022-01-01", "404", 404, 7, DeliveryStatus.valueOf("PENDING"), 25);
+        dbHelper.addWebhookDeliveryQueueMessage(10, "2022-01-01", "2022-01-01", "404", 404, 8, DeliveryStatus.valueOf("PENDING"), 25);
+        dbHelper.addWebhookDeliveryQueueMessage(11, "2022-01-01", "2022-01-01", "404", 404, 9, DeliveryStatus.valueOf("PENDING"), 25);
+        dbHelper.addWebhookDeliveryQueueMessage(12, "2022-01-01", "2022-01-01", "404", 404, 10, DeliveryStatus.valueOf("PENDING"), 25);
+        dbHelper.addWebhookDeliveryQueueMessage(13, "2022-01-01", "2022-01-01", "404", 404, 11, DeliveryStatus.valueOf("PENDING"), 25);
         
         //dbHelper.addWebhookDeliveryQueueWithMessagesExpectedToBePartiallyDeleted();
         return new WebhookMessageExternalIds(
