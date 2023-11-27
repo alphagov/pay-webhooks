@@ -3,8 +3,6 @@ package uk.gov.pay.webhooks.util;
 import org.jdbi.v3.core.Jdbi;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 
-import java.util.List;
-
 /*
   Group methods referencing same database tables together for ease of maintenance and future refactor .
   e.g. webhooks database table inserts are arranged at the top of the file.
