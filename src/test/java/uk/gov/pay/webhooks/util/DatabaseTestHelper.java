@@ -34,6 +34,8 @@ public class DatabaseTestHelper {
     public void addWebhookSubscription(int webhookSubscriptionId, String event) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhook_subscriptions VALUES ('%d', (SELECT id FROM event_types WHERE name = '%s'))".formatted(webhookSubscriptionId, event)));
     }
+    
+    
     public void addWebhookMessage(int webhookMessageId, String externalId, String createdDate, int webhookId, String eventDate, int eventType, String resource, String resourceExternalId, String resourceType, DeliveryStatus status) {
         jdbi.withHandle(h -> h.execute("""
                 INSERT INTO webhook_messages VALUES
@@ -50,6 +52,11 @@ public class DatabaseTestHelper {
                 resourceType,
                 status)
         ));
+    }
+    public void addWebhookMessage(int startIdIndex, int recordCount, String externalId, String createdDate, int webhookId, String eventDate, int eventType, String resource, String resourceExternalId, String resourceType, DeliveryStatus status) {
+        for (int i = startIdIndex; i <= recordCount; i++) {
+            addWebhookMessage(i, i+externalId, createdDate, webhookId, eventDate, eventType, resource, resourceExternalId, resourceType, status);
+        }
     }
 
     public void addWebhookDeliveryQueueMessage(int id, String sentDate, String createdDate, String deliveryResult, int statusCode, int webhookMessageId, DeliveryStatus deliveryStatus, int deliveryCode) {

@@ -274,28 +274,12 @@ public class WebhookResourceIT {
                         .then()
                         .statusCode(Response.Status.NOT_FOUND.getStatusCode()));
     }
-
-    private void addWebhookMessage(List<String> webhookMessageExternalIds, String date) {
-        app.getJdbi().withHandle(h -> h.execute("""
-                    INSERT INTO webhook_messages VALUES
-                    (13, '%s', '%s', 1, '%s', 1, '{}', 'transaction-external-id', 'payment', 'FAILED'),
-                    (14, '%s', '%s', 1, '%s', 1, '{}', null, null, null),
-                    (15, '%s', '%s', 1, '%s', 1, '{}', null, null, null)
-                """.formatted(
-                webhookMessageExternalIds.get(0), date, date,
-                webhookMessageExternalIds.get(1), date, date,
-                webhookMessageExternalIds.get(2), date, date)
-        ));
-    }
-
+    
     private List<String> setupThreeWebhookMessagesThatShouldNotBeDeleted() {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String date = df.format(Date.from(OffsetDateTime.now().minusDays(1).toInstant()));
         List<String> webhookMessageExternalIds = List.of("thirteenth-message-external-id", "fourteenth-message-external-id", "fifteenth-message-external-id");
-
-        // Method is tied to the enclosing method
-        // addWebhookMessage(webhookMessageExternalIds,date);
-
+        
         dbHelper.addWebhookMessage(13, webhookMessageExternalIds.get(0), date, 1, date, 1, "{}", "transaction-external-id", "payment", DeliveryStatus.valueOf("FAILED"));
         dbHelper.addWebhookMessage(14, webhookMessageExternalIds.get(1), date, 1, date, 1, "{}", null, null, DeliveryStatus.valueOf("PENDING"));
         dbHelper.addWebhookMessage(15, webhookMessageExternalIds.get(2), date, 1, date, 1, "{}", null, null, DeliveryStatus.valueOf("PENDING"));
@@ -304,7 +288,6 @@ public class WebhookResourceIT {
         dbHelper.addWebhookDeliveryQueueMessage(16, date, date, "404", 404, 14, DeliveryStatus.valueOf("FAILED"), 25);
         dbHelper.addWebhookDeliveryQueueMessage(17, date, date, null, 404, 15, DeliveryStatus.valueOf("PENDING"), 25);
         
-        //dbHelper.addThreeWebhookMessagesThatShouldNotBeDeleted(date);
         return webhookMessageExternalIds;
     }
 
@@ -364,7 +347,7 @@ public class WebhookResourceIT {
     private void setupWebhookWithMessages(String externalId, String messageExternalId) {
         dbHelper.addWebhook(externalId);
         dbHelper.addWebhookMessage(1, messageExternalId, "2022-01-01", 1, "2022-01-01", 1, "{}", "transaction-external-id", "payment", DeliveryStatus.valueOf("FAILED"));
-        dbHelper.addWebhookMessage(2, "second-message-external-id", "2022-01-01", 1, "2022-01-01", 1, "{}", "transaction-external-id-2", "payment", DeliveryStatus.valueOf("FAILED"));
+       /* dbHelper.addWebhookMessage(2, "second-message-external-id", "2022-01-01", 1, "2022-01-01", 1, "{}", "transaction-external-id-2", "payment", DeliveryStatus.valueOf("FAILED"));
         dbHelper.addWebhookMessage(3, "third-message-external-id", "2022-01-01", 1, "2022-01-01", 1,"{}", null, null, DeliveryStatus.valueOf("PENDING"));
         dbHelper.addWebhookMessage(4, "fourth-message-external-id", "2022-01-01", 1, "2022-01-01", 1,"{}", null, null, DeliveryStatus.valueOf("PENDING"));
         dbHelper.addWebhookMessage(5, "fifth-message-external-id", "2022-01-01", 1, "2022-01-01", 1,"{}", null, null, DeliveryStatus.valueOf("PENDING"));
@@ -375,11 +358,12 @@ public class WebhookResourceIT {
         dbHelper.addWebhookMessage(10, "tenth-message-external-id", "2022-01-01", 1, "2022-01-01", 1,"{}", null, null, DeliveryStatus.valueOf("PENDING"));
         dbHelper.addWebhookMessage(11, "eleventh-message-external-id", "2022-01-01", 1, "2022-01-01", 1,"{}", null, null, DeliveryStatus.valueOf("PENDING"));
         dbHelper.addWebhookMessage(12, "twelfth-message-external-id", "2022-01-01", 1, "2022-01-01", 1,"{}", null, null, DeliveryStatus.valueOf("PENDING"));
-        
-        //dbHelper.addWebhookDeliveryQueueWithMessages();
+*/
+        dbHelper.addWebhookMessage(2, 11,"-message-external-id", "2022-01-01", 1, "2022-01-01", 1,"{}", null, null, DeliveryStatus.valueOf("PENDING"));
+
         dbHelper.addWebhookDeliveryQueueMessage(1, "2022-01-01", "2022-01-01", "200", 200, 1, DeliveryStatus.valueOf("SUCCESSFUL"), 1250);
         dbHelper.addWebhookDeliveryQueueMessage(2, "2022-01-02", "2022-01-01", "404", 404, 1, DeliveryStatus.valueOf("FAILED"), 25);
-        dbHelper.addWebhookDeliveryQueueMessage(3, "2022-01-02", "2022-01-01", null, 404, 1, DeliveryStatus.valueOf("PENDING"), 25);
+        dbHelper.addWebhookDeliveryQueueMessage(3, "2022-01-02", "2022-01-01", "404", 404, 1, DeliveryStatus.valueOf("PENDING"), 25);
         dbHelper.addWebhookDeliveryQueueMessage(4, "2022-01-01", "2022-01-01", "404", 404, 2, DeliveryStatus.valueOf("PENDING"), 25);
         dbHelper.addWebhookDeliveryQueueMessage(5, "2022-01-01", "2022-01-01", "404", 404, 3, DeliveryStatus.valueOf("PENDING"), 25);
         dbHelper.addWebhookDeliveryQueueMessage(6, "2022-01-01", "2022-01-01", "404", 404, 4, DeliveryStatus.valueOf("PENDING"), 25);
