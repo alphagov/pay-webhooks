@@ -52,23 +52,6 @@ public class DatabaseTestHelper {
         ));
     }
 
-    public void addWebhookMessages(int startIdIndex, int recordCount) {
-        for (int i = startIdIndex; i <= recordCount; i++) {
-            addWebhookMessage(i + 1, (i + 1) + "-message-external-id", "2022-01-01", 1, "2022-01-01", 1, "{}", null, null, null);
-        }
-    }
-    public void addThreeWebhookMessagesThatShouldNotBeDeleted(String date) {
-        jdbi.withHandle(h -> h.execute("""
-                INSERT INTO webhook_delivery_queue VALUES
-                    (15, '%s', '%s', '200', 200, 13, 'SUCCESSFUL', 1250),
-                    (16, '%s', '%s', '404', 404, 14, 'FAILED', 25),
-                    (17, '%s', '%s', null, null, 15, 'PENDING', null)
-                """.
-
-                formatted(date, date, date, date, date, date)
-        ));
-    }
-
     public void addWebhookDeliveryQueueMessage(int id, String sentDate, String createdDate, String deliveryResult, int statusCode, int webhookMessageId, DeliveryStatus deliveryStatus, int deliveryCode) {
         jdbi.withHandle(h -> h.execute("""
                 INSERT INTO webhook_delivery_queue VALUES
