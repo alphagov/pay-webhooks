@@ -3,6 +3,8 @@ package uk.gov.pay.webhooks.util;
 import org.jdbi.v3.core.Jdbi;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 
+import java.util.List;
+
 /*
   Group methods referencing same database tables together for ease of maintenance and future refactor .
   e.g. webhooks database table inserts are arranged at the top of the file.
@@ -53,9 +55,9 @@ public class DatabaseTestHelper {
                 status)
         ));
     }
-    public void addWebhookMessage(int startIdIndex, int recordCount, String externalId, String createdDate, int webhookId, String eventDate, int eventType, String resource, String resourceExternalId, String resourceType, DeliveryStatus status) {
+    public void addWebhookMessage(int startIdIndex, int recordCount, List<String> externalIdList, String createdDate, int webhookId, String eventDate, int eventType, String resource, String resourceExternalId, String resourceType, DeliveryStatus status) {
         for (int i = startIdIndex; i <= recordCount; i++) {
-            addWebhookMessage(i, i+externalId, createdDate, webhookId, eventDate, eventType, resource, resourceExternalId, resourceType, status);
+            addWebhookMessage(i, externalIdList.get(i-2), createdDate, webhookId, eventDate, eventType, resource, resourceExternalId, resourceType, status);
         }
     }
 
