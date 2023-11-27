@@ -23,21 +23,24 @@ public class DatabaseTestHelper {
     public void addWebhook() {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', 'webhook-external-id', 'signing-key', 'service-id', true, 'https://callback-url.test', 'description', 'ACTIVE')"));
     }
+
     public void addWebhook(String externalId) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE', '100')".formatted(externalId)));
     }
+
     public void addWebhook(String webhookExternalId, String serviceExternalId, String callbackUrl, String gatewayAccountId) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', '%s', false, '%s', 'description', 'ACTIVE', '%s')".formatted(webhookExternalId, serviceExternalId, callbackUrl, gatewayAccountId)));
     }
+
     public void addWebhook(int webhookId, String webhookExternalId, String serviceExternalId, String endpointUrl, String gatewayAccountId) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES ('%d', '2022-01-01', '%s', 'signing-key', '%s', false, '%s', 'description', 'ACTIVE', '%s')"
                 .formatted(webhookId, webhookExternalId, serviceExternalId, endpointUrl, gatewayAccountId)));
     }
+
     public void addWebhookSubscription(int webhookSubscriptionId, String event) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhook_subscriptions VALUES ('%d', (SELECT id FROM event_types WHERE name = '%s'))".formatted(webhookSubscriptionId, event)));
     }
-    
-    
+
     public void addWebhookMessage(int webhookMessageId, String externalId, String createdDate, int webhookId, String eventDate, int eventType, String resource, String resourceExternalId, String resourceType, DeliveryStatus status) {
         jdbi.withHandle(h -> h.execute("""
                 INSERT INTO webhook_messages VALUES
@@ -55,9 +58,10 @@ public class DatabaseTestHelper {
                 status)
         ));
     }
+
     public void addWebhookMessage(int startIdIndex, int recordCount, List<String> externalIdList, String createdDate, int webhookId, String eventDate, int eventType, String resource, String resourceExternalId, String resourceType, DeliveryStatus status) {
         for (int i = startIdIndex; i <= recordCount; i++) {
-            addWebhookMessage(i, externalIdList.get(i-2), createdDate, webhookId, eventDate, eventType, resource, resourceExternalId, resourceType, status);
+            addWebhookMessage(i, externalIdList.get(i - 2), createdDate, webhookId, eventDate, eventType, resource, resourceExternalId, resourceType, status);
         }
     }
 
@@ -67,6 +71,12 @@ public class DatabaseTestHelper {
                     ('%d', '%s', '%s', '%s', '%d', '%d', '%s', '%d')
                 """.formatted(id, sentDate, createdDate, deliveryResult, statusCode, webhookMessageId, deliveryStatus, deliveryCode)
         ));
+    }
+
+    public void addWebhookDeliveryQueueMessage(int startIdIndex, int recordCount, String sentDate, String createdDate, String deliveryResult, int statusCode, DeliveryStatus deliveryStatus, int deliveryCode) {
+        for (int i = startIdIndex; i <= recordCount; i++) {
+            addWebhookDeliveryQueueMessage(i, sentDate, createdDate, deliveryResult, statusCode, i - 2, deliveryStatus, deliveryCode);
+        }
     }
 
     public void truncateAllWebhooksData() {
