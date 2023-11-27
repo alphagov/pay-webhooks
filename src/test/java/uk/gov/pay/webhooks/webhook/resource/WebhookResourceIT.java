@@ -275,14 +275,28 @@ public class WebhookResourceIT {
                         .statusCode(Response.Status.NOT_FOUND.getStatusCode()));
     }
 
+    private void addWebhookMessage(List<String> webhookMessageExternalIds, String date) {
+        app.getJdbi().withHandle(h -> h.execute("""
+                    INSERT INTO webhook_messages VALUES
+                    (13, '%s', '%s', 1, '%s', 1, '{}', 'transaction-external-id', 'payment', 'FAILED'),
+                    (14, '%s', '%s', 1, '%s', 1, '{}', null, null, null),
+                    (15, '%s', '%s', 1, '%s', 1, '{}', null, null, null)
+                """.formatted(
+                webhookMessageExternalIds.get(0), date, date,
+                webhookMessageExternalIds.get(1), date, date,
+                webhookMessageExternalIds.get(2), date, date)
+        ));
+    }
+
     private List<String> setupThreeWebhookMessagesThatShouldNotBeDeleted() {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String date = df.format(Date.from(OffsetDateTime.now().minusDays(1).toInstant()));
         List<String> webhookMessageExternalIds = List.of("thirteenth-message-external-id", "fourteenth-message-external-id", "fifteenth-message-external-id");
 
-        // dbHelper.addWebhookMessage(webhookMessageExternalIds,date);
+        // Method is tied to the enclosing method
+        addWebhookMessage(webhookMessageExternalIds,date);
 
-        dbHelper.addWebhookMessage(13, webhookMessageExternalIds.get(0), date, 1, date, 1, "{}", "transaction-external-id", "payment", DeliveryStatus.valueOf("FAILED"));
+        //dbHelper.addWebhookMessage(13, webhookMessageExternalIds.get(0), date, 1, date, 1, "{}", "transaction-external-id", "payment", DeliveryStatus.valueOf("FAILED"));
         //dbHelper.addWebhookMessage(14, webhookMessageExternalIds.get(1), date, 2, date, 1, "{}", null, null, null);
         //dbHelper.addWebhookMessage(15, webhookMessageExternalIds.get(2), date, 3, date, 1, "{}", null, null, null);
         

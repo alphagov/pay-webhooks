@@ -53,18 +53,7 @@ public class DatabaseTestHelper {
                 status)
         ));
     }
-    public void addWebhookMessage(List<String> webhookMessageExternalIds, String date) {
-        jdbi.withHandle(h -> h.execute("""
-                    INSERT INTO webhook_messages VALUES
-                    (13, '%s', '%s', 1, '%s', 1, '{}', 'transaction-external-id', 'payment', 'FAILED'),
-                    (14, '%s', '%s', 1, '%s', 1, '{}', null, null, null),
-                    (15, '%s', '%s', 1, '%s', 1, '{}', null, null, null)
-                """.formatted(
-                webhookMessageExternalIds.get(0), date, date,
-                webhookMessageExternalIds.get(1), date, date,
-                webhookMessageExternalIds.get(2), date, date)
-        ));
-    }
+
     public void addWebhookMessages(int startIdIndex, int recordCount) {
         for (int i = startIdIndex; i <= recordCount; i++) {
             addWebhookMessage(i + 1, (i + 1) + "-message-external-id", "2022-01-01", 1, "2022-01-01", 1, "{}", null, null, null);
