@@ -427,7 +427,7 @@ public class WebhookResourceIT {
                 .webhookMessageId(1)
                 .deliveryStatus(DeliveryStatus.valueOf("FAILED"))
                 .deliveryCode(25).build();
-        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage3 = DatabaseTestHelper.WebhookDeliveryQueueMessage.builder()
+        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage = DatabaseTestHelper.WebhookDeliveryQueueMessage.builder()
                 .deliveryQueueMessageId(3)
                 .sentDate("2022-01-01")
                 .createdDate("2022-01-01")
@@ -438,7 +438,7 @@ public class WebhookResourceIT {
                 .deliveryCode(25).build();
         dbHelper.addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage1);
         dbHelper.addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage2);
-        dbHelper.addWebhookDeliveryQueueMessage(3, 13, webhookDeliveryQueueMessage3);
+        dbHelper.addWebhookDeliveryQueueMessage(3, 13, webhookDeliveryQueueMessage);
 
         return new WebhookMessageExternalIds(
                 List.of("first-message-external-id", "second-message-external-id", "third-message-external-id", "fourth-message-external-id", "fifth-message-external-id", "sixth-message-external-id"),
@@ -523,7 +523,7 @@ public class WebhookResourceIT {
                 .deliveryCode(1250).build();
 
         DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage2 = DatabaseTestHelper.WebhookDeliveryQueueMessage.builder()
-                .deliveryQueueMessageId(1)
+                .deliveryQueueMessageId(2)
                 .sentDate("2022-01-02")
                 .createdDate("2022-01-01")
                 .deliveryResult("404")
@@ -533,7 +533,7 @@ public class WebhookResourceIT {
                 .deliveryCode(25).build();
 
         DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage3 = DatabaseTestHelper.WebhookDeliveryQueueMessage.builder()
-                .deliveryQueueMessageId(1)
+                .deliveryQueueMessageId(3)
                 .sentDate("2022-01-02")
                 .createdDate("2022-01-01")
                 .deliveryResult("404")
