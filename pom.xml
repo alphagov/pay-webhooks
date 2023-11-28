@@ -170,7 +170,12 @@
             <artifactId>dropwizard-sentry</artifactId>
             <version>2.1.2-4</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version>
+            <scope>provided</scope>
+        </dependency>
         <!-- Test dependencies that are imported from one of the BOMs specified
              in <dependencyManagement> so no explicit versions needed -->
         <dependency>

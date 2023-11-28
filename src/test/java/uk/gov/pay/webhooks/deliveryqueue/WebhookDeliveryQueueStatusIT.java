@@ -6,8 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import uk.gov.pay.extension.AppWithPostgresAndSqsExtension;
 import uk.gov.pay.webhooks.util.DatabaseTestHelper;
-
-import java.util.Optional;
+import uk.gov.pay.webhooks.util.dto.Webhook;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
@@ -26,8 +25,15 @@ public class WebhookDeliveryQueueStatusIT {
     @ParameterizedTest
     @EnumSource(value = DeliveryStatus.class)
     public void deliveryStatusEnumIsConsistentWithDatabase(DeliveryStatus status) {
-        dbHelper.addWebhook(1, "webhook-external-id", "service-id", "https://callback-url.test", "true", "100");
-
+        Webhook webhook = Webhook.builder()
+                .webhookId(1)
+                .webhookExternalId("webhook-external-id")
+                .serviceExternalId("service-id")
+                .endpointUrl("https://callback-url.test")
+                .live("true")
+                .gatewayAccountId("100")
+                .build();
+        dbHelper.addWebhook(webhook);
         dbHelper.addWebhookMessage(1,"message-external-id", "2022-01-01", 1, "2022-01-01", 1, "{}", "transaction-external-id", "payment",status);
         assertDoesNotThrow(() -> dbHelper.addWebhookDeliveryQueueMessage(1, "2022-01-01", "2022-01-01", "200", 200, 1, status, 1250));
     }

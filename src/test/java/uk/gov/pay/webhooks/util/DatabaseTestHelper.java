@@ -2,6 +2,7 @@ package uk.gov.pay.webhooks.util;
 
 import org.jdbi.v3.core.Jdbi;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
+import uk.gov.pay.webhooks.util.dto.Webhook;
 
 import java.util.List;
 
@@ -20,13 +21,14 @@ public class DatabaseTestHelper {
         return new DatabaseTestHelper(jdbi);
     }
 
-    public void addWebhook() {
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', 'webhook-external-id', 'signing-key', 'service-id', true, 'https://callback-url.test', 'description', 'ACTIVE')"));
-    }
-
-    public void addWebhook(int webhookId, String webhookExternalId, String serviceExternalId, String endpointUrl, String live, String gatewayAccountId) {
+    public void addWebhook(Webhook webhook) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES ('%d', '2022-01-01', '%s', 'signing-key', '%s', '%s', '%s', 'description', 'ACTIVE', '%s')"
-                .formatted(webhookId, webhookExternalId, serviceExternalId, live, endpointUrl, gatewayAccountId)));
+                .formatted(webhook.getWebhookId(), 
+                        webhook.getWebhookExternalId(), 
+                        webhook.getServiceExternalId(), 
+                        webhook.getLive(), 
+                        webhook.getEndpointUrl(), 
+                        webhook.getGatewayAccountId())));
     }
 
     public void addWebhookSubscription(int webhookSubscriptionId, String event) {
