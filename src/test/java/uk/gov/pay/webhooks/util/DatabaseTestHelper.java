@@ -2,6 +2,7 @@ package uk.gov.pay.webhooks.util;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import org.jdbi.v3.core.Jdbi;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 
@@ -38,27 +39,29 @@ public class DatabaseTestHelper {
                         webhookSubscription.getEvent())));
     }
 
-    public void addWebhookMessage(int webhookMessageId, String externalId, String createdDate, int webhookId, String eventDate, int eventType, String resource, String resourceExternalId, String resourceType, DeliveryStatus status) {
+    public void addWebhookMessage(WebhookMessage webhookMessage) {
         jdbi.withHandle(h -> h.execute("""
                 INSERT INTO webhook_messages VALUES
                 ('%d', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s')
                 """.formatted(
-                webhookMessageId,
-                externalId,
-                createdDate,
-                webhookId,
-                eventDate,
-                eventType,
-                resource,
-                resourceExternalId,
-                resourceType,
-                status)
+                webhookMessage.getWebhookMessageId(),
+                webhookMessage.getExternalId(),
+                webhookMessage.getCreatedDate(),
+                webhookMessage.getWebhookId(),
+                webhookMessage.getEventDate(),
+                webhookMessage.getEventType(),
+                webhookMessage.getResource(),
+                webhookMessage.getResourceType(),
+                webhookMessage.getResource(),
+                webhookMessage.getDeliveryStatus())
         ));
     }
 
-    public void addWebhookMessage(int startIdIndex, int recordCount, List<String> externalIdList, String createdDate, int webhookId, String eventDate, int eventType, String resource, String resourceExternalId, String resourceType, DeliveryStatus status) {
+    public void addWebhookMessage(int startIdIndex, int recordCount, List<String> externalIdList, WebhookMessage webhookMessage) {
         for (int i = startIdIndex; i <= recordCount; i++) {
-            addWebhookMessage(i, externalIdList.get(i - 2), createdDate, webhookId, eventDate, eventType, resource, resourceExternalId, resourceType, status);
+            webhookMessage.setWebhookMessageId(i);
+            webhookMessage.setExternalId(externalIdList.get(i - 2));
+            addWebhookMessage(webhookMessage);
         }
     }
 
@@ -86,17 +89,33 @@ public class DatabaseTestHelper {
     @Builder
     public static class Webhook {
         private final int webhookId;
-        private String webhookExternalId;
-        private String serviceExternalId;
-        private String endpointUrl;
-        private String live;
-        private String gatewayAccountId;
+        private final String webhookExternalId;
+        private final String serviceExternalId;
+        private final String endpointUrl;
+        private final String live;
+        private final String gatewayAccountId;
     }
 
     @Getter
     @Builder
     public static class WebhookSubscription {
         private final int subscriptionId;
-        private String event;
+        private final String event;
+    }
+    
+    @Getter
+    @Setter
+    @Builder
+    public static class WebhookMessage {
+        private int webhookMessageId;
+        private String externalId;
+        private final String createdDate;
+        private final int webhookId;
+        private final String eventDate;
+        private final int eventType;
+        private final String resource;
+        private final String resourceExternalId;
+        private final String resourceType;
+        private final DeliveryStatus deliveryStatus;
     }
 }

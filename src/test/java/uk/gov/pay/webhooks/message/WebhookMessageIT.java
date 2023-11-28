@@ -33,6 +33,18 @@ public class WebhookMessageIT {
                 .live("true")
                 .gatewayAccountId("100")
                 .build();
-        dbHelper.addWebhook(webhook);        assertDoesNotThrow(() -> dbHelper.addWebhookMessage(1, "message-external-id", "2022-01-01", 1, "2022-01-01", 1, "{}", "transaction-external-id", "payment",status));
+        dbHelper.addWebhook(webhook);
+        DatabaseTestHelper.WebhookMessage webhookMessage = DatabaseTestHelper.WebhookMessage.builder()
+                .webhookMessageId(1)
+                .externalId("message-external-id")
+                .createdDate("2022-01-01")
+                .webhookId(1)
+                .eventDate("2022-01-01")
+                .eventType(1)
+                .resource("{}")
+                .resourceExternalId("transaction-external-id")
+                .resourceType("payment")
+                .deliveryStatus(status).build();
+        assertDoesNotThrow(() -> dbHelper.addWebhookMessage(webhookMessage));
     }
 }
