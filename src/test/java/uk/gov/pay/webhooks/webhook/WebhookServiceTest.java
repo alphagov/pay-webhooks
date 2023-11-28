@@ -163,31 +163,4 @@ class WebhookServiceTest {
         WebhookEntity captured = argumentCaptor.getAllValues().get(0);
         assertThat(captured.getSigningKey(), equalTo("some-signing-key"));
     }
-    
-    @Test
-    public void printIt(){
-        List<String> externalIdList = List.of(
-                "second-message-external-id",
-                "third-message-external-id",
-                "fourth-message-external-id",
-                "fifth-message-external-id",
-                "sixth-message-external-id",
-                "seventh-message-external-id",
-                "eighth-message-external-id",
-                "ninth-message-external-id",
-                "tenth-message-external-id",
-                "eleventh-message-external-id",
-                "twelfth-message-external-id"
-        );
-        addWebhookMessage(2, 12, externalIdList, "2022-01-01", 1, "2022-01-01", 1,"{}", null, null, DeliveryStatus.valueOf("PENDING"));
-
-    }
-
-    public void addWebhookMessage(int startIdIndex, int recordCount, List<String> externalIdList, String createdDate, int webhookId, String eventDate, int eventType, String resource, String resourceExternalId, String resourceType, DeliveryStatus status) {
-        for (int i = startIdIndex; i <= recordCount; i++) {
-            System.out.println(i);
-            System.out.println(externalIdList.get(i-2));
-        }
-    }
-    
 }

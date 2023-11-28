@@ -51,8 +51,8 @@ public class DatabaseTestHelper {
                 webhookMessage.getEventDate(),
                 webhookMessage.getEventType(),
                 webhookMessage.getResource(),
+                webhookMessage.getResourceExternalId(),
                 webhookMessage.getResourceType(),
-                webhookMessage.getResource(),
                 webhookMessage.getDeliveryStatus())
         ));
     }
