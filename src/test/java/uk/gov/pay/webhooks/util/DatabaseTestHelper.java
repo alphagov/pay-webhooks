@@ -36,7 +36,7 @@ public class DatabaseTestHelper {
 
     public void addWebhook(int webhookId, String webhookExternalId, String serviceExternalId, String endpointUrl, String live, String gatewayAccountId) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES ('%d', '2022-01-01', '%s', 'signing-key', '%s', '%s', '%s', 'description', 'ACTIVE', '%s')"
-                .formatted(webhookId, webhookExternalId, serviceExternalId, endpointUrl, live, gatewayAccountId)));
+                .formatted(webhookId, webhookExternalId, serviceExternalId, live, endpointUrl, gatewayAccountId)));
     }
 
     public void addWebhookSubscription(int webhookSubscriptionId, String event) {
