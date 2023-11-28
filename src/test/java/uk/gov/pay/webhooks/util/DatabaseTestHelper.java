@@ -233,8 +233,8 @@ public class DatabaseTestHelper {
         private final String createdDate;
         private final String deliveryResult;
         private final int statusCode;
-        private DeliveryStatus deliveryStatus;
-        private int deliveryCode;
+        private final DeliveryStatus deliveryStatus;
+        private final int deliveryCode;
 
         public WebhookDeliveryQueueMessage(int deliveryQueueMessageId, int webhookMessageId, String sentDate, String createdDate, String deliveryResult, int statusCode, DeliveryStatus deliveryStatus, int deliveryCode) {
             this.deliveryQueueMessageId = deliveryQueueMessageId;
