@@ -37,7 +37,7 @@ public class DatabaseTestHelper {
 
     public void addWebhookMessage(int startIdIndex, int recordCount, List<String> externalIdList, WebhookMessage webhookMessage) {
         for (int i = startIdIndex; i <= recordCount; i++) {
-            addWebhookMessage(webhookMessage.setWebhookMessageAndExternalId(i,externalIdList.get(i - 2)));
+            addWebhookMessage(webhookMessage.withWebhookMessageAndExternalId(i,externalIdList.get(i - 2)));
         }
     }
 
@@ -50,7 +50,7 @@ public class DatabaseTestHelper {
 
     public void addWebhookDeliveryQueueMessage(int startIdIndex, int recordCount, WebhookDeliveryQueueMessage webhookDeliveryQueueMessage) {
         for (int i = startIdIndex; i <= recordCount; i++) {
-            addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage.setDeliveryQueueAndWebhookMessageId(i,i - 2));
+            addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage.withDeliveryQueueAndWebhookMessageId(i,i - 2));
         }
     }
 
@@ -59,7 +59,7 @@ public class DatabaseTestHelper {
     }
 
 
-    public static record Webhook(int webhookId,
+    public record Webhook(int webhookId,
                                  String webhookExternalId,
                                  String serviceExternalId,
                                  String endpointUrl,
@@ -67,10 +67,10 @@ public class DatabaseTestHelper {
                                  String gatewayAccountId) {
     }
 
-    public static record WebhookSubscription(int subscriptionId, String event) {
+    public record WebhookSubscription(int subscriptionId, String event) {
     }
 
-    public static record WebhookMessage(
+    public record WebhookMessage(
             int webhookMessageId,
             String externalId,
             String createdDate,
@@ -81,7 +81,7 @@ public class DatabaseTestHelper {
             String resourceExternalId,
             String resourceType,
             DeliveryStatus deliveryStatus) {
-        public WebhookMessage setWebhookMessageAndExternalId(int webhookMessageId, String externalId) {
+        public WebhookMessage withWebhookMessageAndExternalId(int webhookMessageId, String externalId) {
             return new WebhookMessage(webhookMessageId,
                     externalId,
                     createdDate(),
@@ -95,7 +95,7 @@ public class DatabaseTestHelper {
         }
     }
 
-    public static record WebhookDeliveryQueueMessage(int deliveryQueueMessageId,
+    public record WebhookDeliveryQueueMessage(int deliveryQueueMessageId,
                                                      int webhookMessageId,
                                                      String sentDate,
                                                      String createdDate,
@@ -103,7 +103,7 @@ public class DatabaseTestHelper {
                                                      int statusCode,
                                                      DeliveryStatus deliveryStatus,
                                                      int deliveryCode) {
-        public WebhookDeliveryQueueMessage setDeliveryQueueAndWebhookMessageId(int deliveryQueueMessageId, int webhookMessageId) {
+        public WebhookDeliveryQueueMessage withDeliveryQueueAndWebhookMessageId(int deliveryQueueMessageId, int webhookMessageId) {
             return new WebhookDeliveryQueueMessage(
                     deliveryQueueMessageId,
                     webhookMessageId,
