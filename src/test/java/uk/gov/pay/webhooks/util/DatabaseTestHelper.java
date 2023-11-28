@@ -37,8 +37,7 @@ public class DatabaseTestHelper {
 
     public void addWebhookMessage(int startIdIndex, int recordCount, List<String> externalIdList, WebhookMessage webhookMessage) {
         for (int i = startIdIndex; i <= recordCount; i++) {
-            webhookMessage.setWebhookMessageAndExternalId(i,externalIdList.get(i - 2));
-            addWebhookMessage(webhookMessage);
+            addWebhookMessage(webhookMessage.setWebhookMessageAndExternalId(i,externalIdList.get(i - 2)));
         }
     }
 
@@ -51,8 +50,7 @@ public class DatabaseTestHelper {
 
     public void addWebhookDeliveryQueueMessage(int startIdIndex, int recordCount, WebhookDeliveryQueueMessage webhookDeliveryQueueMessage) {
         for (int i = startIdIndex; i <= recordCount; i++) {
-            webhookDeliveryQueueMessage.setDeliveryQueueAndWebhookMessageId(i,i - 2);
-            addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage);
+            addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage.setDeliveryQueueAndWebhookMessageId(i,i - 2));
         }
     }
 
