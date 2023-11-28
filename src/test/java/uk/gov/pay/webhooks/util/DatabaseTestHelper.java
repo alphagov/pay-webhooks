@@ -25,20 +25,23 @@ public class DatabaseTestHelper {
     }
 
     public void addWebhook(String externalId) {
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE', '100')".formatted(externalId)));
+        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', 'service-id', true, 'http://callback-url.com', 'description', 'ACTIVE', '100')"
+                .formatted(externalId)));
     }
 
-    public void addWebhook(String webhookExternalId, String serviceExternalId, String callbackUrl, String gatewayAccountId) {
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', '%s', false, '%s', 'description', 'ACTIVE', '%s')".formatted(webhookExternalId, serviceExternalId, callbackUrl, gatewayAccountId)));
+    public void addWebhook(String webhookExternalId, String serviceExternalId, String endpointUrl, String gatewayAccountId) {
+        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', '%s', 'signing-key', '%s', false, '%s', 'description', 'ACTIVE', '%s')"
+                .formatted(webhookExternalId, serviceExternalId, endpointUrl, gatewayAccountId)));
     }
 
-    public void addWebhook(int webhookId, String webhookExternalId, String serviceExternalId, String endpointUrl, String gatewayAccountId) {
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES ('%d', '2022-01-01', '%s', 'signing-key', '%s', false, '%s', 'description', 'ACTIVE', '%s')"
-                .formatted(webhookId, webhookExternalId, serviceExternalId, endpointUrl, gatewayAccountId)));
+    public void addWebhook(int webhookId, String webhookExternalId, String serviceExternalId, String endpointUrl, String live, String gatewayAccountId) {
+        jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES ('%d', '2022-01-01', '%s', 'signing-key', '%s', '%s', '%s', 'description', 'ACTIVE', '%s')"
+                .formatted(webhookId, webhookExternalId, serviceExternalId, endpointUrl, live, gatewayAccountId)));
     }
 
     public void addWebhookSubscription(int webhookSubscriptionId, String event) {
-        jdbi.withHandle(h -> h.execute("INSERT INTO webhook_subscriptions VALUES ('%d', (SELECT id FROM event_types WHERE name = '%s'))".formatted(webhookSubscriptionId, event)));
+        jdbi.withHandle(h -> h.execute("INSERT INTO webhook_subscriptions VALUES ('%d', (SELECT id FROM event_types WHERE name = '%s'))"
+                .formatted(webhookSubscriptionId, event)));
     }
 
     public void addWebhookMessage(int webhookMessageId, String externalId, String createdDate, int webhookId, String eventDate, int eventType, String resource, String resourceExternalId, String resourceType, DeliveryStatus status) {

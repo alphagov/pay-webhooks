@@ -50,7 +50,7 @@ public class WebhookDeliveryQueueIT {
     public void webhookMessageIsEmittedForSubscribedWebhook() throws IOException, InterruptedException {
         var serviceExternalId = "a-valid-service-id";
         var gatewayAccountId = "100";
-        dbHelper.addWebhook("a-valid-webhook-id", serviceExternalId, "http://localhost:%d/a-test-endpoint".formatted(app.getWireMockPort()), gatewayAccountId);
+        dbHelper.addWebhook(1,"a-valid-webhook-id", serviceExternalId, "http://localhost:%d/a-test-endpoint".formatted(app.getWireMockPort()), "false", gatewayAccountId);
         dbHelper.addWebhookSubscription(1, "card_payment_succeeded");
         dbHelper.addWebhookSubscription(1, "card_payment_refunded");
 
@@ -90,7 +90,7 @@ public class WebhookDeliveryQueueIT {
     public void webhookMessageIsEmittedForSubscribedWebhook_forChildPaymentEvents() throws IOException, InterruptedException {
         var serviceExternalId = "a-valid-service-id";
         var gatewayAccountId = "100";
-        dbHelper.addWebhook("a-valid-webhook-id", serviceExternalId, "http://localhost:%d/a-test-endpoint".formatted(app.getWireMockPort()), gatewayAccountId);
+        dbHelper.addWebhook(1,"a-valid-webhook-id", serviceExternalId, "http://localhost:%d/a-test-endpoint".formatted(app.getWireMockPort()), "false", gatewayAccountId);
         dbHelper.addWebhookSubscription(1, "card_payment_succeeded");
         dbHelper.addWebhookSubscription(1, "card_payment_refunded");
         var transaction = aTransactionFromLedgerFixture();
@@ -125,18 +125,12 @@ public class WebhookDeliveryQueueIT {
     public void webhookMessageLastDeliveryStatusIsConsistent() throws InterruptedException, IOException {
         var serviceExternalId = "a-valid-service-id";
         var gatewayAccountId = "100";
-       /* dbHelper.addWebhook(1,"webhook-external-id-succeeds",serviceExternalId,app.getWireMockPort(), gatewayAccountId);
-        dbHelper.addWebhook(2,"webhook-external-id-fails",serviceExternalId,app.getWireMockPort(), gatewayAccountId);
-        dbHelper.addWebhookSubscription(1,"card_payment_succeeded");
-        dbHelper.addWebhookSubscription(2,"card_payment_succeeded");
-*/
-        //dbHelper.webhookMessageLastDeliveryStatusIsConsistent(serviceExternalId,app.getWireMockPort(), gatewayAccountId);
-        //("INSERT INTO webhooks VALUES (1, '2022-01-01', 'webhook-external-id-succeeds', 'signing-key', '%s', false, 'http://localhost:%d/a-working-endpoint', 'description', 'ACTIVE', '%s')".formatted(serviceExternalId, port, gatewayAccountId)));
-
+      
         dbHelper.addWebhook(1,
                 "webhook-external-id-succeeds",
                 serviceExternalId,
                 "http://localhost:"+app.getWireMockPort()+"/a-working-endpoint",
+                "false",
                 gatewayAccountId
                 );
 
@@ -144,6 +138,7 @@ public class WebhookDeliveryQueueIT {
                 "webhook-external-id-fails",
                 serviceExternalId,
                 "http://localhost:"+app.getWireMockPort()+"/a-failing-endpoint",
+                "false",
                 gatewayAccountId
         );
 

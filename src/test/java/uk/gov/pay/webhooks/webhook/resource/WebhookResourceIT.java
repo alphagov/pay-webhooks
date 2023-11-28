@@ -171,7 +171,7 @@ public class WebhookResourceIT {
     @Test
     public void shouldReturnAndCountEmptyMessages() {
         var externalId = "a-valid-webhook-id";
-        dbHelper.addWebhook(externalId);
+        dbHelper.addWebhook(1, externalId,"service-id","http://callback-url.com","false", "100");
         given().port(port)
                 .contentType(JSON)
                 .get("/v1/webhook/%s/message".formatted(externalId))
@@ -304,7 +304,7 @@ public class WebhookResourceIT {
                 "tenth-message-external-id",
                 "eleventh-message-external-id"
         );
-        dbHelper.addWebhook(externalId);
+        dbHelper.addWebhook(1, externalId, "service-id", "http://callback-url.com", "true", "100");
         dbHelper.addWebhookMessage(1, "first-message-external-id", "2022-01-01", 1, "2022-01-01", 1, "{}", "transaction-external-id", "payment", DeliveryStatus.valueOf("FAILED"));
         dbHelper.addWebhookMessage(2, 11, externalIdList, "2022-01-01", 1, "2022-01-01", 1, "{}", null, null, DeliveryStatus.valueOf("PENDING"));
         dbHelper.addWebhookDeliveryQueueMessage(1, "2022-01-01", "2022-01-01", "200", 200, 1, DeliveryStatus.valueOf("SUCCESSFUL"), 1250);
@@ -348,7 +348,7 @@ public class WebhookResourceIT {
                 "twelfth-message-external-id"
         );
 
-        dbHelper.addWebhook(externalId);
+        dbHelper.addWebhook(1, externalId, "service-id", "http://callback-url.com", "true", "100");
         dbHelper.addWebhookMessage(1, messageExternalId, "2022-01-01", 1, "2022-01-01", 1, "{}", "transaction-external-id", "payment", DeliveryStatus.valueOf("FAILED"));
         dbHelper.addWebhookMessage(2, 12, externalIdList, "2022-01-01", 1, "2022-01-01", 1, "{}", null, null, DeliveryStatus.valueOf("PENDING"));
         dbHelper.addWebhookDeliveryQueueMessage(1, "2022-01-01", "2022-01-01", "200", 200, 1, DeliveryStatus.valueOf("SUCCESSFUL"), 1250);
