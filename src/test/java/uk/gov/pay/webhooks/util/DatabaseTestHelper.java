@@ -65,17 +65,26 @@ public class DatabaseTestHelper {
         }
     }
 
-    public void addWebhookDeliveryQueueMessage(int id, String sentDate, String createdDate, String deliveryResult, int statusCode, int webhookMessageId, DeliveryStatus deliveryStatus, int deliveryCode) {
+    public void addWebhookDeliveryQueueMessage(WebhookDeliveryQueueMessage webhookDeliveryQueueMessage) {
         jdbi.withHandle(h -> h.execute("""
                 INSERT INTO webhook_delivery_queue VALUES
                     ('%d', '%s', '%s', '%s', '%d', '%d', '%s', '%d')
-                """.formatted(id, sentDate, createdDate, deliveryResult, statusCode, webhookMessageId, deliveryStatus, deliveryCode)
+                """.formatted(webhookDeliveryQueueMessage.getDeliveryQueueMessageId(),
+                webhookDeliveryQueueMessage.getSentDate(),
+                webhookDeliveryQueueMessage.getCreatedDate(),
+                webhookDeliveryQueueMessage.getDeliveryResult(),
+                webhookDeliveryQueueMessage.getStatusCode(),
+                webhookDeliveryQueueMessage.getWebhookMessageId(),
+                webhookDeliveryQueueMessage.getDeliveryStatus(),
+                webhookDeliveryQueueMessage.getDeliveryCode())
         ));
     }
 
-    public void addWebhookDeliveryQueueMessage(int startIdIndex, int recordCount, String sentDate, String createdDate, String deliveryResult, int statusCode, DeliveryStatus deliveryStatus, int deliveryCode) {
+    public void addWebhookDeliveryQueueMessage(int startIdIndex, int recordCount, WebhookDeliveryQueueMessage webhookDeliveryQueueMessage) {
         for (int i = startIdIndex; i <= recordCount; i++) {
-            addWebhookDeliveryQueueMessage(i, sentDate, createdDate, deliveryResult, statusCode, i - 2, deliveryStatus, deliveryCode);
+            webhookDeliveryQueueMessage.setDeliveryQueueMessageId(i);
+            webhookDeliveryQueueMessage.setWebhookMessageId(i - 2);
+            addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage);
         }
     }
 
@@ -102,7 +111,7 @@ public class DatabaseTestHelper {
         private final int subscriptionId;
         private final String event;
     }
-    
+
     @Getter
     @Setter
     @Builder
@@ -117,5 +126,19 @@ public class DatabaseTestHelper {
         private final String resourceExternalId;
         private final String resourceType;
         private final DeliveryStatus deliveryStatus;
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class WebhookDeliveryQueueMessage {
+        private int deliveryQueueMessageId;
+        private int webhookMessageId;
+        private final String sentDate;
+        private final String createdDate;
+        private final String deliveryResult;
+        private final int statusCode;
+        private final DeliveryStatus deliveryStatus;
+        private final int deliveryCode;
     }
 }

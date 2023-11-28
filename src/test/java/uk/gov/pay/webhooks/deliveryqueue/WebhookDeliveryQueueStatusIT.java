@@ -9,7 +9,6 @@ import uk.gov.pay.webhooks.util.DatabaseTestHelper;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-
 public class WebhookDeliveryQueueStatusIT {
     @RegisterExtension
     public static AppWithPostgresAndSqsExtension app = new AppWithPostgresAndSqsExtension();
@@ -44,7 +43,16 @@ public class WebhookDeliveryQueueStatusIT {
                 .resourceExternalId("transaction-external-id")
                 .resourceType("payment")
                 .deliveryStatus(status).build();
-        dbHelper.addWebhookMessage(webhookMessage);                                                                   
-        assertDoesNotThrow(() -> dbHelper.addWebhookDeliveryQueueMessage(1, "2022-01-01", "2022-01-01", "200", 200, 1, status, 1250));
+        dbHelper.addWebhookMessage(webhookMessage);
+        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage = DatabaseTestHelper.WebhookDeliveryQueueMessage.builder()
+                .deliveryQueueMessageId(1)
+                .sentDate("2022-01-01")
+                .createdDate("2022-01-01")
+                .deliveryResult("200")
+                .statusCode(200)
+                .webhookMessageId(1)
+                .deliveryStatus(status)
+                .deliveryCode(1250).build();
+        assertDoesNotThrow(() -> dbHelper.addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage));
     }
 }
