@@ -1,8 +1,9 @@
 package uk.gov.pay.webhooks.util;
 
+import lombok.Builder;
+import lombok.Getter;
 import org.jdbi.v3.core.Jdbi;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
-import uk.gov.pay.webhooks.util.dto.Webhook;
 
 import java.util.List;
 
@@ -23,17 +24,18 @@ public class DatabaseTestHelper {
 
     public void addWebhook(Webhook webhook) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhooks VALUES ('%d', '2022-01-01', '%s', 'signing-key', '%s', '%s', '%s', 'description', 'ACTIVE', '%s')"
-                .formatted(webhook.getWebhookId(), 
-                        webhook.getWebhookExternalId(), 
-                        webhook.getServiceExternalId(), 
-                        webhook.getLive(), 
-                        webhook.getEndpointUrl(), 
+                .formatted(webhook.getWebhookId(),
+                        webhook.getWebhookExternalId(),
+                        webhook.getServiceExternalId(),
+                        webhook.getLive(),
+                        webhook.getEndpointUrl(),
                         webhook.getGatewayAccountId())));
     }
 
-    public void addWebhookSubscription(int webhookSubscriptionId, String event) {
+    public void addWebhookSubscription(WebhookSubscription webhookSubscription) {
         jdbi.withHandle(h -> h.execute("INSERT INTO webhook_subscriptions VALUES ('%d', (SELECT id FROM event_types WHERE name = '%s'))"
-                .formatted(webhookSubscriptionId, event)));
+                .formatted(webhookSubscription.getSubscriptionId(),
+                        webhookSubscription.getEvent())));
     }
 
     public void addWebhookMessage(int webhookMessageId, String externalId, String createdDate, int webhookId, String eventDate, int eventType, String resource, String resourceExternalId, String resourceType, DeliveryStatus status) {
@@ -78,5 +80,23 @@ public class DatabaseTestHelper {
         jdbi.withHandle(h -> h.createScript(
                 "TRUNCATE TABLE webhooks CASCADE; "
         ).execute());
+    }
+
+    @Getter
+    @Builder
+    public static class Webhook {
+        private final int webhookId;
+        private String webhookExternalId;
+        private String serviceExternalId;
+        private String endpointUrl;
+        private String live;
+        private String gatewayAccountId;
+    }
+
+    @Getter
+    @Builder
+    public static class WebhookSubscription {
+        private final int subscriptionId;
+        private String event;
     }
 }

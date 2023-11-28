@@ -9,7 +9,6 @@ import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageResponse;
 import uk.gov.pay.webhooks.message.resource.WebhookMessageSearchResponse;
 import uk.gov.pay.webhooks.util.DatabaseTestHelper;
-import uk.gov.pay.webhooks.util.dto.Webhook;
 
 import javax.ws.rs.core.Response;
 import java.text.DateFormat;
@@ -172,7 +171,7 @@ public class WebhookResourceIT {
     @Test
     public void shouldReturnAndCountEmptyMessages() {
         var externalId = "a-valid-webhook-id";
-        Webhook webhook = Webhook.builder()
+        DatabaseTestHelper.Webhook webhook = DatabaseTestHelper.Webhook.builder()
                 .webhookId(1)
                 .webhookExternalId(externalId)
                 .serviceExternalId("service-id")
@@ -313,7 +312,7 @@ public class WebhookResourceIT {
                 "tenth-message-external-id",
                 "eleventh-message-external-id"
         );
-        Webhook webhook = Webhook.builder()
+        DatabaseTestHelper.Webhook webhook = DatabaseTestHelper.Webhook.builder()
                 .webhookId(1)
                 .webhookExternalId(externalId)
                 .serviceExternalId("service-id")
@@ -365,7 +364,7 @@ public class WebhookResourceIT {
                 "twelfth-message-external-id"
         );
 
-        Webhook webhook = Webhook.builder()
+        DatabaseTestHelper.Webhook webhook = DatabaseTestHelper.Webhook.builder()
                 .webhookId(1)
                 .webhookExternalId(externalId)
                 .serviceExternalId("service-id")
