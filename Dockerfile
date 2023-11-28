@@ -1,4 +1,11 @@
-FROM eclipse-temurin:17-jre-alpine@sha256:984703da8353d0a33eb04944b56665e84c6271e5d4f8a679e73cb5bd2b846301
+FROM maven:3.9.5-eclipse-temurin-17-alpine@sha256:5f0dc07092c3806ff7cf7c3f21b0e93d30befc5d56adf03758d301c05d63efb8 AS builder
+
+WORKDIR /home/build
+COPY . .
+
+RUN ["mvn", "clean", "--no-transfer-progress", "package", "-DskipTests"]
+
+FROM eclipse-temurin:17-jre-alpine@sha256:984703da8353d0a33eb04944b56665e84c6271e5d4f8a679e73cb5bd2b846301 AS final
 
 RUN ["apk", "--no-cache", "upgrade"]
 
@@ -22,9 +29,9 @@ EXPOSE 8081
 
 WORKDIR /app
 
-COPY docker-startup.sh /app/docker-startup.sh
-COPY target/*.yaml /app/
-COPY target/pay-*-allinone.jar /app/
+COPY --from=builder /home/build/docker-startup.sh .
+COPY --from=builder /home/build/target/*.yaml .
+COPY --from=builder /home/build/target/pay-*-allinone.jar .
 
 ENTRYPOINT ["tini", "-e", "143", "--"]
 
