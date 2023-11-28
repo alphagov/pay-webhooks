@@ -354,7 +354,7 @@ public class WebhookResourceIT {
                 .webhookMessageId(15)
                 .deliveryStatus(DeliveryStatus.valueOf("PENDING"))
                 .deliveryCode(25).build();
-        
+
         dbHelper.addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage1);
         dbHelper.addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage2);
         dbHelper.addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage3);
@@ -408,7 +408,7 @@ public class WebhookResourceIT {
                 .resourceType(null)
                 .deliveryStatus(DeliveryStatus.valueOf("PENDING")).build();
         dbHelper.addWebhookMessage(2, 11, externalIdList, webhookMessage);
-        
+
         DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage1 = DatabaseTestHelper.WebhookDeliveryQueueMessage.builder()
                 .deliveryQueueMessageId(1)
                 .sentDate("2022-01-01")
@@ -485,7 +485,7 @@ public class WebhookResourceIT {
                 .live("true")
                 .gatewayAccountId("100")
                 .build();
-        
+
         dbHelper.addWebhook(webhook);
         DatabaseTestHelper.WebhookMessage webhookMessage1 = DatabaseTestHelper.WebhookMessage.builder()
                 .webhookMessageId(1)
@@ -541,7 +541,7 @@ public class WebhookResourceIT {
                 .webhookMessageId(1)
                 .deliveryStatus(DeliveryStatus.valueOf("PENDING"))
                 .deliveryCode(25).build();
-        
+
         dbHelper.addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage1);
         dbHelper.addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage2);
         dbHelper.addWebhookDeliveryQueueMessage(3, 14, webhookDeliveryQueueMessage3);
