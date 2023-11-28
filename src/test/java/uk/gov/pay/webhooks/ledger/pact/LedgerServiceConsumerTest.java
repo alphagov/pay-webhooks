@@ -14,12 +14,8 @@ import uk.gov.pay.webhooks.ledger.LedgerService;
 import uk.gov.pay.webhooks.ledger.model.LedgerTransaction;
 import uk.gov.service.payments.commons.testing.pact.consumers.PactProviderRule;
 import uk.gov.service.payments.commons.testing.pact.consumers.Pacts;
-import uk.gov.service.payments.logging.RestClientLoggingFilter;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;

@@ -163,5 +163,4 @@ class WebhookServiceTest {
         WebhookEntity captured = argumentCaptor.getAllValues().get(0);
         assertThat(captured.getSigningKey(), equalTo("some-signing-key"));
     }
-    
 }

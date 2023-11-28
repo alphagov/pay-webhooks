@@ -10,7 +10,6 @@ import uk.gov.pay.webhooks.util.DatabaseTestHelper;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-
 public class WebhookMessageIT {
     @RegisterExtension
     public static AppWithPostgresAndSqsExtension app = new AppWithPostgresAndSqsExtension();
@@ -19,13 +18,31 @@ public class WebhookMessageIT {
     @BeforeEach
     public void setUp() {
         dbHelper = DatabaseTestHelper.aDatabaseTestHelper(app.getJdbi());
-        dbHelper.truncateAllData();
+        dbHelper.truncateAllWebhooksData();
     }
 
     @ParameterizedTest
     @EnumSource(value = DeliveryStatus.class)
     public void deliveryStatusEnumIsConsistentWithWebhookMessageLastDeliveryStatus(DeliveryStatus status) {
-        app.getJdbi().withHandle(h -> h.execute("INSERT INTO webhooks VALUES (1, '2022-01-01', 'webhook-external-id', 'signing-key', 'service-id', true, 'https://callback-url.test', 'description', 'ACTIVE')"));
-        assertDoesNotThrow(() -> app.getJdbi().withHandle(h -> h.execute("INSERT INTO webhook_messages VALUES (1, 'message-external-id', '2022-01-01', 1, '2022-01-01', 1, '{}', 'transaction-external-id', 'payment', '%s')".formatted(status))));
+        DatabaseTestHelper.Webhook webhook = new DatabaseTestHelper.Webhook(
+                1,
+                "webhook-external-id",
+                "service-id",
+                "https://callback-url.test",
+                "true",
+                "100");
+        dbHelper.addWebhook(webhook);
+        DatabaseTestHelper.WebhookMessage webhookMessage = new DatabaseTestHelper.WebhookMessage(
+                1,
+                "message-external-id",
+                "2022-01-01",
+                1,
+                "2022-01-01",
+                1,
+                "{}",
+                "transaction-external-id",
+                "payment",
+                status);
+        assertDoesNotThrow(() -> dbHelper.addWebhookMessage(webhookMessage));
     }
 }
