@@ -1,11 +1,9 @@
 package uk.gov.pay.webhooks.util;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
 import org.jdbi.v3.core.Jdbi;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 
+import java.io.Serializable;
 import java.util.List;
 
 /*
@@ -94,28 +92,67 @@ public class DatabaseTestHelper {
         ).execute());
     }
 
-    @Getter
-    @Builder
-    public static class Webhook {
+    public static class Webhook implements Serializable {
         private final int webhookId;
         private final String webhookExternalId;
         private final String serviceExternalId;
         private final String endpointUrl;
         private final String live;
         private final String gatewayAccountId;
+
+        public Webhook(int webhookId, String webhookExternalId, String serviceExternalId, String endpointUrl, String live, String gatewayAccountId) {
+            this.webhookId = webhookId;
+            this.webhookExternalId = webhookExternalId;
+            this.serviceExternalId = serviceExternalId;
+            this.endpointUrl = endpointUrl;
+            this.live = live;
+            this.gatewayAccountId = gatewayAccountId;
+        }
+
+        public int getWebhookId() {
+            return webhookId;
+        }
+
+        public String getWebhookExternalId() {
+            return webhookExternalId;
+        }
+
+        public String getServiceExternalId() {
+            return serviceExternalId;
+        }
+
+        public String getEndpointUrl() {
+            return endpointUrl;
+        }
+
+        public String getLive() {
+            return live;
+        }
+
+        public String getGatewayAccountId() {
+            return gatewayAccountId;
+        }
     }
 
-    @Getter
-    @Builder
-    public static class WebhookSubscription {
+    public static class WebhookSubscription implements Serializable {
         private final int subscriptionId;
         private final String event;
+
+        public WebhookSubscription(int subscriptionId, String event) {
+            this.subscriptionId = subscriptionId;
+            this.event = event;
+        }
+
+        public int getSubscriptionId() {
+            return subscriptionId;
+        }
+
+        public String getEvent() {
+            return event;
+        }
     }
 
-    @Getter
-    @Setter
-    @Builder
-    public static class WebhookMessage {
+    public static class WebhookMessage implements Serializable {
         private int webhookMessageId;
         private String externalId;
         private final String createdDate;
@@ -126,19 +163,128 @@ public class DatabaseTestHelper {
         private final String resourceExternalId;
         private final String resourceType;
         private final DeliveryStatus deliveryStatus;
+
+        public WebhookMessage(int webhookMessageId, String externalId, String createdDate, int webhookId, String eventDate, int eventType, String resource, String resourceExternalId, String resourceType, DeliveryStatus deliveryStatus) {
+            this.webhookMessageId = webhookMessageId;
+            this.externalId = externalId;
+            this.createdDate = createdDate;
+            this.webhookId = webhookId;
+            this.eventDate = eventDate;
+            this.eventType = eventType;
+            this.resource = resource;
+            this.resourceExternalId = resourceExternalId;
+            this.resourceType = resourceType;
+            this.deliveryStatus = deliveryStatus;
+        }
+
+        public void setWebhookMessageId(int webhookMessageId) {
+            this.webhookMessageId = webhookMessageId;
+        }
+
+        public void setExternalId(String externalId) {
+            this.externalId = externalId;
+        }
+
+        public int getWebhookMessageId() {
+            return webhookMessageId;
+        }
+
+        public String getExternalId() {
+            return externalId;
+        }
+
+        public String getCreatedDate() {
+            return createdDate;
+        }
+
+        public int getWebhookId() {
+            return webhookId;
+        }
+
+        public String getEventDate() {
+            return eventDate;
+        }
+
+        public int getEventType() {
+            return eventType;
+        }
+
+        public String getResource() {
+            return resource;
+        }
+
+        public String getResourceExternalId() {
+            return resourceExternalId;
+        }
+
+        public String getResourceType() {
+            return resourceType;
+        }
+
+        public DeliveryStatus getDeliveryStatus() {
+            return deliveryStatus;
+        }
     }
 
-    @Getter
-    @Setter
-    @Builder
-    public static class WebhookDeliveryQueueMessage {
+    public static class WebhookDeliveryQueueMessage implements Serializable {
         private int deliveryQueueMessageId;
         private int webhookMessageId;
         private final String sentDate;
         private final String createdDate;
         private final String deliveryResult;
         private final int statusCode;
-        private final DeliveryStatus deliveryStatus;
-        private final int deliveryCode;
+        private DeliveryStatus deliveryStatus;
+        private int deliveryCode;
+
+        public WebhookDeliveryQueueMessage(int deliveryQueueMessageId, int webhookMessageId, String sentDate, String createdDate, String deliveryResult, int statusCode, DeliveryStatus deliveryStatus, int deliveryCode) {
+            this.deliveryQueueMessageId = deliveryQueueMessageId;
+            this.webhookMessageId = webhookMessageId;
+            this.sentDate = sentDate;
+            this.createdDate = createdDate;
+            this.deliveryResult = deliveryResult;
+            this.statusCode = statusCode;
+            this.deliveryStatus = deliveryStatus;
+            this.deliveryCode = deliveryCode;
+        }
+
+        public int getDeliveryQueueMessageId() {
+            return deliveryQueueMessageId;
+        }
+
+        public int getWebhookMessageId() {
+            return webhookMessageId;
+        }
+
+        public String getSentDate() {
+            return sentDate;
+        }
+
+        public String getCreatedDate() {
+            return createdDate;
+        }
+
+        public String getDeliveryResult() {
+            return deliveryResult;
+        }
+
+        public int getStatusCode() {
+            return statusCode;
+        }
+
+        public DeliveryStatus getDeliveryStatus() {
+            return deliveryStatus;
+        }
+
+        public int getDeliveryCode() {
+            return deliveryCode;
+        }
+
+        public void setDeliveryQueueMessageId(int deliveryQueueMessageId) {
+            this.deliveryQueueMessageId = deliveryQueueMessageId;
+        }
+
+        public void setWebhookMessageId(int webhookMessageId) {
+            this.webhookMessageId = webhookMessageId;
+        }
     }
 }

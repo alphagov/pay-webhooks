@@ -50,24 +50,19 @@ public class WebhookDeliveryQueueIT {
     public void webhookMessageIsEmittedForSubscribedWebhook() throws IOException, InterruptedException {
         var serviceExternalId = "a-valid-service-id";
         var gatewayAccountId = "100";
-        DatabaseTestHelper.Webhook webhook = DatabaseTestHelper.Webhook.builder()
-                .webhookId(1)
-                .webhookExternalId("a-valid-webhook-id")
-                .serviceExternalId(serviceExternalId)
-                .endpointUrl("http://localhost:%d/a-test-endpoint".formatted(app.getWireMockPort()))
-                .live("false")
-                .gatewayAccountId(gatewayAccountId)
-                .build();
+        DatabaseTestHelper.Webhook webhook = new DatabaseTestHelper.Webhook(
+                1,
+                "a-valid-webhook-id",
+                serviceExternalId,
+                "http://localhost:%d/a-test-endpoint".formatted(app.getWireMockPort()),
+                "false",
+                gatewayAccountId);
         dbHelper.addWebhook(webhook);
-        DatabaseTestHelper.WebhookSubscription webhookSubscription1 = DatabaseTestHelper.WebhookSubscription.builder()
-                .subscriptionId(1)
-                .event("card_payment_succeeded")
-                .build();
+        DatabaseTestHelper.WebhookSubscription webhookSubscription1 = new DatabaseTestHelper.WebhookSubscription(
+                1, "card_payment_succeeded");
         dbHelper.addWebhookSubscription(webhookSubscription1);
-        DatabaseTestHelper.WebhookSubscription webhookSubscription2 = DatabaseTestHelper.WebhookSubscription.builder()
-                .subscriptionId(1)
-                .event("card_payment_refunded")
-                .build();
+        DatabaseTestHelper.WebhookSubscription webhookSubscription2 = new DatabaseTestHelper.WebhookSubscription(
+                1, "card_payment_refunded");
         dbHelper.addWebhookSubscription(webhookSubscription2);
 
         var transaction = aTransactionFromLedgerFixture();
@@ -106,24 +101,19 @@ public class WebhookDeliveryQueueIT {
     public void webhookMessageIsEmittedForSubscribedWebhook_forChildPaymentEvents() throws IOException, InterruptedException {
         var serviceExternalId = "a-valid-service-id";
         var gatewayAccountId = "100";
-        DatabaseTestHelper.Webhook webhook = DatabaseTestHelper.Webhook.builder()
-                .webhookId(1)
-                .webhookExternalId("a-valid-webhook-id")
-                .serviceExternalId(serviceExternalId)
-                .endpointUrl("http://localhost:%d/a-test-endpoint".formatted(app.getWireMockPort()))
-                .live("false")
-                .gatewayAccountId(gatewayAccountId)
-                .build();
+        DatabaseTestHelper.Webhook webhook = new DatabaseTestHelper.Webhook(
+                1,
+                "a-valid-webhook-id",
+                serviceExternalId,
+                "http://localhost:%d/a-test-endpoint".formatted(app.getWireMockPort()),
+                "false",
+                gatewayAccountId);
         dbHelper.addWebhook(webhook);
-        DatabaseTestHelper.WebhookSubscription webhookSubscription1 = DatabaseTestHelper.WebhookSubscription.builder()
-                .subscriptionId(1)
-                .event("card_payment_succeeded")
-                .build();
+        DatabaseTestHelper.WebhookSubscription webhookSubscription1 = new DatabaseTestHelper.WebhookSubscription(
+                1, "card_payment_succeeded");
         dbHelper.addWebhookSubscription(webhookSubscription1);
-        DatabaseTestHelper.WebhookSubscription webhookSubscription2 = DatabaseTestHelper.WebhookSubscription.builder()
-                .subscriptionId(1)
-                .event("card_payment_refunded")
-                .build();
+        DatabaseTestHelper.WebhookSubscription webhookSubscription2 = new DatabaseTestHelper.WebhookSubscription(
+                1, "card_payment_refunded");
         dbHelper.addWebhookSubscription(webhookSubscription2);
         var transaction = aTransactionFromLedgerFixture();
         var sqsMessage = anSNSToSQSEventFixture()
@@ -158,33 +148,27 @@ public class WebhookDeliveryQueueIT {
         var serviceExternalId = "a-valid-service-id";
         var gatewayAccountId = "100";
 
-        DatabaseTestHelper.Webhook webhook1 = DatabaseTestHelper.Webhook.builder()
-                .webhookId(1)
-                .webhookExternalId("webhook-external-id-succeeds")
-                .serviceExternalId(serviceExternalId)
-                .endpointUrl("http://localhost:" + app.getWireMockPort() + "/a-working-endpoint")
-                .live("false")
-                .gatewayAccountId(gatewayAccountId)
-                .build();
+        DatabaseTestHelper.Webhook webhook1 = new DatabaseTestHelper.Webhook(
+                1,
+                "webhook-external-id-succeeds",
+                serviceExternalId,
+                "http://localhost:%d/a-working-endpoint".formatted(app.getWireMockPort()),
+                "false",
+                gatewayAccountId);
         dbHelper.addWebhook(webhook1);
-        DatabaseTestHelper.Webhook webhook2 = DatabaseTestHelper.Webhook.builder()
-                .webhookId(2)
-                .webhookExternalId("webhook-external-id-fails")
-                .serviceExternalId(serviceExternalId)
-                .endpointUrl("http://localhost:" + app.getWireMockPort() + "/a-failing-endpoint")
-                .live("false")
-                .gatewayAccountId(gatewayAccountId)
-                .build();
+        DatabaseTestHelper.Webhook webhook2 = new DatabaseTestHelper.Webhook(
+                2,
+                "webhook-external-id-fails",
+                serviceExternalId,
+                "http://localhost:%d/a-failing-endpoint".formatted(app.getWireMockPort()),
+                "false",
+                gatewayAccountId);
         dbHelper.addWebhook(webhook2);
-        DatabaseTestHelper.WebhookSubscription webhookSubscription1 = DatabaseTestHelper.WebhookSubscription.builder()
-                .subscriptionId(1)
-                .event("card_payment_succeeded")
-                .build();
+        DatabaseTestHelper.WebhookSubscription webhookSubscription1 = new DatabaseTestHelper.WebhookSubscription(
+                1, "card_payment_succeeded");
         dbHelper.addWebhookSubscription(webhookSubscription1);
-        DatabaseTestHelper.WebhookSubscription webhookSubscription2 = DatabaseTestHelper.WebhookSubscription.builder()
-                .subscriptionId(2)
-                .event("card_payment_succeeded")
-                .build();
+        DatabaseTestHelper.WebhookSubscription webhookSubscription2 = new DatabaseTestHelper.WebhookSubscription(
+                2, "card_payment_succeeded");
         dbHelper.addWebhookSubscription(webhookSubscription2);
         var transaction = aTransactionFromLedgerFixture();
         var sqsMessage = anSNSToSQSEventFixture()

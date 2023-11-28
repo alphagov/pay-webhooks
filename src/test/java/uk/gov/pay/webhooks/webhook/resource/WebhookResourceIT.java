@@ -171,14 +171,13 @@ public class WebhookResourceIT {
     @Test
     public void shouldReturnAndCountEmptyMessages() {
         var externalId = "a-valid-webhook-id";
-        DatabaseTestHelper.Webhook webhook = DatabaseTestHelper.Webhook.builder()
-                .webhookId(1)
-                .webhookExternalId(externalId)
-                .serviceExternalId("service-id")
-                .endpointUrl("http://callback-url.com")
-                .live("false")
-                .gatewayAccountId("100")
-                .build();
+        DatabaseTestHelper.Webhook webhook = new DatabaseTestHelper.Webhook(
+                1,
+                externalId,
+                "service-id",
+                "http://callback-url.com",
+                "false",
+                "100");
         dbHelper.addWebhook(webhook);
         given().port(port)
                 .contentType(JSON)
@@ -288,72 +287,72 @@ public class WebhookResourceIT {
         String date = df.format(Date.from(OffsetDateTime.now().minusDays(1).toInstant()));
         List<String> webhookMessageExternalIds = List.of("thirteenth-message-external-id", "fourteenth-message-external-id", "fifteenth-message-external-id");
 
-        DatabaseTestHelper.WebhookMessage webhookMessage1 = DatabaseTestHelper.WebhookMessage.builder()
-                .webhookMessageId(13)
-                .externalId(webhookMessageExternalIds.get(0))
-                .createdDate(date)
-                .webhookId(1)
-                .eventDate(date)
-                .eventType(1)
-                .resource("{}")
-                .resourceExternalId("transaction-external-id")
-                .resourceType("payment")
-                .deliveryStatus(DeliveryStatus.valueOf("FAILED")).build();
+        DatabaseTestHelper.WebhookMessage webhookMessage1 = new DatabaseTestHelper.WebhookMessage(
+                13,
+                webhookMessageExternalIds.get(0),
+                date,
+                1,
+                date,
+                1,
+                "{}",
+                "transaction-external-id",
+                "payment",
+                DeliveryStatus.valueOf("FAILED"));
         dbHelper.addWebhookMessage(webhookMessage1);
-        DatabaseTestHelper.WebhookMessage webhookMessage2 = DatabaseTestHelper.WebhookMessage.builder()
-                .webhookMessageId(14)
-                .externalId(webhookMessageExternalIds.get(1))
-                .createdDate(date)
-                .webhookId(1)
-                .eventDate(date)
-                .eventType(1)
-                .resource("{}")
-                .resourceExternalId(null)
-                .resourceType(null)
-                .deliveryStatus(DeliveryStatus.valueOf("PENDING")).build();
+        DatabaseTestHelper.WebhookMessage webhookMessage2 = new DatabaseTestHelper.WebhookMessage(
+                14,
+                webhookMessageExternalIds.get(1),
+                date,
+                1,
+                date,
+                1,
+                "{}",
+                null,
+                null,
+                DeliveryStatus.valueOf("PENDING"));
         dbHelper.addWebhookMessage(webhookMessage2);
-        DatabaseTestHelper.WebhookMessage webhookMessage3 = DatabaseTestHelper.WebhookMessage.builder()
-                .webhookMessageId(15)
-                .externalId(webhookMessageExternalIds.get(2))
-                .createdDate(date)
-                .webhookId(1)
-                .eventDate(date)
-                .eventType(1)
-                .resource("{}")
-                .resourceExternalId(null)
-                .resourceType(null)
-                .deliveryStatus(DeliveryStatus.valueOf("PENDING")).build();
+        DatabaseTestHelper.WebhookMessage webhookMessage3 = new DatabaseTestHelper.WebhookMessage(
+                15,
+                webhookMessageExternalIds.get(2),
+                date,
+                1,
+                date,
+                1,
+                "{}",
+                null,
+                null,
+                DeliveryStatus.valueOf("PENDING"));
         dbHelper.addWebhookMessage(webhookMessage3);
 
-        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage1 = DatabaseTestHelper.WebhookDeliveryQueueMessage.builder()
-                .deliveryQueueMessageId(15)
-                .sentDate(date)
-                .createdDate(date)
-                .deliveryResult("200")
-                .statusCode(200)
-                .webhookMessageId(13)
-                .deliveryStatus(DeliveryStatus.valueOf("SUCCESSFUL"))
-                .deliveryCode(1250).build();
+        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage1 = new DatabaseTestHelper.WebhookDeliveryQueueMessage(
+                15,
+                13,
+                date,
+                date,
+                "200",
+                200,
+                DeliveryStatus.valueOf("SUCCESSFUL"),
+                1250);
 
-        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage2 = DatabaseTestHelper.WebhookDeliveryQueueMessage.builder()
-                .deliveryQueueMessageId(16)
-                .sentDate(date)
-                .createdDate(date)
-                .deliveryResult("404")
-                .statusCode(404)
-                .webhookMessageId(14)
-                .deliveryStatus(DeliveryStatus.valueOf("FAILED"))
-                .deliveryCode(25).build();
+        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage2 = new DatabaseTestHelper.WebhookDeliveryQueueMessage(
+                16,
+                14,
+                date,
+                date,
+                "404",
+                404,
+                DeliveryStatus.valueOf("FAILED"),
+                25);
 
-        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage3 = DatabaseTestHelper.WebhookDeliveryQueueMessage.builder()
-                .deliveryQueueMessageId(17)
-                .sentDate(date)
-                .createdDate(date)
-                .deliveryResult(null)
-                .statusCode(404)
-                .webhookMessageId(15)
-                .deliveryStatus(DeliveryStatus.valueOf("PENDING"))
-                .deliveryCode(25).build();
+        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage3 = new DatabaseTestHelper.WebhookDeliveryQueueMessage(
+                17,
+                15,
+                date,
+                date,
+                null,
+                404,
+                DeliveryStatus.valueOf("PENDING"),
+                25);
 
         dbHelper.addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage1);
         dbHelper.addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage2);
@@ -375,67 +374,66 @@ public class WebhookResourceIT {
                 "tenth-message-external-id",
                 "eleventh-message-external-id"
         );
-        DatabaseTestHelper.Webhook webhook = DatabaseTestHelper.Webhook.builder()
-                .webhookId(1)
-                .webhookExternalId(externalId)
-                .serviceExternalId("service-id")
-                .endpointUrl("http://callback-url.com")
-                .live("true")
-                .gatewayAccountId("100")
-                .build();
+        DatabaseTestHelper.Webhook webhook = new DatabaseTestHelper.Webhook(
+                1,
+                externalId,
+                "service-id",
+                "http://callback-url.com",
+                "true",
+                "100");
         dbHelper.addWebhook(webhook);
-        DatabaseTestHelper.WebhookMessage webhookMessage1 = DatabaseTestHelper.WebhookMessage.builder()
-                .webhookMessageId(1)
-                .externalId("first-message-external-id")
-                .createdDate("2022-01-01")
-                .webhookId(1)
-                .eventDate("2022-01-01")
-                .eventType(1)
-                .resource("{}")
-                .resourceExternalId("transaction-external-id")
-                .resourceType("payment")
-                .deliveryStatus(DeliveryStatus.valueOf("FAILED")).build();
+        DatabaseTestHelper.WebhookMessage webhookMessage1 = new DatabaseTestHelper.WebhookMessage(
+                1,
+                "first-message-external-id",
+                "2022-01-01",
+                1,
+                "2022-01-01",
+                1,
+                "{}",
+                "transaction-external-id",
+                "payment",
+                DeliveryStatus.valueOf("FAILED"));
         dbHelper.addWebhookMessage(webhookMessage1);
-        DatabaseTestHelper.WebhookMessage webhookMessage = DatabaseTestHelper.WebhookMessage.builder()
-                .webhookMessageId(2)
-                .externalId("second-message-external-id")
-                .createdDate("2022-01-01")
-                .webhookId(1)
-                .eventDate("2022-01-01")
-                .eventType(1)
-                .resource("{}")
-                .resourceExternalId(null)
-                .resourceType(null)
-                .deliveryStatus(DeliveryStatus.valueOf("PENDING")).build();
+        DatabaseTestHelper.WebhookMessage webhookMessage = new DatabaseTestHelper.WebhookMessage(
+                2,
+                "second-message-external-id",
+                "2022-01-01",
+                1,
+                "2022-01-01",
+                1,
+                "{}",
+                null,
+                null,
+                DeliveryStatus.valueOf("PENDING"));
         dbHelper.addWebhookMessage(2, 11, externalIdList, webhookMessage);
 
-        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage1 = DatabaseTestHelper.WebhookDeliveryQueueMessage.builder()
-                .deliveryQueueMessageId(1)
-                .sentDate("2022-01-01")
-                .createdDate("2022-01-01")
-                .deliveryResult("200")
-                .statusCode(200)
-                .webhookMessageId(1)
-                .deliveryStatus(DeliveryStatus.valueOf("SUCCESSFUL"))
-                .deliveryCode(1250).build();
-        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage2 = DatabaseTestHelper.WebhookDeliveryQueueMessage.builder()
-                .deliveryQueueMessageId(2)
-                .sentDate("2022-01-02")
-                .createdDate("2022-01-01")
-                .deliveryResult("404")
-                .statusCode(404)
-                .webhookMessageId(1)
-                .deliveryStatus(DeliveryStatus.valueOf("FAILED"))
-                .deliveryCode(25).build();
-        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage = DatabaseTestHelper.WebhookDeliveryQueueMessage.builder()
-                .deliveryQueueMessageId(3)
-                .sentDate("2022-01-01")
-                .createdDate("2022-01-01")
-                .deliveryResult("404")
-                .statusCode(404)
-                .webhookMessageId(1)
-                .deliveryStatus(DeliveryStatus.valueOf("PENDING"))
-                .deliveryCode(25).build();
+        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage1 = new DatabaseTestHelper.WebhookDeliveryQueueMessage(
+                1,
+                1,
+                "2022-01-01",
+                "2022-01-01",
+                "200",
+                200,
+                DeliveryStatus.valueOf("SUCCESSFUL"),
+                1250);
+        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage2 = new DatabaseTestHelper.WebhookDeliveryQueueMessage(
+                2,
+                1,
+                "2022-01-02",
+                "2022-01-01",
+                "404",
+                404,
+                DeliveryStatus.valueOf("FAILED"),
+                25);
+        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage = new DatabaseTestHelper.WebhookDeliveryQueueMessage(
+                3,
+                1,
+                "2022-01-01",
+                "2022-01-01",
+                "404",
+                404,
+                DeliveryStatus.valueOf("PENDING"),
+                25);
         dbHelper.addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage1);
         dbHelper.addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage2);
         dbHelper.addWebhookDeliveryQueueMessage(3, 13, webhookDeliveryQueueMessage);
@@ -477,70 +475,69 @@ public class WebhookResourceIT {
                 "twelfth-message-external-id"
         );
 
-        DatabaseTestHelper.Webhook webhook = DatabaseTestHelper.Webhook.builder()
-                .webhookId(1)
-                .webhookExternalId(externalId)
-                .serviceExternalId("service-id")
-                .endpointUrl("http://callback-url.com")
-                .live("true")
-                .gatewayAccountId("100")
-                .build();
-
+        DatabaseTestHelper.Webhook webhook = new DatabaseTestHelper.Webhook(
+                1,
+                externalId,
+                "service-id",
+                "http://callback-url.com",
+                "true",
+                "100");
         dbHelper.addWebhook(webhook);
-        DatabaseTestHelper.WebhookMessage webhookMessage1 = DatabaseTestHelper.WebhookMessage.builder()
-                .webhookMessageId(1)
-                .externalId(messageExternalId)
-                .createdDate("2022-01-01")
-                .webhookId(1)
-                .eventDate("2022-01-01")
-                .eventType(1)
-                .resource("{}")
-                .resourceExternalId("transaction-external-id")
-                .resourceType("payment")
-                .deliveryStatus(DeliveryStatus.valueOf("FAILED")).build();
+
+        DatabaseTestHelper.WebhookMessage webhookMessage1 = new DatabaseTestHelper.WebhookMessage(
+                1,
+                messageExternalId,
+                "2022-01-01",
+                1,
+                "2022-01-01",
+                1,
+                "{}",
+                "transaction-external-id",
+                "payment",
+                DeliveryStatus.valueOf("FAILED"));
         dbHelper.addWebhookMessage(webhookMessage1);
-        DatabaseTestHelper.WebhookMessage webhookMessage = DatabaseTestHelper.WebhookMessage.builder()
-                .webhookMessageId(2)
-                .externalId("second-message-external-id")
-                .createdDate("2022-01-01")
-                .webhookId(1)
-                .eventDate("2022-01-01")
-                .eventType(1)
-                .resource("{}")
-                .resourceExternalId(null)
-                .resourceType(null)
-                .deliveryStatus(DeliveryStatus.valueOf("PENDING")).build();
+        DatabaseTestHelper.WebhookMessage webhookMessage = new DatabaseTestHelper.WebhookMessage(
+                2,
+                "second-message-external-id",
+                "2022-01-01",
+                1,
+                "2022-01-01",
+                1,
+                "{}",
+                null,
+                null,
+                DeliveryStatus.valueOf("PENDING"));
         dbHelper.addWebhookMessage(2, 12, externalIdList, webhookMessage);
 
-        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage1 = DatabaseTestHelper.WebhookDeliveryQueueMessage.builder()
-                .deliveryQueueMessageId(1)
-                .sentDate("2022-01-01")
-                .createdDate("2022-01-01")
-                .deliveryResult("200")
-                .statusCode(200)
-                .webhookMessageId(1)
-                .deliveryStatus(DeliveryStatus.valueOf("SUCCESSFUL"))
-                .deliveryCode(1250).build();
+        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage1 = new DatabaseTestHelper.WebhookDeliveryQueueMessage(
+                1,
+                1,
+                "2022-01-01",
+                "2022-01-01",
+                "200",
+                200,
+                DeliveryStatus.valueOf("SUCCESSFUL"),
+                1250);
 
-        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage2 = DatabaseTestHelper.WebhookDeliveryQueueMessage.builder()
-                .deliveryQueueMessageId(2)
-                .sentDate("2022-01-02")
-                .createdDate("2022-01-01")
-                .deliveryResult("404")
-                .statusCode(404)
-                .webhookMessageId(1)
-                .deliveryStatus(DeliveryStatus.valueOf("FAILED"))
-                .deliveryCode(25).build();
+        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage2 = new DatabaseTestHelper.WebhookDeliveryQueueMessage(
+                2,
+                1,
+                "2022-01-02",
+                "2022-01-01",
+                "404",
+                404,
+                DeliveryStatus.valueOf("FAILED"),
+                25);
 
-        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage3 = DatabaseTestHelper.WebhookDeliveryQueueMessage.builder()
-                .deliveryQueueMessageId(3)
-                .sentDate("2022-01-02")
-                .createdDate("2022-01-01")
-                .deliveryResult("404")
-                .statusCode(404)
-                .webhookMessageId(1)
-                .deliveryStatus(DeliveryStatus.valueOf("PENDING"))
-                .deliveryCode(25).build();
+        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage3 = new DatabaseTestHelper.WebhookDeliveryQueueMessage(
+                3,
+                1,
+                "2022-01-02",
+                "2022-01-01",
+                "404",
+                404,
+                DeliveryStatus.valueOf("PENDING"),
+                25);
 
         dbHelper.addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage1);
         dbHelper.addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage2);

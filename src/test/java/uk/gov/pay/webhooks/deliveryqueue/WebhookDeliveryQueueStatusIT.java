@@ -23,36 +23,35 @@ public class WebhookDeliveryQueueStatusIT {
     @ParameterizedTest
     @EnumSource(value = DeliveryStatus.class)
     public void deliveryStatusEnumIsConsistentWithDatabase(DeliveryStatus status) {
-        DatabaseTestHelper.Webhook webhook = DatabaseTestHelper.Webhook.builder()
-                .webhookId(1)
-                .webhookExternalId("webhook-external-id")
-                .serviceExternalId("service-id")
-                .endpointUrl("https://callback-url.test")
-                .live("true")
-                .gatewayAccountId("100")
-                .build();
+        DatabaseTestHelper.Webhook webhook = new DatabaseTestHelper.Webhook(
+                1,
+                "webhook-external-id",
+                "service-id",
+                "https://callback-url.test",
+                "true",
+                "100");
         dbHelper.addWebhook(webhook);
-        DatabaseTestHelper.WebhookMessage webhookMessage = DatabaseTestHelper.WebhookMessage.builder()
-                .webhookMessageId(1)
-                .externalId("message-external-id")
-                .createdDate("2022-01-01")
-                .webhookId(1)
-                .eventDate("2022-01-01")
-                .eventType(1)
-                .resource("{}")
-                .resourceExternalId("transaction-external-id")
-                .resourceType("payment")
-                .deliveryStatus(status).build();
+        DatabaseTestHelper.WebhookMessage webhookMessage = new DatabaseTestHelper.WebhookMessage(
+                1,
+                "message-external-id",
+                "2022-01-01",
+                1,
+                "2022-01-01",
+                1,
+                "{}",
+                "transaction-external-id",
+                "payment",
+                status);
         dbHelper.addWebhookMessage(webhookMessage);
-        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage = DatabaseTestHelper.WebhookDeliveryQueueMessage.builder()
-                .deliveryQueueMessageId(1)
-                .sentDate("2022-01-01")
-                .createdDate("2022-01-01")
-                .deliveryResult("200")
-                .statusCode(200)
-                .webhookMessageId(1)
-                .deliveryStatus(status)
-                .deliveryCode(1250).build();
+        DatabaseTestHelper.WebhookDeliveryQueueMessage webhookDeliveryQueueMessage = new DatabaseTestHelper.WebhookDeliveryQueueMessage(
+                1,
+                1,
+                "2022-01-01",
+                "2022-01-01",
+                "200",
+                200,
+                status,
+                1250);
         assertDoesNotThrow(() -> dbHelper.addWebhookDeliveryQueueMessage(webhookDeliveryQueueMessage));
     }
 }
