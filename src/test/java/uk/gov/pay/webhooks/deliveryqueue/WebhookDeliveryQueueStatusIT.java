@@ -26,7 +26,8 @@ public class WebhookDeliveryQueueStatusIT {
     @ParameterizedTest
     @EnumSource(value = DeliveryStatus.class)
     public void deliveryStatusEnumIsConsistentWithDatabase(DeliveryStatus status) {
-        dbHelper.addWebhook();
+        dbHelper.addWebhook(1, "webhook-external-id", "service-id", "https://callback-url.test", "true", "100");
+
         dbHelper.addWebhookMessage(1,"message-external-id", "2022-01-01", 1, "2022-01-01", 1, "{}", "transaction-external-id", "payment",status);
         assertDoesNotThrow(() -> dbHelper.addWebhookDeliveryQueueMessage(1, "2022-01-01", "2022-01-01", "200", 200, 1, status, 1250));
     }
