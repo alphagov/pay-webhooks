@@ -67,7 +67,7 @@ class WebhookRequestValidatorTest {
                         "op", "replace",
                         "value", "foo bar")));
         var thrown = assertThrows(ValidationException.class, () -> webhookRequestValidator.validate(request, false));
-        assertThat(thrown.getErrors().get(0), is("Value for path [status] must be one of ACTIVE or INACTIVE"));
+        assertThat(thrown.getErrors().get(0), is("Value for path [status] must be one of ACTIVE or INACTIVE or DISABLED"));
     }
 
     @Test

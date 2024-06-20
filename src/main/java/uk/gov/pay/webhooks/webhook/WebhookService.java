@@ -153,7 +153,12 @@ public class WebhookService {
         return webhookDao.listByGatewayAccountId(event.gatewayAccountId())
                 .stream()
                 .filter(webhook -> webhookHasSubscriptionForEvent(webhook, event))
+                .filter(this::webhookIsNotDisabled)
                 .toList();
+    }
+
+    private boolean webhookIsNotDisabled(WebhookEntity webhook) {
+        return webhook.getStatus() != WebhookStatus.DISABLED;
     }
 
     private boolean webhookHasSubscriptionForEvent(WebhookEntity webhook, InternalEvent event) {
