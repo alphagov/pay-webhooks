@@ -1,6 +1,6 @@
 package uk.gov.pay.webhooks.ledger.pact;
 
-import au.com.dius.pact.consumer.PactVerification;
+import au.com.dius.pact.consumer.junit.PactVerification;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,8 +12,8 @@ import uk.gov.pay.webhooks.app.InternalRestClientFactory;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
 import uk.gov.pay.webhooks.ledger.LedgerService;
 import uk.gov.pay.webhooks.ledger.model.LedgerTransaction;
-import uk.gov.service.payments.commons.testing.pact.consumers.PactProviderRule;
 import uk.gov.service.payments.commons.testing.pact.consumers.Pacts;
+import uk.gov.service.payments.commons.testing.pact.consumers.PayPactProviderRule;
 
 import java.util.Optional;
 
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 public class LedgerServiceConsumerTest {
 
     @Rule
-    public PactProviderRule ledgerRule = new PactProviderRule("ledger", this);
+    public PayPactProviderRule ledgerRule = new PayPactProviderRule("ledger", this);
 
     @Mock
     WebhooksConfig configuration;
