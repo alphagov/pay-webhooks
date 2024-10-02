@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
-import uk.gov.service.payments.commons.api.json.ApiResponseInstantSerializer;
+import uk.gov.service.payments.commons.api.json.IsoInstantMillisecondSerializer;
 
 import java.time.Instant;
 
@@ -15,9 +15,9 @@ public record WebhookMessageResponse(
         @Schema(example = "s0wjen129ejalk21nfjkdknf1jejklh")
         @JsonProperty("external_id") String externalId,
         @Schema(example = "\"2022-04-05T21:33:45.611Z\"")
-        @JsonProperty("created_date") @JsonSerialize(using = ApiResponseInstantSerializer.class) Instant createdDate,
+        @JsonProperty("created_date") @JsonSerialize(using = IsoInstantMillisecondSerializer.class) Instant createdDate,
         @Schema(example = "\"2022-04-05T21:31:45.611Z\"")
-        @JsonProperty("event_date") @JsonSerialize(using = ApiResponseInstantSerializer.class) Instant eventDate,
+        @JsonProperty("event_date") @JsonSerialize(using = IsoInstantMillisecondSerializer.class) Instant eventDate,
         @Schema(example = "card_payment_started")
         @JsonProperty("event_type") EventTypeName eventTypeName,
         @Schema(example = "payment-external-id-123")

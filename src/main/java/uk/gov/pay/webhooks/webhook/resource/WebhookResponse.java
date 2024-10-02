@@ -8,7 +8,7 @@ import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookStatus;
-import uk.gov.service.payments.commons.api.json.ApiResponseInstantSerializer;
+import uk.gov.service.payments.commons.api.json.IsoInstantMillisecondSerializer;
 
 import java.time.Instant;
 import java.util.List;
@@ -28,7 +28,7 @@ public record WebhookResponse(
         @Schema(example = "ACTIVE")
         @JsonProperty(FIELD_STATUS) WebhookStatus status,
         @Schema(example = "2022-04-05T17:07:15.281Z")
-        @JsonProperty("created_date") @JsonSerialize(using = ApiResponseInstantSerializer.class) Instant createdDate,
+        @JsonProperty("created_date") @JsonSerialize(using = IsoInstantMillisecondSerializer.class) Instant createdDate,
         @ArraySchema(schema = @Schema(example = "card_payment_started"))
         @JsonProperty(FIELD_SUBSCRIPTIONS) List<EventTypeName> subscriptions
 ) {
