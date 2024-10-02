@@ -6,14 +6,14 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
-import uk.gov.service.payments.commons.api.json.ApiResponseInstantSerializer;
+import uk.gov.service.payments.commons.api.json.IsoInstantMillisecondSerializer;
 
 import java.time.Instant;
 
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record WebhookMessageBody(String webhookMessageId,
-                                 @JsonSerialize(using = ApiResponseInstantSerializer.class) Instant createdDate,
+                                 @JsonSerialize(using = IsoInstantMillisecondSerializer.class) Instant createdDate,
                                  String resourceId,
                                  Integer apiVersion,
                                  String resourceType,
