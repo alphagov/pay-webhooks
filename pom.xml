@@ -17,7 +17,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <mainClass>uk.gov.pay.webhooks.app.WebhooksApp</mainClass>
-        <pay-java-commons.version>1.0.20241021093118</pay-java-commons.version>
+        <pay-java-commons.version>1.0.20241028115727</pay-java-commons.version>
         <swagger-version>2.2.25</swagger-version>
         <pact.version>4.6.14</pact.version>
         <prometheus.version>0.16.0</prometheus.version>
