@@ -19,7 +19,7 @@
         <mainClass>uk.gov.pay.webhooks.app.WebhooksApp</mainClass>
         <pay-java-commons.version>1.0.20241125091008</pay-java-commons.version>
         <swagger-version>2.2.26</swagger-version>
-        <pact.version>4.6.15</pact.version>
+        <pact.version>4.6.16</pact.version>
         <prometheus.version>0.16.0</prometheus.version>
         <PACT_BROKER_URL/>
         <PACT_BROKER_USERNAME/>
