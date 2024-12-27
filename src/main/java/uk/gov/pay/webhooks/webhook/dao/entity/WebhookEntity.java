@@ -3,20 +3,20 @@ package uk.gov.pay.webhooks.webhook.dao.entity;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.resource.CreateWebhookRequest;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -42,17 +42,17 @@ import java.util.Set;
 
 @NamedQuery(
     name = WebhookEntity.LIST_BY_LIVE_AND_SERVICE_ID,
-    query = "select p from WebhookEntity p where live = :live and serviceId = :serviceId order by created_date DESC"
+    query = "select p from WebhookEntity p where live = :live and serviceId = :serviceId order by createdDate DESC"
 )
 
 @NamedQuery(
         name = WebhookEntity.LIST_BY_GATEWAY_ACCOUNT_ID,
-        query = "select p from WebhookEntity p where gatewayAccountId = :gatewayAccountId order by created_date DESC"
+        query = "select p from WebhookEntity p where gatewayAccountId = :gatewayAccountId order by createdDate DESC"
 )
 
 @NamedQuery(
     name = WebhookEntity.LIST_BY_LIVE,
-    query = "select p from WebhookEntity p where live = :live order by created_date DESC"
+    query = "select p from WebhookEntity p where live = :live order by createdDate DESC"
 )
 @Entity
 @SequenceGenerator(name="webhooks_id_seq", sequenceName = "webhooks_id_seq", allocationSize = 1)

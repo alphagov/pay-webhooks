@@ -8,7 +8,7 @@ import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 import uk.gov.pay.webhooks.webhook.resource.WebhookMessageSearchParams;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;

@@ -8,7 +8,7 @@ import uk.gov.pay.webhooks.queue.sqs.QueueException;
 import uk.gov.pay.webhooks.queue.sqs.QueueMessage;
 import uk.gov.pay.webhooks.queue.sqs.SqsQueueService;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;

@@ -21,7 +21,9 @@ import java.util.List;
 import static com.google.common.collect.Lists.newArrayList;
 import static io.dropwizard.testing.ConfigOverride.config;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
-import static uk.gov.pay.rule.PostgresTestDocker.*;
+import static uk.gov.pay.rule.PostgresTestDocker.getConnectionUrl;
+import static uk.gov.pay.rule.PostgresTestDocker.getDbPassword;
+import static uk.gov.pay.rule.PostgresTestDocker.getDbUsername;
 
 public class AppWithPostgresAndSqsExtension implements BeforeAllCallback, AfterAllCallback {
 

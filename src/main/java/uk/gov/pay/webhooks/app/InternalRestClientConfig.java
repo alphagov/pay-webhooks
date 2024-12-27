@@ -1,6 +1,6 @@
 package uk.gov.pay.webhooks.app;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 public class InternalRestClientConfig {
     @Valid

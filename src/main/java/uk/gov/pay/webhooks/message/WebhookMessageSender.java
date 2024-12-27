@@ -1,8 +1,7 @@
 package uk.gov.pay.webhooks.message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
+import jakarta.inject.Inject;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -13,11 +12,9 @@ import uk.gov.pay.webhooks.validations.CallbackUrlDomainNotOnAllowListException;
 import uk.gov.pay.webhooks.validations.CallbackUrlService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookStatus;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.net.URI;
 import java.security.InvalidKeyException;
-import java.time.Duration;
 
 public class WebhookMessageSender {
 

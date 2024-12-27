@@ -11,7 +11,7 @@ import uk.gov.pay.webhooks.app.WebhooksConfig;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.message.WebhookMessageSender;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.time.InstantSource;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;

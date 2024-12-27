@@ -24,7 +24,7 @@ logging:
       customFields:
         container: "webhooks"
         environment: ${ENVIRONMENT}
-    - type: pay-dropwizard-3-sentry
+    - type: pay-dropwizard-4-sentry
       threshold: ERROR
       dsn: ${SENTRY_DSN:-https://example.com@dummy/1}
       environment: ${ENVIRONMENT}
@@ -37,7 +37,7 @@ database:
 
   properties:
     charSet: UTF-8
-    hibernate.dialect: org.hibernate.dialect.PostgreSQL10Dialect
+    hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate.generate_statistics: false
 
   # the maximum amount of time to wait on an empty pool before throwing an exception

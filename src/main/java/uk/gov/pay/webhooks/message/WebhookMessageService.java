@@ -19,7 +19,7 @@ import uk.gov.pay.webhooks.util.IdGenerator;
 import uk.gov.pay.webhooks.webhook.WebhookService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.io.IOException;
 import java.time.InstantSource;
 import java.util.Optional;

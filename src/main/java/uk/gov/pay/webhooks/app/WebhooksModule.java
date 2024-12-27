@@ -21,8 +21,8 @@ import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
 import uk.gov.pay.webhooks.util.IdGenerator;
 
-import javax.inject.Singleton;
-import javax.ws.rs.client.Client;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.client.Client;
 import java.time.InstantSource;
 import java.util.concurrent.TimeUnit;
 

@@ -17,7 +17,7 @@ import uk.gov.pay.webhooks.validations.WebhookRequestValidator;
 import uk.gov.pay.webhooks.webhook.WebhookService;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
-import javax.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Entity;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;

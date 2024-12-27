@@ -1,29 +1,27 @@
 package uk.gov.pay.webhooks.message.dao.entity;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.vladmihalcea.hibernate.type.json.JsonType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.JoinFormula;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+import org.hibernate.type.SqlTypes;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQuery;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -56,9 +54,6 @@ import java.time.ZoneOffset;
 @Entity
 @SequenceGenerator(name="webhook_messages_id_seq", sequenceName = "webhook_messages_id_seq", allocationSize = 1)
 @Table(name = "webhook_messages")
-@TypeDefs({
-        @TypeDef(name = "json", typeClass = JsonType.class)
-})
 public class WebhookMessageEntity {
 
     public static final String MESSAGE_BY_WEBHOOK_ID_AND_MESSAGE_ID = "WebhookMessage.message_by_webhook_id_and_message_id";
@@ -111,8 +106,8 @@ public class WebhookMessageEntity {
     @ManyToOne
     @JoinColumn(name = "event_type", updatable = false)
     private EventTypeEntity eventType;
-    
-    @Type(type = "json")
+
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "resource", columnDefinition = "json")
     private JsonNode resource;
 
