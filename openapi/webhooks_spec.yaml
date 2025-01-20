@@ -75,7 +75,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/WebhookResponse'
+                  $ref: "#/components/schemas/WebhookResponse"
           description: OK
         "400":
           description: For invalid query params
@@ -88,14 +88,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateWebhookRequest'
+              $ref: "#/components/schemas/CreateWebhookRequest"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WebhookResponse'
+                $ref: "#/components/schemas/WebhookResponse"
           description: OK
         "400":
           description: "Invalid payload (ex: non existent event type)"
@@ -148,7 +148,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WebhookResponse'
+                $ref: "#/components/schemas/WebhookResponse"
           description: OK
         "404":
           description: Not found
@@ -184,13 +184,13 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/JsonNode'
+                $ref: "#/components/schemas/JsonNode"
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WebhookResponse'
+                $ref: "#/components/schemas/WebhookResponse"
           description: OK
         "400":
           description: Invalid payload
@@ -236,7 +236,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WebhookMessageSearchResponse'
+                $ref: "#/components/schemas/WebhookMessageSearchResponse"
           description: OK
       summary: Get webhook messages by webhook external ID
       tags:
@@ -262,7 +262,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WebhookMessageResponse'
+                $ref: "#/components/schemas/WebhookMessageResponse"
           description: OK
       summary: Get messages by webhook external ID and message ID
       tags:
@@ -290,7 +290,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/WebhookDeliveryQueueResponse'
+                  $ref: "#/components/schemas/WebhookDeliveryQueueResponse"
           description: OK
       summary: Get message attempts for webhook external ID and message ID
       tags:
@@ -322,7 +322,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SigningKeyResponse'
+                $ref: "#/components/schemas/SigningKeyResponse"
           description: OK
         "404":
           description: Not found
@@ -355,7 +355,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SigningKeyResponse'
+                $ref: "#/components/schemas/SigningKeyResponse"
           description: OK
         "404":
           description: Not found
@@ -472,9 +472,9 @@ components:
           - FAILED
           - WILL_NOT_SEND
         latest_attempt:
-          $ref: '#/components/schemas/WebhookDeliveryQueueResponse'
+          $ref: "#/components/schemas/WebhookDeliveryQueueResponse"
         resource:
-          $ref: '#/components/schemas/JsonNode'
+          $ref: "#/components/schemas/JsonNode"
         resource_id:
           type: string
           example: payment-external-id-123
@@ -497,7 +497,7 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/WebhookMessageResponse'
+            $ref: "#/components/schemas/WebhookMessageResponse"
     WebhookResponse:
       type: object
       properties:
