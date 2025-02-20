@@ -43,8 +43,11 @@ public class WebhookRequestValidator {
         MDC.put("gateway_account_id", createWebhookRequest.gatewayAccountId());
         MDC.put("service_id", createWebhookRequest.serviceId());
         MDC.put("live", createWebhookRequest.live().toString());
-        callbackUrlService.validateCallbackUrl(createWebhookRequest.callbackUrl(), createWebhookRequest.live());
-        MDC.clear();
+        try {
+            callbackUrlService.validateCallbackUrl(createWebhookRequest.callbackUrl(), createWebhookRequest.live());
+        } finally {
+            MDC.clear();
+        }
     }
 
     private JsonPatchRequestValidator validator(Boolean isLiveContext) {
