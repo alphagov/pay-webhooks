@@ -2,6 +2,7 @@ package uk.gov.pay.webhooks.validations;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
+import org.slf4j.MDC;
 import uk.gov.pay.webhooks.webhook.resource.CreateWebhookRequest;
 import uk.gov.service.payments.commons.api.validation.JsonPatchRequestValidator;
 import uk.gov.service.payments.commons.api.validation.PatchPathOperation;
@@ -39,7 +40,14 @@ public class WebhookRequestValidator {
     //                callback url. This will require guice injection in the validator contexts and is out of scoped here
     //                but would allow for all of the validation to be processed in one place
     public void validate(CreateWebhookRequest createWebhookRequest) {
-        callbackUrlService.validateCallbackUrl(createWebhookRequest.callbackUrl(), createWebhookRequest.live());
+        MDC.put("gateway_account_id", createWebhookRequest.gatewayAccountId());
+        MDC.put("service_id", createWebhookRequest.serviceId());
+        MDC.put("live", createWebhookRequest.live().toString());
+        try {
+            callbackUrlService.validateCallbackUrl(createWebhookRequest.callbackUrl(), createWebhookRequest.live());
+        } finally {
+            MDC.clear();
+        }
     }
 
     private JsonPatchRequestValidator validator(Boolean isLiveContext) {
