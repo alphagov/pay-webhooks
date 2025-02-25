@@ -488,7 +488,7 @@ components:
           type: integer
           format: int32
           description: The number of results in the current page
-          example: 100
+          example: 10
         page:
           type: integer
           format: int32
@@ -498,6 +498,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/WebhookMessageResponse"
+        total:
+          type: integer
+          format: int64
+          description: The total number of results
+          example: 100
     WebhookResponse:
       type: object
       properties:

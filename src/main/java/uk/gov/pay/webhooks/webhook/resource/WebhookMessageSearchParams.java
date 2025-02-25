@@ -60,6 +60,10 @@ public class WebhookMessageSearchParams {
         return page;
     }
 
+    public DeliveryStatus getDeliveryStatus() {
+        return deliveryStatus;
+    }
+    
     public List<String> getFilterTemplates() {
         List<String> filters = new ArrayList<>();
 

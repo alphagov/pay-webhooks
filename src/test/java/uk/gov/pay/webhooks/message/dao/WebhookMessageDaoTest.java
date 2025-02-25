@@ -70,6 +70,26 @@ class WebhookMessageDaoTest {
     }
 
     @Test
+    public void shouldCountMessages() {
+        setup(1);
+        var webhook = webhookDao.findByExternalId(webhookExternalId).get();
+
+        var searchParams = new WebhookMessageSearchParams(1, null, null);
+        var count = webhookMessageDao.getTotalMessagesCount(webhook, searchParams);
+        assertThat(count, is(2L));
+    }
+    
+    @Test
+    public void shouldCountMessagesByStatus() {
+        setup(1);
+        var webhook = webhookDao.findByExternalId(webhookExternalId).get();
+
+        var searchParams = new WebhookMessageSearchParams(1, DeliveryStatus.SUCCESSFUL, null);
+        var count = webhookMessageDao.getTotalMessagesCount(webhook, searchParams);
+        assertThat(count, is(1L));
+    }
+
+    @Test
     public void shouldListFilteredMessages() {
         WebhookEntity webhook = insertWebhook();
         String resourceExternalId = "resource-external-id";

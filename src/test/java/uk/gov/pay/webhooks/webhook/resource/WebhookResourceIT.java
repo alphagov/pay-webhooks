@@ -121,6 +121,7 @@ public class WebhookResourceIT {
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("count", is(1))
                 .body("page", is(1))
+                .body("total", is(1))
                 .body("results.last_delivery_status[0]", is("FAILED"))
                 .body("results.latest_attempt[0].status", is("FAILED"));
     }
@@ -137,6 +138,7 @@ public class WebhookResourceIT {
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("count", is(10))
+                .body("total", is(12))
                 .body("page", is(1))
                 .body("results.size()", is(10));
     }
@@ -155,6 +157,7 @@ public class WebhookResourceIT {
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("count", is(2))
+                .body("total", is(12))
                 .body("page", is(2))
                 .body("results.size()", is(2));
     }

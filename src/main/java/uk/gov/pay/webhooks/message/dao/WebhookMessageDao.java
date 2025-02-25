@@ -40,6 +40,20 @@ public class WebhookMessageDao extends AbstractDAO<WebhookMessageEntity> {
                 .stream()
                 .findFirst();
     }
+    
+    public long getTotalMessagesCount(WebhookEntity webhook, WebhookMessageSearchParams params) {
+        Query<?> query;
+        if (params.getDeliveryStatus() == null) {
+            query = namedQuery(WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID)
+                    .setParameter("webhook", webhook);
+        } else {
+            query = namedQuery(WebhookMessageEntity.COUNT_MESSAGES_BY_WEBHOOK_ID_AND_STATUS)
+                    .setParameter("webhook", webhook)
+                    .setParameter("deliveryStatus", params.getDeliveryStatus());
+        }
+
+        return (Long) query.uniqueResult();
+    }
 
     public List<WebhookMessageEntity> list(WebhookEntity webhook, WebhookMessageSearchParams params) {
         String searchClauseTemplate = String.join(" AND ", params.getFilterTemplates());

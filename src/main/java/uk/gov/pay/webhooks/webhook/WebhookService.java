@@ -100,11 +100,12 @@ public class WebhookService {
 
     public WebhookMessageSearchResponse listMessages(String webhookId, WebhookMessageSearchParams queryParams) {
         var webhook = webhookDao.findByExternalId(webhookId).orElseThrow(NotFoundException::new);
+        var totalMessagesCount = webhookMessageDao.getTotalMessagesCount(webhook, queryParams);
         var messages = webhookMessageDao.list(webhook, queryParams)
                 .stream()
                 .map(WebhookMessageResponse::from)
                 .toList();
-        return new WebhookMessageSearchResponse(messages.size(), queryParams.getPage(), messages);
+        return new WebhookMessageSearchResponse(messages.size(), queryParams.getPage(), totalMessagesCount, messages);
     }
 
     public Optional<WebhookMessageResponse> getMessage(String webhookId, String messageId) {
