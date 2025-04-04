@@ -2,8 +2,8 @@ package uk.gov.pay.webhooks.app;
 
 import io.dropwizard.core.Configuration;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotNull;
 
 public class SqsConfig extends Configuration {
 

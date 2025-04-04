@@ -2,8 +2,8 @@ package uk.gov.pay.webhooks.app.filters;
 
 import org.slf4j.MDC;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
 import java.util.Optional;
 
 import static uk.gov.pay.webhooks.app.WebhooksKeys.RESOURCE_IS_LIVE;

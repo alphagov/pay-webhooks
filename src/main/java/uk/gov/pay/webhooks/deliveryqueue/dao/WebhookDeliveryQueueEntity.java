@@ -4,19 +4,19 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -30,12 +30,12 @@ import java.util.Optional;
 
 @NamedQuery(
         name = WebhookDeliveryQueueEntity.NEXT_TO_SEND,
-        query = "select m from WebhookDeliveryQueueEntity m where :send_at > send_at and delivery_status = 'PENDING' order by send_at asc"
+        query = "select m from WebhookDeliveryQueueEntity m where :send_at > sendAt and m.deliveryStatus = 'PENDING' order by sendAt asc"
 )
 
 @NamedQuery(
         name = WebhookDeliveryQueueEntity.COUNT_FAILED,
-        query = "select count(m) from WebhookDeliveryQueueEntity m where webhook_message_id = :webhook_message_id and delivery_status = 'FAILED'"
+        query = "select count(m) from WebhookDeliveryQueueEntity m where webhookMessageEntity = :webhook_message_id and deliveryStatus = 'FAILED'"
 )
 
 @NamedQuery(

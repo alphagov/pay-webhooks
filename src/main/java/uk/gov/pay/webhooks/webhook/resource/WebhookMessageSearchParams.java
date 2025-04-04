@@ -1,11 +1,10 @@
 package uk.gov.pay.webhooks.webhook.resource;
 
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.QueryParam;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 
-import javax.validation.Valid;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.QueryParam;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

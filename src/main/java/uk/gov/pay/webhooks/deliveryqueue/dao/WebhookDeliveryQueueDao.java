@@ -8,8 +8,8 @@ import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 
-import javax.inject.Inject;
-import javax.persistence.LockModeType;
+import jakarta.inject.Inject;
+import jakarta.persistence.LockModeType;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.InstantSource;
@@ -38,7 +38,7 @@ public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEnt
                 .setMaxResults(1)
                 .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                 .setHint(
-                        "javax.persistence.lock.timeout",
+                        "jakarta.persistence.lock.timeout",
                         LockOptions.SKIP_LOCKED
                 )
                 .getResultList()

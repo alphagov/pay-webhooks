@@ -2,21 +2,21 @@ package uk.gov.pay.webhooks.eventtype.dao;
 
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQuery;
-import javax.persistence.PostLoad;
-import javax.persistence.PrePersist;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @NamedQuery(
         name = EventTypeEntity.GET_BY_NAME,
-        query = "select e from EventTypeEntity e where name = :name"
+        query = "select e from EventTypeEntity e where nameValue = :name"
 )
 @Entity
 @SequenceGenerator(name="event_types_id_seq", sequenceName = "event_types_id_seq", allocationSize = 1)

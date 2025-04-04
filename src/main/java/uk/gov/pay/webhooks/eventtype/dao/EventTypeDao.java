@@ -4,7 +4,7 @@ import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.Optional;
 
 public class EventTypeDao extends AbstractDAO<EventTypeEntity> {

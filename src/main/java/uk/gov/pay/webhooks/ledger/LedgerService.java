@@ -3,9 +3,9 @@ package uk.gov.pay.webhooks.ledger;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
 import uk.gov.pay.webhooks.ledger.model.LedgerTransaction;
 
-import javax.inject.Inject;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.core.Response;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.Response;
 import java.net.URI;
 import java.util.Optional;
 
