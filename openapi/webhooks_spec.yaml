@@ -378,6 +378,7 @@ components:
         gateway_account_id:
           type: string
           example: "100"
+          minLength: 1
         live:
           type: boolean
         service_id:
