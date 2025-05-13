@@ -1,29 +1,30 @@
 package uk.gov.pay.webhooks.queue.sqs;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.model.AmazonSQSException;
-import com.amazonaws.services.sqs.model.ChangeMessageVisibilityRequest;
-import com.amazonaws.services.sqs.model.DeleteMessageRequest;
-import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
-import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.ChangeMessageVisibilityRequest;
+import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest;
+import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
+import software.amazon.awssdk.services.sqs.model.ReceiveMessageResponse;
+import software.amazon.awssdk.services.sqs.model.SqsException;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
 
 import jakarta.inject.Inject;
+
 import java.util.List;
 
 public class SqsQueueService {
     private final Logger logger = LoggerFactory.getLogger(SqsQueueService.class);
 
-    private final AmazonSQS sqsClient;
+    private final SqsClient sqsClient;
 
     private final int messageMaximumWaitTimeInSeconds;
     private final int messageMaximumBatchSize;
 
     @Inject
-    public SqsQueueService(AmazonSQS sqsClient, WebhooksConfig webhooksConfig) {
+    public SqsQueueService(SqsClient sqsClient, WebhooksConfig webhooksConfig) {
         this.sqsClient = sqsClient;
         this.messageMaximumBatchSize = webhooksConfig.getSqsConfig().getMessageMaximumBatchSize();
         this.messageMaximumWaitTimeInSeconds = webhooksConfig.getSqsConfig().getMessageMaximumWaitTimeInSeconds();
@@ -31,13 +32,14 @@ public class SqsQueueService {
 
     public List<QueueMessage> receiveMessages(String queueUrl, String messageAttributeName) throws QueueException {
         try {
-            ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(queueUrl);
-            receiveMessageRequest
-                    .withMessageAttributeNames(messageAttributeName)
-                    .withWaitTimeSeconds(messageMaximumWaitTimeInSeconds)
-                    .withMaxNumberOfMessages(messageMaximumBatchSize);
+            ReceiveMessageRequest receiveMessageRequest = ReceiveMessageRequest.builder()
+                    .queueUrl(queueUrl)
+                    .messageAttributeNames(messageAttributeName)
+                    .waitTimeSeconds(messageMaximumWaitTimeInSeconds)
+                    .maxNumberOfMessages(messageMaximumBatchSize)
+                    .build();
 
-            ReceiveMessageResult receiveMessageResult = sqsClient.receiveMessage(receiveMessageRequest);
+            ReceiveMessageResponse receiveMessageResult = sqsClient.receiveMessage(receiveMessageRequest);
 
             return QueueMessage.of(receiveMessageResult);
         } catch (Exception e) {
@@ -48,26 +50,31 @@ public class SqsQueueService {
 
     public void deleteMessage(String queueUrl, String messageReceiptHandle) throws QueueException {
         try {
-            sqsClient.deleteMessage(new DeleteMessageRequest(queueUrl, messageReceiptHandle));
-        } catch (AmazonSQSException | UnsupportedOperationException e) {
+            DeleteMessageRequest deleteMessageRequest = DeleteMessageRequest.builder()
+                    .queueUrl(queueUrl)
+                    .receiptHandle(messageReceiptHandle)
+                    .build();
+            sqsClient.deleteMessage(deleteMessageRequest);
+        } catch (SqsException | UnsupportedOperationException e) {
             logger.error("Failed to delete message from SQS queue - {}", e.getMessage());
             throw new QueueException("Failed to delete message from SQS queue", e);
-        } catch (AmazonServiceException e) {
-            logger.error("Failed to delete message from SQS queue - [errorMessage={}] [awsErrorCode={}]", e.getMessage(), e.getErrorCode());
+        } catch (AwsServiceException e) {
+            logger.error("Failed to delete message from SQS queue - [errorMessage={}] [awsErrorCode={}]", e.getMessage(), e.awsErrorDetails().errorCode());
             throw new QueueException("Failed to delete message from SQS queue", e);
         }
     }
 
     public void deferMessage(String queueUrl, String messageReceiptHandle, int retryDelayInSeconds) throws QueueException {
         try {
-            ChangeMessageVisibilityRequest changeMessageVisibilityRequest = new ChangeMessageVisibilityRequest(
-                    queueUrl,
-                    messageReceiptHandle,
-                    retryDelayInSeconds
-            );
+            ChangeMessageVisibilityRequest changeMessageVisibilityRequest = ChangeMessageVisibilityRequest.builder()
+                    .queueUrl(queueUrl)
+                    .receiptHandle(messageReceiptHandle)
+                    .visibilityTimeout(retryDelayInSeconds)
+                    .build();
+
 
             sqsClient.changeMessageVisibility(changeMessageVisibilityRequest);
-        } catch (AmazonSQSException | UnsupportedOperationException e) {
+        } catch (SqsException | UnsupportedOperationException e) {
             logger.error("Failed to defer message from SQS queue - {}", e.getMessage());
             throw new QueueException("Failed to defer message from SQS queue", e);
         }

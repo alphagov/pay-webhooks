@@ -4,6 +4,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import software.amazon.awssdk.services.sqs.model.DeleteQueueRequest;
 import uk.gov.pay.extension.AppWithPostgresAndSqsExtension;
 import uk.gov.pay.rule.PostgresTestDocker;
 import uk.gov.pay.rule.SqsTestDocker;
@@ -15,7 +16,7 @@ class HealthCheckResourceIT {
     public static AppWithPostgresAndSqsExtension app = new AppWithPostgresAndSqsExtension();
 
     @Test
-    void HealthCheckIsHealthyTest(){
+    void HealthCheckIsHealthyTest() {
         RestAssured.given().port(app.getAppRule().getLocalPort())
                 .contentType(ContentType.JSON)
                 .when()
@@ -33,7 +34,10 @@ class HealthCheckResourceIT {
     @Test
     void healthCheckShouldReturn503WhenDBAndSqsQueueDown() throws InterruptedException {
         PostgresTestDocker.shutDown();
-        app.getSqsClient().deleteQueue(SqsTestDocker.getQueueUrl("event-queue"));
+        DeleteQueueRequest deleteQueueRequest = DeleteQueueRequest.builder()
+                .queueUrl(SqsTestDocker.getQueueUrl("event-queue"))
+                .build();
+        app.getSqsClient().deleteQueue(deleteQueueRequest);
 
         RestAssured.given().port(app.getAppRule().getLocalPort())
                 .contentType(ContentType.JSON)

@@ -1,14 +1,14 @@
 package uk.gov.pay.webhooks.healthcheck;
 
-import com.amazonaws.SdkClientException;
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.model.AmazonSQSException;
-import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
 import com.codahale.metrics.health.HealthCheck;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.GetQueueAttributesRequest;
+import software.amazon.awssdk.services.sqs.model.SqsException;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
 
 import jakarta.inject.Inject;
@@ -21,12 +21,12 @@ import static java.lang.String.format;
 
 public class SQSHealthCheck extends HealthCheck {
 
-    private final AmazonSQS sqsClient;
+    private final SqsClient sqsClient;
     private final Logger logger = LoggerFactory.getLogger(SQSHealthCheck.class);
     private List<NameValuePair> checkList = new ArrayList<>();
 
     @Inject
-    public SQSHealthCheck(AmazonSQS sqsClient, WebhooksConfig webhooksConfig) {
+    public SQSHealthCheck(SqsClient sqsClient, WebhooksConfig webhooksConfig) {
         this.sqsClient = sqsClient;
         setUpCheckList(webhooksConfig);
     }
@@ -50,11 +50,13 @@ public class SQSHealthCheck extends HealthCheck {
     
     private Optional<String> checkQueue(NameValuePair nameValuePair) {
         GetQueueAttributesRequest queueAttributesRequest =
-                new GetQueueAttributesRequest(nameValuePair.getValue())
-                        .withAttributeNames("All");
+                GetQueueAttributesRequest.builder()
+                        .queueUrl(nameValuePair.getValue())
+                        .attributeNamesWithStrings("All")
+                        .build();
         try {
             sqsClient.getQueueAttributes(queueAttributesRequest);
-        } catch (AmazonSQSException | UnsupportedOperationException e) {
+        } catch (SqsException | UnsupportedOperationException e) {
             logger.error("Failed to retrieve [{}] queue attributes - {}", nameValuePair.getName(), e.getMessage());
             return Optional.of(e.getMessage());
         } catch (SdkClientException e) {

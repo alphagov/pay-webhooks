@@ -7,6 +7,7 @@ import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 import uk.gov.pay.extension.AppWithPostgresAndSqsExtension;
 import uk.gov.pay.rule.SqsTestDocker;
 import uk.gov.pay.webhooks.ledger.LedgerStub;
@@ -81,7 +82,11 @@ public class WebhookDeliveryQueueIT {
         ledgerStub.returnLedgerTransaction(transaction);
         wireMock.stubFor(post("/a-test-endpoint").willReturn(ResponseDefinitionBuilder.okForJson("{}")));
 
-        app.getSqsClient().sendMessage(SqsTestDocker.getQueueUrl("event-queue"), sqsMessage.build());
+        SendMessageRequest sendMessageRequest = SendMessageRequest.builder()
+                .queueUrl(SqsTestDocker.getQueueUrl("event-queue"))
+                .messageBody(sqsMessage.build())
+                .build();
+        app.getSqsClient().sendMessage(sendMessageRequest);
         Thread.sleep(1000);
 
         wireMock.verify(
@@ -133,7 +138,11 @@ public class WebhookDeliveryQueueIT {
         ledgerStub.returnLedgerTransaction(transaction);
         wireMock.stubFor(post("/a-test-endpoint").willReturn(ResponseDefinitionBuilder.okForJson("{}")));
 
-        app.getSqsClient().sendMessage(SqsTestDocker.getQueueUrl("event-queue"), sqsMessage.build());
+        SendMessageRequest sendMessageRequest = SendMessageRequest.builder()
+                .queueUrl(SqsTestDocker.getQueueUrl("event-queue"))
+                .messageBody(sqsMessage.build())
+                .build();
+        app.getSqsClient().sendMessage(sendMessageRequest);
         Thread.sleep(1000);
 
         // resource body is appropriately formatted as a payment
@@ -187,7 +196,11 @@ public class WebhookDeliveryQueueIT {
         wireMock.stubFor(post("/a-working-endpoint").willReturn(ResponseDefinitionBuilder.okForJson("{}")));
         wireMock.stubFor(post("/a-failing-endpoint").willReturn(WireMock.forbidden()));
 
-        app.getSqsClient().sendMessage(SqsTestDocker.getQueueUrl("event-queue"), sqsMessage.build());
+        SendMessageRequest sendMessageRequest = SendMessageRequest.builder()
+                .queueUrl(SqsTestDocker.getQueueUrl("event-queue"))
+                .messageBody(sqsMessage.build())
+                .build();
+        app.getSqsClient().sendMessage(sendMessageRequest);
         Thread.sleep(2000);
 
         wireMock.verify(

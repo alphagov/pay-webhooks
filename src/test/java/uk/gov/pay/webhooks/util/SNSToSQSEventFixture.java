@@ -1,16 +1,20 @@
 package uk.gov.pay.webhooks.util;
 
-import com.amazonaws.util.json.Jackson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Optional;
 
 public class SNSToSQSEventFixture {
     private JsonNode body;
-    private final ObjectNode fixture = (ObjectNode) Jackson.getObjectMapper().readTree(getClass().getResource("/sns-to-sqs-event.json"));
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectNode fixture;
     public SNSToSQSEventFixture() throws IOException {
+        URL json = getClass().getResource("/sns-to-sqs-event.json");
+        this.fixture = (ObjectNode) objectMapper.readTree(json);
     }
 
     public static SNSToSQSEventFixture anSNSToSQSEventFixture() throws IOException {
@@ -23,7 +27,7 @@ public class SNSToSQSEventFixture {
     }
 
     public SNSToSQSEventFixture withBody(Object body) {
-        this.body = Jackson.getObjectMapper().valueToTree(body);
+        this.body = objectMapper.valueToTree(body);
         return this;
     }
 

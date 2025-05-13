@@ -1,6 +1,5 @@
 package uk.gov.pay.extension;
 
-import com.amazonaws.services.sqs.AmazonSQS;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.junit5.DropwizardAppExtension;
 import org.jdbi.v3.core.Jdbi;
@@ -10,6 +9,7 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.services.sqs.SqsClient;
 import uk.gov.pay.rule.PostgresTestDocker;
 import uk.gov.pay.rule.SqsTestDocker;
 import uk.gov.pay.webhooks.app.WebhooksApp;
@@ -35,7 +35,7 @@ public class AppWithPostgresAndSqsExtension implements BeforeAllCallback, AfterA
 
     static final int wireMockPort = PortFactory.findFreePort();
 
-    private final AmazonSQS sqsClient;
+    private final SqsClient sqsClient;
 
     public AppWithPostgresAndSqsExtension() {
         this(new ConfigOverride[0]);
@@ -104,7 +104,7 @@ public class AppWithPostgresAndSqsExtension implements BeforeAllCallback, AfterA
         return jdbi;
     }
 
-    public AmazonSQS getSqsClient() {
+    public SqsClient getSqsClient() {
         return sqsClient;
     }
 
