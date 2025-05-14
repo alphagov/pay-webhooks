@@ -1,6 +1,6 @@
 package uk.gov.pay.webhooks.ledger;
 
-import com.amazonaws.util.json.Jackson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -24,6 +24,7 @@ public class TransactionFromLedgerFixture {
     private final Boolean moto = false;
     private final Boolean live = false;
     private final String transactionId = "e8eq11mi2ndmauvb51qsg8hccn";
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public TransactionFromLedgerFixture() {
     }
@@ -33,7 +34,7 @@ public class TransactionFromLedgerFixture {
     }
 
     public String build() throws JsonProcessingException {
-        return Jackson.getObjectMapper().writeValueAsString(this);
+        return objectMapper.writeValueAsString(this);
     }
 
     public String getTransactionId() {

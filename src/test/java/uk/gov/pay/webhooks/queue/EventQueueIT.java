@@ -1,10 +1,11 @@
 package uk.gov.pay.webhooks.queue;
 
-import com.amazonaws.services.sqs.AmazonSQS;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 import uk.gov.pay.extension.AppWithPostgresAndSqsExtension;
 import uk.gov.pay.rule.SqsTestDocker;
 import uk.gov.pay.webhooks.app.QueueMessageReceiverConfig;
@@ -29,7 +30,7 @@ class EventQueueIT {
 
     @RegisterExtension
     public static AppWithPostgresAndSqsExtension rule = new AppWithPostgresAndSqsExtension();
-    private AmazonSQS client;
+    private SqsClient client;
 
     @BeforeEach
     public void setUp() {
@@ -38,7 +39,11 @@ class EventQueueIT {
 
     @Test
     void shouldReceiveMessageFromTheQueue() throws QueueException {
-        client.sendMessage(SqsTestDocker.getQueueUrl("event-queue"), "{ messageBody: \"example message\" }");
+        SendMessageRequest sendMessageRequest = SendMessageRequest.builder()
+                .queueUrl(SqsTestDocker.getQueueUrl("event-queue"))
+                .messageBody("{ messageBody: \"example message\" }")
+                .build();
+        client.sendMessage(sendMessageRequest);
 
         SqsConfig sqsConfig = mock(SqsConfig.class);
         when(sqsConfig.getMessageMaximumBatchSize()).thenReturn(10);
@@ -68,7 +73,13 @@ class EventQueueIT {
         var sqsMessage = anSNSToSQSEventFixture()
                 .withBody(eventMessage)
                 .build();
-        client.sendMessage(SqsTestDocker.getQueueUrl("event-queue"), sqsMessage);
+
+        SendMessageRequest sendMessageRequest = SendMessageRequest.builder()
+                .queueUrl(SqsTestDocker.getQueueUrl("event-queue"))
+                .messageBody(sqsMessage)
+                .build();
+        
+        client.sendMessage(sendMessageRequest);
 
         SqsConfig sqsConfig = mock(SqsConfig.class);
         when(sqsConfig.getMessageMaximumBatchSize()).thenReturn(10);

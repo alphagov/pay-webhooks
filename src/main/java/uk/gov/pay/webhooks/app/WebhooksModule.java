@@ -1,10 +1,5 @@
 package uk.gov.pay.webhooks.app;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import io.dropwizard.hibernate.HibernateBundle;
@@ -18,11 +13,19 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
 import org.hibernate.SessionFactory;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.awscore.client.builder.AwsSyncClientBuilder;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.SqsClientBuilder;
 import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
 import uk.gov.pay.webhooks.util.IdGenerator;
 
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.client.Client;
+
+import java.net.URI;
 import java.time.InstantSource;
 import java.util.concurrent.TimeUnit;
 
@@ -120,25 +123,23 @@ public class WebhooksModule extends AbstractModule {
     }
 
     @Provides
-    public AmazonSQS sqsClient(WebhooksConfig webhooksConfig) {
-        AmazonSQSClientBuilder clientBuilder = AmazonSQSClientBuilder
-                .standard();
+    public SqsClient sqsClient(WebhooksConfig webhooksConfig) {
+        SqsClientBuilder clientBuilder = SqsClient.builder();
         if (webhooksConfig.getSqsConfig().isNonStandardServiceEndpoint()) {
             // build static credentials in a local environment
-            BasicAWSCredentials basicAWSCredentials = new BasicAWSCredentials(
-                    webhooksConfig.getSqsConfig().getAccessKey(),
-                    webhooksConfig.getSqsConfig().getSecretKey());
+            AwsBasicCredentials basicAWSCredentials = AwsBasicCredentials
+                    .create(webhooksConfig
+                                    .getSqsConfig()
+                                    .getAccessKey(),
+                            webhooksConfig.getSqsConfig().getSecretKey());
 
             clientBuilder
-                    .withCredentials(new AWSStaticCredentialsProvider(basicAWSCredentials))
-                    .withEndpointConfiguration(
-                            new AwsClientBuilder.EndpointConfiguration(
-                                    webhooksConfig.getSqsConfig().getEndpoint(),
-                                    webhooksConfig.getSqsConfig().getRegion())
-                    );
+                    .credentialsProvider(StaticCredentialsProvider.create(basicAWSCredentials))
+                    .endpointOverride(URI.create(webhooksConfig.getSqsConfig().getEndpoint()))
+                    .region(Region.of(webhooksConfig.getSqsConfig().getRegion()));
         } else {
             // AWS SDK will use the default provider chain to get credentials from ECS
-            clientBuilder.withRegion(webhooksConfig.getSqsConfig().getRegion());
+            clientBuilder.region(Region.of(webhooksConfig.getSqsConfig().getRegion()));
         }
 
         return clientBuilder.build();
