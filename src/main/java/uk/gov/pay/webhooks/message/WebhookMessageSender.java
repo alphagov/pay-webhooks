@@ -3,7 +3,6 @@ package uk.gov.pay.webhooks.message;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import uk.gov.pay.webhooks.deliveryqueue.WebhookNotActiveException;
@@ -16,6 +15,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.security.InvalidKeyException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class WebhookMessageSender {
 
     public static final String SIGNATURE_HEADER_NAME = "Pay-Signature";
@@ -24,13 +25,16 @@ public class WebhookMessageSender {
     private final WebhookMessageSignatureGenerator webhookMessageSignatureGenerator;
     private final CallbackUrlService callbackUrlService;
     private final ObjectMapper objectMapper;
+    private final HttpPostFactory httpPostFactory;
 
     @Inject
     public WebhookMessageSender(CloseableHttpClient httpClient,
+                                HttpPostFactory httpPostFactory,
                                 ObjectMapper objectMapper,
                                 CallbackUrlService callbackUrlService,
                                 WebhookMessageSignatureGenerator webhookMessageSignatureGenerator) {
         this.httpClient = httpClient;
+        this.httpPostFactory = httpPostFactory;
         this.webhookMessageSignatureGenerator = webhookMessageSignatureGenerator;
         this.callbackUrlService = callbackUrlService;
         this.objectMapper = objectMapper;
@@ -51,10 +55,10 @@ public class WebhookMessageSender {
         String signingKey = webhookMessage.getWebhookEntity().getSigningKey();
         String signature = webhookMessageSignatureGenerator.generate(body, signingKey);
 
-        var request = new HttpPost(uri);
+        var request = httpPostFactory.newHttpPost(uri);
         request.addHeader("Content-Type", "application/json");
         request.addHeader(SIGNATURE_HEADER_NAME, signature);
-        request.setEntity(new StringEntity(body));
+        request.setEntity(new StringEntity(body, UTF_8));
 
         try(CloseableHttpResponse response = httpClient.execute(request)) {
             return response;

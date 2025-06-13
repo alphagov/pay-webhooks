@@ -2,9 +2,11 @@ package uk.gov.pay.webhooks.app;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
-import io.dropwizard.core.setup.Environment;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.client.Client;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -15,15 +17,12 @@ import org.apache.http.ssl.SSLContexts;
 import org.hibernate.SessionFactory;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.awscore.client.builder.AwsSyncClientBuilder;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.SqsClientBuilder;
+import uk.gov.pay.webhooks.message.HttpPostFactory;
 import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
 import uk.gov.pay.webhooks.util.IdGenerator;
-
-import jakarta.inject.Singleton;
-import jakarta.ws.rs.client.Client;
 
 import java.net.URI;
 import java.time.InstantSource;
@@ -108,6 +107,12 @@ public class WebhooksModule extends AbstractModule {
                 .setDefaultRequestConfig(config)
                 .setConnectionManager(poolingConnManager)
                 .build();
+    }
+
+    @Provides
+    @Singleton
+    public HttpPostFactory httpPostFactory() {
+        return new HttpPostFactory();
     }
 
     @Provides
