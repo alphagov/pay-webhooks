@@ -103,6 +103,6 @@ webhookMessageSendingQueueProcessorConfig:
 
 # The azurewebsites.net domain was added due to Zendesk ticket #5451010 — it is
 # intended to be temporary and should be gone by the end of August 2023
-liveDataAllowDomains: ["gov.uk", "s118-prod-bsr-acs-common-fa.azurewebsites.net", "cadets.mod.uk", "edevelopment.scot"]
+liveDataAllowDomains: ["gov.uk", "s118-prod-bsr-acs-common-fa.azurewebsites.net", "cadets.mod.uk", "edevelopment.scot", "anybus-lancashire.co.uk"]
 
 ecsContainerMetadataUriV4: ${ECS_CONTAINER_METADATA_URI_V4:-}
