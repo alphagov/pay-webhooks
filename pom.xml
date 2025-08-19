@@ -170,11 +170,6 @@
             <version>${pay-java-commons.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.dhatim</groupId>
-            <artifactId>dropwizard-sentry</artifactId>
-            <version>2.1.6</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5.14</version>
