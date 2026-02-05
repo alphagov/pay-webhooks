@@ -14,6 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import uk.gov.pay.webhooks.deliveryqueue.WebhookNotActiveException;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
@@ -34,6 +36,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.pay.webhooks.message.WebhookMessageSender.SIGNATURE_HEADER_NAME;
 
 @ExtendWith(MockitoExtension.class)
@@ -136,4 +143,13 @@ class WebhookMessageSenderTest {
         assertThrows(CallbackUrlDomainNotOnAllowListException.class, () -> webhookMessageSender.sendWebhookMessage(webhookMessageEntity));
     }
 
+    @Test
+    void doesNotValidateCallbackUrlWhenWebhookIsInactive() {
+        webhookEntity.setStatus(WebhookStatus.INACTIVE);
+
+        assertThrows(WebhookNotActiveException.class,
+            () -> webhookMessageSender.sendWebhookMessage(webhookMessageEntity));
+
+        verify(mockCallbackUrlService, never()).validateCallbackUrl(anyString(), anyBoolean());
+    }
 }
