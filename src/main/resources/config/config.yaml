@@ -101,6 +101,8 @@ webhookMessageSendingQueueProcessorConfig:
   idleConnectionMonitorInitialDelayInMilliseconds: ${WEBHOOK_MESSAGE_SENDING_QUEUE_IDLE_CONNECTION_MONITOR_INITIAL_DELAY_IN_MILLISECONDS:-1000}
   idleConnectionMonitorThreadDelayInMilliseconds: ${WEBHOOK_MESSAGE_SENDING_QUEUE_IDLE_CONNECTION_MONITOR_THREAD_DELAY_IN_MILLISECONDS:-1000}
 
-liveDataAllowDomains: ["gov.uk", "cadets.mod.uk", "edevelopment.scot", "anybus-lancashire.co.uk", "naturalresources.wales", "govpay-ipn.cam-pgmc.ac.uk"]
+# The azurewebsites.net domain was added due to Zendesk ticket #5451010 — it is
+# intended to be temporary and should be gone by the end of August 2023
+liveDataAllowDomains: ["gov.uk", "s118-prod-bsr-acs-common-fa.azurewebsites.net", "cadets.mod.uk", "edevelopment.scot", "anybus-lancashire.co.uk", "naturalresources.wales", "govpay-ipn.cam-pgmc.ac.uk"]
 
 ecsContainerMetadataUriV4: ${ECS_CONTAINER_METADATA_URI_V4:-}
