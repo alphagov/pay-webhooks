@@ -43,11 +43,12 @@ public class WebhookMessageSender {
     public CloseableHttpResponse sendWebhookMessage(WebhookMessageEntity webhookMessage) throws IOException, InterruptedException, InvalidKeyException, CallbackUrlDomainNotOnAllowListException {
         var webhook = webhookMessage.getWebhookEntity();
 
-        if (webhook.isLive()) {
-            callbackUrlService.validateCallbackUrl(webhook.getCallbackUrl(), webhook.isLive());
-        }
         if (webhook.getStatus() != WebhookStatus.ACTIVE) {
             throw new WebhookNotActiveException("Webhook must be active to send messages");
+        }
+
+        if (webhook.isLive()) {
+            callbackUrlService.validateCallbackUrl(webhook.getCallbackUrl(), webhook.isLive());
         }
 
         URI uri = URI.create(webhookMessage.getWebhookEntity().getCallbackUrl());
