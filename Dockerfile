@@ -5,14 +5,14 @@ COPY . .
 
 RUN ["mvn", "clean", "--no-transfer-progress", "package", "-DskipTests"]
 
-FROM eclipse-temurin:25-alpine@sha256:da683f4f02f9427597d8fa162b73b8222fe08596dcebaf23e4399576ff8b037e AS final
+FROM eclipse-temurin:25-jre-alpine@sha256:f10d6259d0798c1e12179b6bf3b63cea0d6843f7b09c9f9c9c422c50e44379ec AS final
 
 RUN ["apk", "--no-cache", "upgrade"]
 
 ARG DNS_TTL=15
 
 # Default to UTF-8 file.encoding
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8
 
 RUN echo networkaddress.cache.ttl=$DNS_TTL >> "$JAVA_HOME/conf/security/java.security"
 
@@ -21,8 +21,8 @@ RUN /import_aws_rds_cert_bundles.sh && rm /import_aws_rds_cert_bundles.sh
 
 RUN ["apk", "add", "--no-cache", "bash", "tini"]
 
-ENV PORT 8080
-ENV ADMIN_PORT 8081
+ENV PORT=8080
+ENV ADMIN_PORT=8081
 
 EXPOSE 8080
 EXPOSE 8081
