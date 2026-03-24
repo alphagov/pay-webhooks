@@ -115,6 +115,10 @@ public class SendAttempter {
             );
             handleResponse(queueItem, DeliveryStatus.WILL_NOT_SEND, null, "Violates security rules", retryCount, start);
         } catch (Exception e) {
+            LOGGER.error(
+                    Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, e.getMessage()),
+                    "this is Exception e, i missed all expected exceptions"
+            );
             handleGenericException(queueItem, retryCount, start, e);
         }
     }
