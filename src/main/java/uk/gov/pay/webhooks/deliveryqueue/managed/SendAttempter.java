@@ -2,6 +2,8 @@ package uk.gov.pay.webhooks.deliveryqueue.managed;
 
 import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.core.setup.Environment;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.Response;
 import net.logstash.logback.marker.LogstashMarker;
 import net.logstash.logback.marker.Markers;
 import org.apache.http.NoHttpResponseException;
@@ -15,8 +17,6 @@ import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.message.WebhookMessageSender;
 import uk.gov.pay.webhooks.validations.CallbackUrlDomainNotOnAllowListException;
 
-import jakarta.inject.Inject;
-import jakarta.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
@@ -45,6 +45,9 @@ import static uk.gov.service.payments.logging.LoggingKeys.RESPONSE_TIME;
 
 public class SendAttempter {
     private static final Logger LOGGER = LoggerFactory.getLogger(SendAttempter.class);
+    private static final String WEBHOOK_MESSAGE_SCHEDULED_SEND_AT = "scheduled_send_at";
+    private static final String WEBHOOK_MESSAGE_NEXT_SEND_AT = "next_send_at";
+    private static final String WEBHOOK_MESSAGE_RETRY_DELAY_MILLIS = "retry_delay_millis";
     private final MetricRegistry metricRegistry;
     private final WebhookDeliveryQueueDao webhookDeliveryQueueDao;
     private final InstantSource instantSource;
@@ -72,7 +75,7 @@ public class SendAttempter {
         Instant start = instantSource.instant();
 
         URL url = null;
-        
+
         try {
             url = new URL(webhook.getCallbackUrl().strip());
         } catch (MalformedURLException e) {
@@ -80,25 +83,36 @@ public class SendAttempter {
         }
 
         try {
-
             LOGGER.info(
                     Markers.append(WEBHOOK_CALLBACK_URL, queueItem.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl())
                             .and(Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount))
+                            .and(Markers.append(WEBHOOK_MESSAGE_SCHEDULED_SEND_AT, queueItem.getSendAt().toString()))
                             .and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, url.getHost()))
                             .and(Markers.append(WEBHOOK_MESSAGE_DELAY_BETWEEN_ATTEMPT_SCHEDULED_SEND_AT_TIME_AND_NOW, Duration.between(queueItem.getSendAt(), instantSource.instant()).toMillis())),
-                    "Sending webhook message started"
-            ); 
-            var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity());
+                    "Before Sending webhook message started"
+            );
 
+            var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity());
+            LOGGER.info(
+                    Markers.append(WEBHOOK_CALLBACK_URL, queueItem.getWebhookMessageEntity().getWebhookEntity().getCallbackUrl())
+                            .and(Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount))
+                            .and(Markers.append(WEBHOOK_MESSAGE_SCHEDULED_SEND_AT, queueItem.getSendAt().toString()))
+                            .and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, url.getHost()))
+                            .and(Markers.append(WEBHOOK_MESSAGE_DELAY_BETWEEN_ATTEMPT_SCHEDULED_SEND_AT_TIME_AND_NOW, Duration.between(queueItem.getSendAt(), instantSource.instant()).toMillis())),
+                    "After Sending webhook message started"
+            );
             var statusCode = response.getStatusLine().getStatusCode();
             if (statusCode >= 200 && statusCode <= 299) {
                 handleResponse(queueItem, DeliveryStatus.SUCCESSFUL, statusCode, getReasonFromStatusCode(statusCode), retryCount, start, Optional.of(url));
             } else {
                 handleResponse(queueItem, DeliveryStatus.FAILED, statusCode, getReasonFromStatusCode(statusCode), retryCount, start, Optional.of(url));
             }
+
         } catch (SocketTimeoutException | HttpTimeoutException | NoHttpResponseException | ConnectTimeoutException e) {
-            LOGGER.info("Request timed out");
-            handleResponse(queueItem, DeliveryStatus.FAILED, null, "HTTP Timeout", retryCount, start, Optional.of(url));
+            LOGGER.info(
+                    Markers.append(ERROR_MESSAGE, e.getClass().getSimpleName() + ": " + e.getMessage()),
+                    "Webhook request timed out");
+            handleResponse(queueItem, DeliveryStatus.FAILED, null, "HTTP Timeout", retryCount, start, Optional.ofNullable(url));
         } catch (IOException | InterruptedException | InvalidKeyException e) {
             LOGGER.info(
                     Markers.append(ERROR_MESSAGE, e.getMessage()),
@@ -142,40 +156,52 @@ public class SendAttempter {
         handleResponse(webhookDeliveryQueueEntity, status, statusCode, reason, retryCount, startTime, Optional.empty());
     }
 
-    private void handleResponse(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, 
-                                DeliveryStatus status, 
-                                Integer statusCode, 
-                                String reason, 
-                                Long retryCount, 
+    private void handleResponse(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity,
+                                DeliveryStatus status,
+                                Integer statusCode,
+                                String reason,
+                                Long retryCount,
                                 Instant startTime,
                                 Optional<URL> domain) {
         var responseTime = Duration.between(startTime, instantSource.instant());
-        
+
         LogstashMarker logstashMarker = Markers.append(HTTP_STATUS, statusCode)
                 .and(Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount))
                 .and(Markers.append(STATE_TRANSITION_TO_STATE, status))
                 .and(Markers.append(RESPONSE_TIME, responseTime.toMillis()))
                 .and(Markers.append(WEBHOOK_MESSAGE_ATTEMPT_RESPONSE_REASON, reason));
-        
+
         domain.ifPresent(d -> logstashMarker.and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, d.getHost())));
-        
-        LOGGER.info(logstashMarker, "Sending webhook message finished"); 
-        
+
+        LOGGER.info(logstashMarker, "Sending webhook message finished");
+
         webhookDeliveryQueueDao.recordResult(webhookDeliveryQueueEntity, reason, responseTime, statusCode, status, metricRegistry);
         webhookDeliveryQueueEntity.getWebhookMessageEntity().setLastDeliveryStatus(status);
 
         if (!terminalStatuses.contains(status)) {
-            enqueueRetry(webhookDeliveryQueueEntity, nextRetryIn(retryCount));
+            enqueueRetry(webhookDeliveryQueueEntity, retryCount, nextRetryIn(retryCount));
         }
     }
 
-    private void enqueueRetry(WebhookDeliveryQueueEntity queueItem, Duration nextRetryIn) {
+    private void enqueueRetry(WebhookDeliveryQueueEntity queueItem, Long retryCount, Duration nextRetryIn) {
         Optional.ofNullable(nextRetryIn).ifPresentOrElse(retryDelay -> {
-            LOGGER.info("Scheduling webhook message for retry");
-            webhookDeliveryQueueDao.enqueueFrom(queueItem.getWebhookMessageEntity(), DeliveryStatus.PENDING, instantSource.instant().plus(retryDelay));
-        }, () -> {
-            LOGGER.warn("Webhook message terminally failed to deliver");
-        });
+            Instant nextSendAt = instantSource.instant().plus(retryDelay);
+            LOGGER.info(
+                    Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount)
+                            .and(Markers.append(WEBHOOK_MESSAGE_RETRY_DELAY_MILLIS, retryDelay.toMillis()))
+                            .and(Markers.append(WEBHOOK_MESSAGE_NEXT_SEND_AT, nextSendAt.toString())),
+                    "Scheduling webhook message for retry"
+            );
+            var retryQueueItem = webhookDeliveryQueueDao.enqueueFrom(queueItem.getWebhookMessageEntity(), DeliveryStatus.PENDING, nextSendAt);
+            LOGGER.info(
+                    Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount + 1)
+                            .and(Markers.append(WEBHOOK_MESSAGE_SCHEDULED_SEND_AT, retryQueueItem.getSendAt().toString())),
+                    "Webhook retry enqueued"
+            );
+        }, () -> LOGGER.warn(
+                Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount),
+                "Webhook message terminally failed to deliver"
+        ));
     }
 
     private Duration nextRetryIn(Long retryCount) {
@@ -188,7 +214,7 @@ public class SendAttempter {
             default -> null;
         };
     }
-    
+
     private String getReasonFromStatusCode(int statusCode) {
         return Stream.of(String.valueOf(statusCode), Response.Status.fromStatusCode(statusCode).getReasonPhrase())
                 .filter(Objects::nonNull)
