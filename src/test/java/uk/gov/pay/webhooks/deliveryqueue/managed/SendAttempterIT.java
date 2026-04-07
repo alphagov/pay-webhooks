@@ -44,22 +44,21 @@ class SendAttempterIT {
     private static final String CALLBACK_URL = "/callback-url";
     private static final String NOW = "2022-01-01T00:00:00.000Z";
     private SendAttempter sendAttempter;
+    private WebhookDeliveryQueueEntity enqueuedItem;
 
     @BeforeEach
-    void setUp() {
+    void setUp(WireMockRuntimeInfo wmRuntimeInfo) {
         sendAttempter = buildSendAttempter();
+        enqueuedItem = buildWebhookDeliveryQueueEntityWithCallbackURL(wmRuntimeInfo.getHttpBaseUrl() + CALLBACK_URL);
     }
 
     @Nested
     class when_send_successful {
 
-        private WebhookDeliveryQueueEntity enqueuedItem;
-
         @BeforeEach
-        void setUp(WireMockRuntimeInfo wmRuntimeInfo) {
+        void setUp() {
             givenThat(post(CALLBACK_URL)
                     .willReturn(ok()));
-            enqueuedItem = buildWebhookDeliveryQueueEntityWithCallbackURL(wmRuntimeInfo.getHttpBaseUrl() + CALLBACK_URL);
         }
 
         @Test
