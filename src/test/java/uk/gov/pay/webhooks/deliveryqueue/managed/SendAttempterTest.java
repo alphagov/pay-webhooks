@@ -51,7 +51,6 @@ class SendAttempterTest {
     private WebhookDeliveryQueueDao webhookDeliveryQueueDao;
     private InstantSource instantSource;
     private WebhookMessageDao webhookMessageDao;
-    private WebhookDao webhookDao;
     private WebhookMessageEntity webhookMessageEntity;
 
     @Mock
@@ -72,7 +71,6 @@ class SendAttempterTest {
     void setUp() {
         instantSource = InstantSource.fixed(Instant.now());
         webhookMessageDao = new WebhookMessageDao(database.getSessionFactory());
-        webhookDao = new WebhookDao(database.getSessionFactory());
         webhookDeliveryQueueDao = new WebhookDeliveryQueueDao(database.getSessionFactory(), instantSource);
         webhookMessageEntity = new WebhookMessageEntity();
         WebhookEntity webhookEntity = new WebhookEntity();
@@ -81,6 +79,7 @@ class SendAttempterTest {
         webhookEntity.setCreatedDate(Instant.parse("2007-12-03T10:15:30.00Z"));
         webhookEntity.setCallbackUrl("http://example.com");
         webhookEntity.setSigningKey("some-signing-key");
+        WebhookDao webhookDao = new WebhookDao(database.getSessionFactory());
         webhookDao.create(webhookEntity);
         webhookMessageEntity.setWebhookEntity(webhookEntity);
         webhookMessageEntity.setCreatedDate(instantSource.instant());
