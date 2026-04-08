@@ -87,7 +87,7 @@ class SendAttempterTest {
     }
 
     @Test
-    void sendAttempterSetsDeliveryStatusBasedOnStatusCode() throws IOException, InterruptedException, InvalidKeyException {
+    void should_set_delivery_status_based_on_status_code() throws IOException, InterruptedException, InvalidKeyException {
         given(mockHttpResponse.getStatusLine()).willReturn(mockStatusLine);
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willReturn(mockHttpResponse);
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
@@ -96,7 +96,7 @@ class SendAttempterTest {
         given(mockStatusLine.getStatusCode()).willReturn(404, 200);
 
         sendAttempter.attemptSend(enqueuedItem);
-        
+
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.FAILED));
         assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.FAILED));
         assertThat(enqueuedItem.getDeliveryResult(), is("404 Not Found"));
@@ -107,43 +107,43 @@ class SendAttempterTest {
     }
 
     @Test
-    void sendAttempterEmitsDeliveryStatusMetric() throws IOException, InvalidKeyException, InterruptedException {
+    void should_emit_delivery_status_metric() throws IOException, InvalidKeyException, InterruptedException {
         given(mockHttpResponse.getStatusLine()).willReturn(mockStatusLine);
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willReturn(mockHttpResponse);
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
         given(mockStatusLine.getStatusCode()).willReturn(200);
-        
+
         sendAttempter.attemptSend(enqueuedItem);
-        
+
         verify(mockMetricRegistry).counter("delivery-status.SUCCESSFUL");
     }
 
     @Test
-    void sendAttempterCatchesExceptions() throws IOException, InterruptedException, InvalidKeyException {
+    void should_catch_exceptions() throws IOException, InterruptedException, InvalidKeyException {
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willThrow(IOException.class, HttpTimeoutException.class);
 
         assertDoesNotThrow(() -> sendAttempter.attemptSend(enqueuedItem));
-        
+
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.FAILED));
         assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.FAILED));
     }
 
     @Test
-    void sendAttempterEnqueuesRetriesIfFailure() throws IOException, InvalidKeyException, InterruptedException {
+    void should_enqueue_retries_if_failure() throws IOException, InvalidKeyException, InterruptedException {
         given(mockHttpResponse.getStatusLine()).willReturn(mockStatusLine);
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willReturn(mockHttpResponse);
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
         given(mockStatusLine.getStatusCode()).willReturn(404);
-        
+
         sendAttempter.attemptSend(enqueuedItem);
-        
+
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.FAILED));
         assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.FAILED));
         database.inTransaction(() -> {
@@ -153,27 +153,27 @@ class SendAttempterTest {
     }
 
     @Test
-    void sendAttempterDoesNotEnqueueRetryForRejectedForSecurityRules() throws IOException, InvalidKeyException, InterruptedException {
+    void should_not_enqueue_retry_for_rejected_for_security_rules() throws IOException, InvalidKeyException, InterruptedException {
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willThrow(CallbackUrlDomainNotOnAllowListException.class);
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
-        
+
         sendAttempter.attemptSend(enqueuedItem);
-        
+
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.WILL_NOT_SEND));
         assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.WILL_NOT_SEND));
     }
 
     @Test
-    void sendAttempterDoesNotEnqueueRetryForNotActiveWebhooks() throws IOException, InvalidKeyException, InterruptedException {
+    void should_not_enqueue_retry_for_not_active_webhooks() throws IOException, InvalidKeyException, InterruptedException {
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willThrow(WebhookNotActiveException.class);
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
 
         sendAttempter.attemptSend(enqueuedItem);
-        
+
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.WILL_NOT_SEND));
         assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.WILL_NOT_SEND));
     }
