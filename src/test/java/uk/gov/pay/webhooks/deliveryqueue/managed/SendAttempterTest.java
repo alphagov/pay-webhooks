@@ -53,22 +53,23 @@ class SendAttempterTest {
     private WebhookMessageDao webhookMessageDao;
     private WebhookDao webhookDao;
     private WebhookMessageEntity webhookMessageEntity;
-    
+
     @Mock
     private WebhookMessageSender mockWebhookMessageSender;
-    
+
     @Mock
     private CloseableHttpResponse mockHttpResponse;
-    @Mock private StatusLine mockStatusLine;
-    
     @Mock
-    private Environment mockEnvironment;    
-    
+    private StatusLine mockStatusLine;
+
+    @Mock
+    private Environment mockEnvironment;
+
     @Mock
     private MetricRegistry mockMetricRegistry;
-            
+
     @BeforeEach
-    void setUp(){
+    void setUp() {
         instantSource = InstantSource.fixed(Instant.now());
         webhookMessageDao = new WebhookMessageDao(database.getSessionFactory());
         webhookDao = new WebhookDao(database.getSessionFactory());
@@ -85,17 +86,17 @@ class SendAttempterTest {
         webhookMessageEntity.setCreatedDate(instantSource.instant());
         given(mockEnvironment.metrics()).willReturn(mockMetricRegistry);
     }
-    
+
     @Test
     void sendAttempterSetsDeliveryStatusBasedOnStatusCode() throws IOException, InterruptedException, InvalidKeyException {
         given(mockHttpResponse.getStatusLine()).willReturn(mockStatusLine);
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willReturn(mockHttpResponse);
-        
+
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
         given(mockStatusLine.getStatusCode()).willReturn(404, 200);
-        
+
         sendAttempter.attemptSend(enqueuedItem);
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.FAILED));
         assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.FAILED));
@@ -104,13 +105,13 @@ class SendAttempterTest {
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.SUCCESSFUL));
         assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.SUCCESSFUL));
         assertThat(enqueuedItem.getDeliveryResult(), is("200 OK"));
-    }    
-    
+    }
+
     @Test
     void sendAttempterEmitsDeliveryStatusMetric() throws IOException, InvalidKeyException, InterruptedException {
         given(mockHttpResponse.getStatusLine()).willReturn(mockStatusLine);
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willReturn(mockHttpResponse);
-        
+
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
@@ -130,7 +131,7 @@ class SendAttempterTest {
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.FAILED));
         assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.FAILED));
     }
-    
+
     @Test
     void sendAttempterEnqueuesRetriesIfFailure() throws IOException, InvalidKeyException, InterruptedException {
         given(mockHttpResponse.getStatusLine()).willReturn(mockStatusLine);
@@ -139,7 +140,7 @@ class SendAttempterTest {
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
         given(mockStatusLine.getStatusCode()).willReturn(404);
-       
+
         sendAttempter.attemptSend(enqueuedItem);
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.FAILED));
         assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.FAILED));
