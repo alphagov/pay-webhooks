@@ -4,11 +4,14 @@ import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.testing.junit5.DAOTestExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
+import io.github.netmikey.logunit.api.LogCapturer;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.FieldSource;
 import org.mockito.Mock;
@@ -35,13 +38,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.slf4j.event.Level.ERROR;
 
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(DropwizardExtensionsSupport.class)
 class SendAttempterTest {
+
+    @RegisterExtension
+    LogCapturer logs = LogCapturer.create().captureForType(SendAttempter.class);
 
     public DAOTestExtension database = DAOTestExtension.newBuilder()
             .addEntityClass(EventTypeEntity.class)
@@ -141,6 +149,24 @@ class SendAttempterTest {
 
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.FAILED));
         assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.FAILED));
+    }
+
+    @Test
+    void should_catch_log_and_rethrow_Errors() throws IOException, InvalidKeyException, InterruptedException {
+        var errorMessage = "BOOM!";
+        given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class)))
+                .willThrow(new Error(errorMessage));
+        var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
+        var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
+        var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
+
+        assertThrows(Error.class, () -> sendAttempter.attemptSend(enqueuedItem));
+
+        var loggingEvent = logs.assertContains("Error during webhook message send");
+        Assertions.assertThat(loggingEvent.getLevel())
+                .isEqualTo(ERROR);
+        Assertions.assertThat(loggingEvent.getThrowable())
+                .hasMessage(errorMessage);
     }
 
     @Test

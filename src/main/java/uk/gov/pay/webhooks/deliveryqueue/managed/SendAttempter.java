@@ -2,6 +2,8 @@ package uk.gov.pay.webhooks.deliveryqueue.managed;
 
 import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.core.setup.Environment;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.Response;
 import net.logstash.logback.marker.LogstashMarker;
 import net.logstash.logback.marker.Markers;
 import org.apache.http.NoHttpResponseException;
@@ -15,8 +17,6 @@ import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 import uk.gov.pay.webhooks.message.WebhookMessageSender;
 import uk.gov.pay.webhooks.validations.CallbackUrlDomainNotOnAllowListException;
 
-import jakarta.inject.Inject;
-import jakarta.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
@@ -72,7 +72,7 @@ public class SendAttempter {
         Instant start = instantSource.instant();
 
         URL url = null;
-        
+
         try {
             url = new URL(webhook.getCallbackUrl().strip());
         } catch (MalformedURLException e) {
@@ -87,7 +87,7 @@ public class SendAttempter {
                             .and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, url.getHost()))
                             .and(Markers.append(WEBHOOK_MESSAGE_DELAY_BETWEEN_ATTEMPT_SCHEDULED_SEND_AT_TIME_AND_NOW, Duration.between(queueItem.getSendAt(), instantSource.instant()).toMillis())),
                     "Sending webhook message started"
-            ); 
+            );
             var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity());
 
             var statusCode = response.getStatusLine().getStatusCode();
@@ -116,6 +116,11 @@ public class SendAttempter {
             handleResponse(queueItem, DeliveryStatus.WILL_NOT_SEND, null, "Violates security rules", retryCount, start);
         } catch (Exception e) {
             handleGenericException(queueItem, retryCount, start, e);
+        } catch (Throwable throwable) {
+            LOGGER.atError()
+                    .setCause(throwable)
+                    .log("Error during webhook message send");
+            throw throwable;
         }
     }
 
@@ -138,25 +143,25 @@ public class SendAttempter {
         handleResponse(webhookDeliveryQueueEntity, status, statusCode, reason, retryCount, startTime, Optional.empty());
     }
 
-    private void handleResponse(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity, 
-                                DeliveryStatus status, 
-                                Integer statusCode, 
-                                String reason, 
-                                Long retryCount, 
+    private void handleResponse(WebhookDeliveryQueueEntity webhookDeliveryQueueEntity,
+                                DeliveryStatus status,
+                                Integer statusCode,
+                                String reason,
+                                Long retryCount,
                                 Instant startTime,
                                 Optional<URL> domain) {
         var responseTime = Duration.between(startTime, instantSource.instant());
-        
+
         LogstashMarker logstashMarker = Markers.append(HTTP_STATUS, statusCode)
                 .and(Markers.append(WEBHOOK_MESSAGE_RETRY_COUNT, retryCount))
                 .and(Markers.append(STATE_TRANSITION_TO_STATE, status))
                 .and(Markers.append(RESPONSE_TIME, responseTime.toMillis()))
                 .and(Markers.append(WEBHOOK_MESSAGE_ATTEMPT_RESPONSE_REASON, reason));
-        
+
         domain.ifPresent(d -> logstashMarker.and(Markers.append(WEBHOOK_CALLBACK_URL_DOMAIN, d.getHost())));
-        
-        LOGGER.info(logstashMarker, "Sending webhook message finished"); 
-        
+
+        LOGGER.info(logstashMarker, "Sending webhook message finished");
+
         webhookDeliveryQueueDao.recordResult(webhookDeliveryQueueEntity, reason, responseTime, statusCode, status, metricRegistry);
         webhookDeliveryQueueEntity.getWebhookMessageEntity().setLastDeliveryStatus(status);
 
@@ -184,7 +189,7 @@ public class SendAttempter {
             default -> null;
         };
     }
-    
+
     private String getReasonFromStatusCode(int statusCode) {
         return Stream.of(String.valueOf(statusCode), Response.Status.fromStatusCode(statusCode).getReasonPhrase())
                 .filter(Objects::nonNull)
