@@ -7,7 +7,6 @@ import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.github.netmikey.logunit.api.LogCapturer;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -163,10 +162,8 @@ class SendAttempterTest {
         assertThrows(Error.class, () -> sendAttempter.attemptSend(enqueuedItem));
 
         var loggingEvent = logs.assertContains("Error during webhook message send");
-        Assertions.assertThat(loggingEvent.getLevel())
-                .isEqualTo(ERROR);
-        Assertions.assertThat(loggingEvent.getThrowable())
-                .hasMessage(errorMessage);
+        assertThat(loggingEvent.getLevel(), is(ERROR));
+        assertThat(loggingEvent.getThrowable().getMessage(), is(errorMessage));
     }
 
     @Test
