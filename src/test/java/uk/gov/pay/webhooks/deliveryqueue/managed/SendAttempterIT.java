@@ -146,7 +146,7 @@ class SendAttempterIT {
 
         sendAttempter.attemptSend(enqueuedItem);
 
-        logs.assertContains("Request timed out"); // Is this the right thing?
+        logs.assertContains("Request timed out");
     }
 
     @ParameterizedTest
