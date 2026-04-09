@@ -197,7 +197,7 @@ class SendAttempterIT {
         var httpClient = HttpClients.createDefault();
         var httpPostFactory = new HttpPostFactory();
         var objectMapper = new ObjectMapper();
-        var callbackUrlService = mock(CallbackUrlService.class); // Using Mockito since the WebhooksConfig has no constructor
+        var callbackUrlService = mock(CallbackUrlService.class);
         var webhookMessageSignatureGenerator = new WebhookMessageSignatureGenerator();
         return new WebhookMessageSender(
                 httpClient,
