@@ -125,7 +125,7 @@ class SendAttempterIT {
     }
 
     @Test
-    void should_log_random_data_then_close_fault() {
+    void should_log_when_response_is_random_data_and_the_connection_is_closed() {
         givenThat(post(CALLBACK_URL)
                 .willReturn(aResponse()
                         .withFault(RANDOM_DATA_THEN_CLOSE)));
