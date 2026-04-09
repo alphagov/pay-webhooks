@@ -7,7 +7,6 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import io.dropwizard.core.setup.Environment;
 import io.github.netmikey.logunit.api.LogCapturer;
 import org.apache.http.impl.client.HttpClients;
-import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -181,7 +180,7 @@ class SendAttempterIT {
                 .build();
     }
 
-    private @NonNull SendAttempter buildSendAttempter() {
+    private SendAttempter buildSendAttempter() {
         var instantSource = InstantSource.fixed(Instant.parse(NOW));
         var webhookMessageSender = buildWebhookMessageSender();
         var environment = new Environment("fake-environment");
@@ -193,7 +192,7 @@ class SendAttempterIT {
         );
     }
 
-    private static @NonNull WebhookMessageSender buildWebhookMessageSender() {
+    private static WebhookMessageSender buildWebhookMessageSender() {
         var httpClient = HttpClients.createDefault();
         var httpPostFactory = new HttpPostFactory();
         var objectMapper = new ObjectMapper();
