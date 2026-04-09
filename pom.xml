@@ -222,6 +222,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>io.github.netmikey.logunit</groupId>
+            <artifactId>logunit-logback</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+        <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <version>6.0.0</version>
