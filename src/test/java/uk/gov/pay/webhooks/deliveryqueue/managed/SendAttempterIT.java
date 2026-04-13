@@ -59,7 +59,7 @@ class SendAttempterIT {
     LogCapturer logs = LogCapturer.create().captureForLogger(ROOT_LOGGER_NAME);
 
     @Mock
-    private WebhookDeliveryQueueDao webhookDeliveryQueueDaoSpy;
+    private WebhookDeliveryQueueDao mockWebhookDeliveryQueueDao;
 
     private static final String CALLBACK_URL = "/callback-url";
     private static final String NOW = "2022-01-01T00:00:00.000Z";
@@ -161,7 +161,7 @@ class SendAttempterIT {
 
         sendAttempter.attemptSend(enqueuedItem);
 
-        Mockito.verify(webhookDeliveryQueueDaoSpy)
+        Mockito.verify(mockWebhookDeliveryQueueDao)
                 .enqueueFrom(
                         any(),
                         eq(DeliveryStatus.PENDING),
@@ -185,7 +185,7 @@ class SendAttempterIT {
         var webhookMessageSender = buildWebhookMessageSender();
         var environment = new Environment("fake-environment");
         return new SendAttempter(
-                webhookDeliveryQueueDaoSpy,
+                mockWebhookDeliveryQueueDao,
                 instantSource,
                 webhookMessageSender,
                 environment
