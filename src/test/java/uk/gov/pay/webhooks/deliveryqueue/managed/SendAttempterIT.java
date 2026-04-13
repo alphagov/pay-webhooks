@@ -138,7 +138,7 @@ class SendAttempterIT {
     }
 
     @Test
-    void should_log_empty_response_fault() {
+    void should_log_when_empty_error_response_is_received() {
         givenThat(post(CALLBACK_URL)
                 .willReturn(aResponse()
                         .withFault(EMPTY_RESPONSE)));
