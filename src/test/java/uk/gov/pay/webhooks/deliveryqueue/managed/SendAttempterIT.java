@@ -110,7 +110,7 @@ class SendAttempterIT {
     }
 
     @Test
-    void should_log_connection_reset_by_peer_fault_with_error_message() {
+    void should_log_error_message_when_connection_is_reset_by_peer() {
         givenThat(post(CALLBACK_URL)
                 .willReturn(aResponse()
                         .withFault(CONNECTION_RESET_BY_PEER)));
