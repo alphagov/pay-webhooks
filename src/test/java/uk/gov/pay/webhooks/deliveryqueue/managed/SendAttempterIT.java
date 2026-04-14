@@ -154,10 +154,10 @@ class SendAttempterIT {
             "RANDOM_DATA_THEN_CLOSE",
             "EMPTY_RESPONSE"
     })
-    void should_enqueue_for_retry_on_fault(Fault fault) {
+    void should_enqueue_for_retry_on_connection_error(Fault connectionError) {
         givenThat(post(CALLBACK_URL)
                 .willReturn(aResponse()
-                        .withFault(fault)));
+                        .withFault(connectionError)));
 
         sendAttempter.attemptSend(enqueuedItem);
 
