@@ -4,11 +4,15 @@ import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.testing.junit5.DAOTestExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
+import io.github.netmikey.logunit.api.LogCapturer;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.FieldSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
@@ -24,22 +28,27 @@ import uk.gov.pay.webhooks.webhook.dao.WebhookDao;
 import uk.gov.pay.webhooks.webhook.dao.entity.WebhookEntity;
 
 import java.io.IOException;
-import java.net.http.HttpTimeoutException;
 import java.security.InvalidKeyException;
 import java.time.Instant;
 import java.time.InstantSource;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.slf4j.event.Level.ERROR;
 
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(DropwizardExtensionsSupport.class)
 class SendAttempterTest {
+
+    @RegisterExtension
+    LogCapturer logs = LogCapturer.create().captureForType(SendAttempter.class);
 
     public DAOTestExtension database = DAOTestExtension.newBuilder()
             .addEntityClass(EventTypeEntity.class)
@@ -51,27 +60,26 @@ class SendAttempterTest {
     private WebhookDeliveryQueueDao webhookDeliveryQueueDao;
     private InstantSource instantSource;
     private WebhookMessageDao webhookMessageDao;
-    private WebhookDao webhookDao;
     private WebhookMessageEntity webhookMessageEntity;
-    
+
     @Mock
     private WebhookMessageSender mockWebhookMessageSender;
-    
+
     @Mock
     private CloseableHttpResponse mockHttpResponse;
-    @Mock private StatusLine mockStatusLine;
-    
     @Mock
-    private Environment mockEnvironment;    
-    
+    private StatusLine mockStatusLine;
+
+    @Mock
+    private Environment mockEnvironment;
+
     @Mock
     private MetricRegistry mockMetricRegistry;
-            
+
     @BeforeEach
-    void setUp(){
+    void setUp() {
         instantSource = InstantSource.fixed(Instant.now());
         webhookMessageDao = new WebhookMessageDao(database.getSessionFactory());
-        webhookDao = new WebhookDao(database.getSessionFactory());
         webhookDeliveryQueueDao = new WebhookDeliveryQueueDao(database.getSessionFactory(), instantSource);
         webhookMessageEntity = new WebhookMessageEntity();
         WebhookEntity webhookEntity = new WebhookEntity();
@@ -80,23 +88,24 @@ class SendAttempterTest {
         webhookEntity.setCreatedDate(Instant.parse("2007-12-03T10:15:30.00Z"));
         webhookEntity.setCallbackUrl("http://example.com");
         webhookEntity.setSigningKey("some-signing-key");
+        WebhookDao webhookDao = new WebhookDao(database.getSessionFactory());
         webhookDao.create(webhookEntity);
         webhookMessageEntity.setWebhookEntity(webhookEntity);
         webhookMessageEntity.setCreatedDate(instantSource.instant());
         given(mockEnvironment.metrics()).willReturn(mockMetricRegistry);
     }
-    
+
     @Test
-    void sendAttempterSetsDeliveryStatusBasedOnStatusCode() throws IOException, InterruptedException, InvalidKeyException {
+    void should_set_delivery_status_based_on_status_code() throws IOException, InterruptedException, InvalidKeyException {
         given(mockHttpResponse.getStatusLine()).willReturn(mockStatusLine);
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willReturn(mockHttpResponse);
-        
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
         given(mockStatusLine.getStatusCode()).willReturn(404, 200);
-        
+
         sendAttempter.attemptSend(enqueuedItem);
+
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.FAILED));
         assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.FAILED));
         assertThat(enqueuedItem.getDeliveryResult(), is("404 Not Found"));
@@ -104,46 +113,72 @@ class SendAttempterTest {
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.SUCCESSFUL));
         assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.SUCCESSFUL));
         assertThat(enqueuedItem.getDeliveryResult(), is("200 OK"));
-    }    
-    
+    }
+
     @Test
-    void sendAttempterEmitsDeliveryStatusMetric() throws IOException, InvalidKeyException, InterruptedException {
+    void should_emit_delivery_status_metric() throws IOException, InvalidKeyException, InterruptedException {
         given(mockHttpResponse.getStatusLine()).willReturn(mockStatusLine);
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willReturn(mockHttpResponse);
-        
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
         given(mockStatusLine.getStatusCode()).willReturn(200);
+
         sendAttempter.attemptSend(enqueuedItem);
+
         verify(mockMetricRegistry).counter("delivery-status.SUCCESSFUL");
     }
 
-    @Test
-    void sendAttempterCatchesExceptions() throws IOException, InterruptedException, InvalidKeyException {
+    static List<Exception> exceptions = List.of(
+            new IOException(),
+            new InvalidKeyException(),
+            new InterruptedException(),
+            new RuntimeException());
+
+    @ParameterizedTest
+    @FieldSource("exceptions")
+    void should_catch_declared_checked_exceptions_and_all_runtime_exceptions(Exception exception) throws IOException, InvalidKeyException, InterruptedException {
+        given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class)))
+                .willThrow(exception);
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
-        var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
-        given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willThrow(IOException.class, HttpTimeoutException.class);
+        var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
 
         assertDoesNotThrow(() -> sendAttempter.attemptSend(enqueuedItem));
+
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.FAILED));
         assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.FAILED));
     }
-    
+
     @Test
-    void sendAttempterEnqueuesRetriesIfFailure() throws IOException, InvalidKeyException, InterruptedException {
+    void should_catch_log_and_rethrow_Errors() throws IOException, InvalidKeyException, InterruptedException {
+        var errorMessage = "BOOM!";
+        given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class)))
+                .willThrow(new Error(errorMessage));
+        var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
+        var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
+        var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
+
+        assertThrows(Error.class, () -> sendAttempter.attemptSend(enqueuedItem));
+
+        var loggingEvent = logs.assertContains("Error during webhook message send");
+        assertThat(loggingEvent.getLevel(), is(ERROR));
+        assertThat(loggingEvent.getThrowable().getMessage(), is(errorMessage));
+    }
+
+    @Test
+    void should_enqueue_retries_if_failure() throws IOException, InvalidKeyException, InterruptedException {
         given(mockHttpResponse.getStatusLine()).willReturn(mockStatusLine);
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willReturn(mockHttpResponse);
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
         given(mockStatusLine.getStatusCode()).willReturn(404);
-       
+
         sendAttempter.attemptSend(enqueuedItem);
+
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.FAILED));
         assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.FAILED));
-
         database.inTransaction(() -> {
             assertThat(webhookDeliveryQueueDao.nextToSend((Instant.parse("2007-12-03T10:15:30.00Z"))), is(notNullValue()));
             assertThat(webhookDeliveryQueueDao.countFailed(webhookMessageEntity), is(1L));
@@ -151,25 +186,27 @@ class SendAttempterTest {
     }
 
     @Test
-    void sendAttempterDoesNotEnqueueRetryForRejectedForSecurityRules() throws IOException, InvalidKeyException, InterruptedException {
+    void should_not_enqueue_retry_for_rejected_for_security_rules() throws IOException, InvalidKeyException, InterruptedException {
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willThrow(CallbackUrlDomainNotOnAllowListException.class);
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
 
         sendAttempter.attemptSend(enqueuedItem);
+
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.WILL_NOT_SEND));
         assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.WILL_NOT_SEND));
     }
 
     @Test
-    void sendAttempterDoesNotEnqueueRetryForNotActiveWebhooks() throws IOException, InvalidKeyException, InterruptedException {
+    void should_not_enqueue_retry_for_not_active_webhooks() throws IOException, InvalidKeyException, InterruptedException {
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willThrow(WebhookNotActiveException.class);
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
 
         sendAttempter.attemptSend(enqueuedItem);
+
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.WILL_NOT_SEND));
         assertThat(webhookMessage.getLastDeliveryStatus(), is(DeliveryStatus.WILL_NOT_SEND));
     }
