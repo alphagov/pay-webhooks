@@ -1,14 +1,13 @@
 package uk.gov.pay.webhooks.deliveryqueue.managed;
 
 import io.dropwizard.hibernate.UnitOfWork;
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
 
-import jakarta.inject.Inject;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,6 +15,7 @@ import static uk.gov.pay.webhooks.app.WebhooksKeys.RESOURCE_IS_LIVE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_EXTERNAL_ID;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_EVENT_TYPE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_EXTERNAL_ID;
+import static uk.gov.service.payments.logging.LoggingKeys.GATEWAY_ACCOUNT_ID;
 import static uk.gov.service.payments.logging.LoggingKeys.MDC_REQUEST_ID_KEY;
 import static uk.gov.service.payments.logging.LoggingKeys.RESOURCE_EXTERNAL_ID;
 import static uk.gov.service.payments.logging.LoggingKeys.SERVICE_EXTERNAL_ID;
@@ -51,6 +51,7 @@ public class WebhookMessagePollingService {
                         MDC.put(WEBHOOK_MESSAGE_EXTERNAL_ID, webhookMessage.getExternalId());
                         MDC.put(WEBHOOK_MESSAGE_EVENT_TYPE, webhookMessage.getEventType().getName().getName());
                         MDC.put(SERVICE_EXTERNAL_ID, webhook.getServiceId());
+                        MDC.put(GATEWAY_ACCOUNT_ID, webhook.getGatewayAccountId());
                         MDC.put(RESOURCE_IS_LIVE, String.valueOf(webhook.isLive()));
 
                         sendAttempter.attemptSend(webhookDeliveryQueueEntity);
@@ -60,12 +61,14 @@ public class WebhookMessagePollingService {
             LOGGER.error("Webhook message sender polling thread exception", e);
             return Optional.empty();
         } finally {
-            List.of(MDC_REQUEST_ID_KEY,
-                    WEBHOOK_EXTERNAL_ID,
-                    RESOURCE_EXTERNAL_ID,
-                    WEBHOOK_MESSAGE_EVENT_TYPE,
-                    SERVICE_EXTERNAL_ID,
-                    RESOURCE_IS_LIVE).forEach(MDC::remove);
+            MDC.remove(MDC_REQUEST_ID_KEY);
+            MDC.remove(WEBHOOK_EXTERNAL_ID);
+            MDC.remove(RESOURCE_EXTERNAL_ID);
+            MDC.remove(WEBHOOK_MESSAGE_EXTERNAL_ID);
+            MDC.remove(WEBHOOK_MESSAGE_EVENT_TYPE);
+            MDC.remove(SERVICE_EXTERNAL_ID);
+            MDC.remove(GATEWAY_ACCOUNT_ID);
+            MDC.remove(RESOURCE_IS_LIVE);
         }
     }
 }

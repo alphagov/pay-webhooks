@@ -9,13 +9,12 @@ import org.slf4j.MDC;
 import uk.gov.pay.webhooks.message.WebhookMessageService;
 import uk.gov.pay.webhooks.queue.sqs.QueueException;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static uk.gov.pay.webhooks.app.WebhooksKeys.ERROR;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.ERROR_MESSAGE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.RESOURCE_IS_LIVE;
+import static uk.gov.service.payments.logging.LoggingKeys.GATEWAY_ACCOUNT_ID;
 import static uk.gov.service.payments.logging.LoggingKeys.LEDGER_EVENT_TYPE;
 import static uk.gov.service.payments.logging.LoggingKeys.MDC_REQUEST_ID_KEY;
 import static uk.gov.service.payments.logging.LoggingKeys.RESOURCE_EXTERNAL_ID;
@@ -41,7 +40,8 @@ public class EventMessageHandler {
                 MDC.put(MDC_REQUEST_ID_KEY, UUID.randomUUID().toString());
                 MDC.put(SQS_MESSAGE_ID, message.queueMessage().messageId());
                 MDC.put(SERVICE_EXTERNAL_ID, message.eventMessageDto().serviceId());
-                MDC.put(RESOURCE_IS_LIVE, Optional.ofNullable(message.eventMessageDto().live()).map(String::valueOf).orElse(null));
+                MDC.put(GATEWAY_ACCOUNT_ID, message.eventMessageDto().gatewayAccountId());
+                MDC.put(RESOURCE_IS_LIVE, String.valueOf(message.eventMessageDto().live()));
                 MDC.put(RESOURCE_EXTERNAL_ID, message.eventMessageDto().resourceExternalId());
                 MDC.put(LEDGER_EVENT_TYPE, message.eventMessageDto().eventType());
                 processSingleMessage(message);
@@ -52,12 +52,13 @@ public class EventMessageHandler {
                         "Error during handling event message"
                 );
             } finally {
-                List.of(MDC_REQUEST_ID_KEY,
-                        SQS_MESSAGE_ID,
-                        SERVICE_EXTERNAL_ID,
-                        RESOURCE_IS_LIVE,
-                        RESOURCE_EXTERNAL_ID,
-                        LEDGER_EVENT_TYPE).forEach(MDC::remove);
+                MDC.remove(MDC_REQUEST_ID_KEY);
+                MDC.remove(SQS_MESSAGE_ID);
+                MDC.remove(SERVICE_EXTERNAL_ID);
+                MDC.remove(GATEWAY_ACCOUNT_ID);
+                MDC.remove(RESOURCE_IS_LIVE);
+                MDC.remove(RESOURCE_EXTERNAL_ID);
+                MDC.remove(LEDGER_EVENT_TYPE);
             }
         }
     }

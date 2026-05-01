@@ -1,21 +1,23 @@
 package uk.gov.pay.webhooks.app.filters;
 
-import org.slf4j.MDC;
-
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
-
-import java.util.List;
+import org.slf4j.MDC;
 
 import static uk.gov.pay.webhooks.app.WebhooksKeys.RESOURCE_IS_LIVE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_EXTERNAL_ID;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_EXTERNAL_ID;
+import static uk.gov.service.payments.logging.LoggingKeys.GATEWAY_ACCOUNT_ID;
 import static uk.gov.service.payments.logging.LoggingKeys.SERVICE_EXTERNAL_ID;
 
 public class LoggingMDCResponseFilter implements ContainerResponseFilter {
     @Override
     public void filter(ContainerRequestContext containerRequestContext, ContainerResponseContext containerResponseContext) {
-        List.of(WEBHOOK_EXTERNAL_ID, WEBHOOK_MESSAGE_EXTERNAL_ID, SERVICE_EXTERNAL_ID, RESOURCE_IS_LIVE).forEach(MDC::remove);
+        MDC.remove(WEBHOOK_EXTERNAL_ID);
+        MDC.remove(WEBHOOK_MESSAGE_EXTERNAL_ID);
+        MDC.remove(SERVICE_EXTERNAL_ID);
+        MDC.remove(GATEWAY_ACCOUNT_ID);
+        MDC.remove(RESOURCE_IS_LIVE);
     }
 }

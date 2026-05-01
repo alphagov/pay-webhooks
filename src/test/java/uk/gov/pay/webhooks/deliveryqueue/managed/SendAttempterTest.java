@@ -7,6 +7,7 @@ import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.github.netmikey.logunit.api.LogCapturer;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +16,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.FieldSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.MDC;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.deliveryqueue.WebhookNotActiveException;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
@@ -36,12 +38,15 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.slf4j.event.Level.ERROR;
+import static uk.gov.service.payments.logging.LoggingKeys.GATEWAY_ACCOUNT_ID;
+import static uk.gov.service.payments.logging.LoggingKeys.SERVICE_EXTERNAL_ID;
 
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(DropwizardExtensionsSupport.class)
@@ -85,6 +90,7 @@ class SendAttempterTest {
         WebhookEntity webhookEntity = new WebhookEntity();
         webhookEntity.setLive(true);
         webhookEntity.setServiceId("service-id-1");
+        webhookEntity.setGatewayAccountId("gateway-account-id-1");
         webhookEntity.setCreatedDate(Instant.parse("2007-12-03T10:15:30.00Z"));
         webhookEntity.setCallbackUrl("http://example.com");
         webhookEntity.setSigningKey("some-signing-key");
@@ -93,6 +99,11 @@ class SendAttempterTest {
         webhookMessageEntity.setWebhookEntity(webhookEntity);
         webhookMessageEntity.setCreatedDate(instantSource.instant());
         given(mockEnvironment.metrics()).willReturn(mockMetricRegistry);
+    }
+
+    @AfterEach
+    void tearDown() {
+        MDC.clear();
     }
 
     @Test
@@ -164,6 +175,29 @@ class SendAttempterTest {
         var loggingEvent = logs.assertContains("Error during webhook message send");
         assertThat(loggingEvent.getLevel(), is(ERROR));
         assertThat(loggingEvent.getThrowable().getMessage(), is(errorMessage));
+    }
+
+    @Test
+    void should_set_and_clear_gateway_account_and_service_context_for_send_attempt_logs() throws IOException, InvalidKeyException, InterruptedException {
+        given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class)))
+                .willAnswer(_ -> {
+                    assertThat(MDC.get(GATEWAY_ACCOUNT_ID), is("gateway-account-id-1"));
+                    assertThat(MDC.get(SERVICE_EXTERNAL_ID), is("service-id-1"));
+                    throw new IOException("boom");
+                });
+
+        MDC.put(GATEWAY_ACCOUNT_ID, "previous-gateway-account-id");
+        MDC.put(SERVICE_EXTERNAL_ID, "previous-service-id");
+
+        var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
+        var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
+        var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
+
+        sendAttempter.attemptSend(enqueuedItem);
+
+        assertNull(MDC.get(GATEWAY_ACCOUNT_ID));
+        assertNull(MDC.get(SERVICE_EXTERNAL_ID));
+        logs.assertContains("Exception caught by request");
     }
 
     @Test

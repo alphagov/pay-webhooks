@@ -3,21 +3,30 @@ package uk.gov.pay.webhooks.validations;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
+import uk.gov.pay.webhooks.webhook.resource.CreateWebhookRequest;
 import uk.gov.service.payments.commons.api.exception.ValidationException;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.RESOURCE_IS_LIVE;
+import static uk.gov.service.payments.logging.LoggingKeys.GATEWAY_ACCOUNT_ID;
+import static uk.gov.service.payments.logging.LoggingKeys.MDC_REQUEST_ID_KEY;
+import static uk.gov.service.payments.logging.LoggingKeys.SERVICE_EXTERNAL_ID;
 
 class WebhookRequestValidatorTest {
     private WebhooksConfig webhooksConfig = mock(WebhooksConfig.class);
@@ -26,6 +35,11 @@ class WebhookRequestValidatorTest {
     @BeforeEach
     public void setUp() {
         when(webhooksConfig.getLiveDataAllowDomains()).thenReturn(Set.of("gov.uk"));
+    }
+
+    @AfterEach
+    void tearDown() {
+        MDC.clear();
     }
 
     @Test
@@ -124,5 +138,29 @@ class WebhookRequestValidatorTest {
                         "op", "replace",
                         "value", "https://gov.uk")));
         assertDoesNotThrow(() -> webhookRequestValidator.validate(request, false));
+    }
+
+    @Test
+    void should_clear_populated_mdc_context_after_validating_create_webhook_request() {
+        MDC.put(MDC_REQUEST_ID_KEY, "request-id");
+        MDC.put(GATEWAY_ACCOUNT_ID, "existing-gateway-account-id");
+        MDC.put(SERVICE_EXTERNAL_ID, "existing-service-id");
+        MDC.put(RESOURCE_IS_LIVE, "false");
+
+        var createWebhookRequest = new CreateWebhookRequest(
+                "new-service-id",
+                "new-gateway-account-id",
+                false,
+                "https://pay.gov.uk",
+                "description",
+                List.of()
+        );
+
+        assertDoesNotThrow(() -> webhookRequestValidator.validate(createWebhookRequest));
+
+        assertThat(MDC.get(MDC_REQUEST_ID_KEY), is("request-id"));
+        assertNull(MDC.get(GATEWAY_ACCOUNT_ID));
+        assertNull(MDC.get(SERVICE_EXTERNAL_ID));
+        assertNull(MDC.get(RESOURCE_IS_LIVE));
     }
 }
