@@ -178,7 +178,7 @@ class SendAttempterTest {
     }
 
     @Test
-    void should_set_and_clear_gateway_account_and_service_context_for_send_attempt_logs() throws IOException, InvalidKeyException, InterruptedException {
+    void should_set_gateway_account_and_service_context_for_send_attempt_logs() throws IOException, InvalidKeyException, InterruptedException {
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class)))
                 .willAnswer(_ -> {
                     assertThat(MDC.get(GATEWAY_ACCOUNT_ID), is("gateway-account-id-1"));
@@ -195,8 +195,8 @@ class SendAttempterTest {
 
         sendAttempter.attemptSend(enqueuedItem);
 
-        assertNull(MDC.get(GATEWAY_ACCOUNT_ID));
-        assertNull(MDC.get(SERVICE_EXTERNAL_ID));
+        assertThat(MDC.get(GATEWAY_ACCOUNT_ID), is("gateway-account-id-1"));
+        assertThat(MDC.get(SERVICE_EXTERNAL_ID),  is("service-id-1"));
         logs.assertContains("Exception caught by request");
     }
 
