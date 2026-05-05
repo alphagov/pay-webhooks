@@ -103,10 +103,7 @@ public class SendAttempter {
         } catch (SocketTimeoutException | HttpTimeoutException | NoHttpResponseException | ConnectTimeoutException _) {
             LOGGER.info("Request timed out");
             handleResponse(queueItem, DeliveryStatus.FAILED, null, "HTTP Timeout", retryCount, start, Optional.of(callbackUrl));
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            handleRequestException(queueItem, retryCount, start, e);
-        } catch (IOException | InvalidKeyException e) {
+        } catch (IOException | InvalidKeyException | InterruptedException e) {
             handleRequestException(queueItem, retryCount, start, e);
         } catch (WebhookNotActiveException _) {
             LOGGER.info("Not sending webhook message for non-active webhook");
