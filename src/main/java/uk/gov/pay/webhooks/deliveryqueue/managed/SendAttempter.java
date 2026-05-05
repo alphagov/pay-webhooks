@@ -10,7 +10,6 @@ import org.apache.http.NoHttpResponseException;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.deliveryqueue.WebhookNotActiveException;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
@@ -42,10 +41,8 @@ import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_CALLBACK_URL_DOMAIN;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_ATTEMPT_RESPONSE_REASON;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_DELAY_BETWEEN_ATTEMPT_SCHEDULED_SEND_AT_TIME_AND_NOW;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_RETRY_COUNT;
-import static uk.gov.service.payments.logging.LoggingKeys.GATEWAY_ACCOUNT_ID;
 import static uk.gov.service.payments.logging.LoggingKeys.HTTP_STATUS;
 import static uk.gov.service.payments.logging.LoggingKeys.RESPONSE_TIME;
-import static uk.gov.service.payments.logging.LoggingKeys.SERVICE_EXTERNAL_ID;
 
 public class SendAttempter {
     private static final Logger LOGGER = LoggerFactory.getLogger(SendAttempter.class);
@@ -74,9 +71,6 @@ public class SendAttempter {
         var webhook = queueItem.getWebhookMessageEntity().getWebhookEntity();
         var retryCount = webhookDeliveryQueueDao.countFailed(queueItem.getWebhookMessageEntity());
         Instant start = instantSource.instant();
-
-        MDC.put(GATEWAY_ACCOUNT_ID, webhook.getGatewayAccountId());
-        MDC.put(SERVICE_EXTERNAL_ID, webhook.getServiceId());
 
         URL callbackUrl;
 

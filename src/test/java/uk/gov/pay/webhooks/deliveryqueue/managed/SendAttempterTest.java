@@ -38,15 +38,12 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.slf4j.event.Level.ERROR;
-import static uk.gov.service.payments.logging.LoggingKeys.GATEWAY_ACCOUNT_ID;
-import static uk.gov.service.payments.logging.LoggingKeys.SERVICE_EXTERNAL_ID;
 
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(DropwizardExtensionsSupport.class)
@@ -177,28 +174,6 @@ class SendAttempterTest {
         assertThat(loggingEvent.getThrowable().getMessage(), is(errorMessage));
     }
 
-    @Test
-    void should_set_gateway_account_and_service_context_for_send_attempt_logs() throws IOException, InvalidKeyException, InterruptedException {
-        given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class)))
-                .willAnswer(_ -> {
-                    assertThat(MDC.get(GATEWAY_ACCOUNT_ID), is("gateway-account-id-1"));
-                    assertThat(MDC.get(SERVICE_EXTERNAL_ID), is("service-id-1"));
-                    throw new IOException("boom");
-                });
-
-        MDC.put(GATEWAY_ACCOUNT_ID, "previous-gateway-account-id");
-        MDC.put(SERVICE_EXTERNAL_ID, "previous-service-id");
-
-        var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
-        var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
-        var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
-
-        sendAttempter.attemptSend(enqueuedItem);
-
-        assertThat(MDC.get(GATEWAY_ACCOUNT_ID), is("gateway-account-id-1"));
-        assertThat(MDC.get(SERVICE_EXTERNAL_ID),  is("service-id-1"));
-        logs.assertContains("Exception caught by request");
-    }
 
     @Test
     void should_enqueue_retries_if_failure() throws IOException, InvalidKeyException, InterruptedException {
