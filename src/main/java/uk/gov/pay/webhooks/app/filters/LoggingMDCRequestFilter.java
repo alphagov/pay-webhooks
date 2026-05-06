@@ -1,14 +1,15 @@
 package uk.gov.pay.webhooks.app.filters;
 
-import org.slf4j.MDC;
-
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
+import org.slf4j.MDC;
+
 import java.util.Optional;
 
 import static uk.gov.pay.webhooks.app.WebhooksKeys.RESOURCE_IS_LIVE;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_EXTERNAL_ID;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_EXTERNAL_ID;
+import static uk.gov.service.payments.logging.LoggingKeys.GATEWAY_ACCOUNT_ID;
 import static uk.gov.service.payments.logging.LoggingKeys.SERVICE_EXTERNAL_ID;
 
 public class LoggingMDCRequestFilter implements ContainerRequestFilter {
@@ -22,6 +23,9 @@ public class LoggingMDCRequestFilter implements ContainerRequestFilter {
 
         getQueryParameterFromRequest("service_id", containerRequestContext)
                 .ifPresent(serviceExternalId -> MDC.put(SERVICE_EXTERNAL_ID, serviceExternalId));
+
+        getQueryParameterFromRequest("gateway_account_id", containerRequestContext)
+                .ifPresent(gatewayAccountId -> MDC.put(GATEWAY_ACCOUNT_ID, gatewayAccountId));
 
         getQueryParameterFromRequest("live", containerRequestContext)
                 .ifPresent(isLive -> MDC.put(RESOURCE_IS_LIVE, isLive));

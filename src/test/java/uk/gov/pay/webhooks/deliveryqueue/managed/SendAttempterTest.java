@@ -85,6 +85,7 @@ class SendAttempterTest {
         WebhookEntity webhookEntity = new WebhookEntity();
         webhookEntity.setLive(true);
         webhookEntity.setServiceId("service-id-1");
+        webhookEntity.setGatewayAccountId("gateway-account-id-1");
         webhookEntity.setCreatedDate(Instant.parse("2007-12-03T10:15:30.00Z"));
         webhookEntity.setCallbackUrl("http://example.com");
         webhookEntity.setSigningKey("some-signing-key");

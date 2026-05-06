@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.slf4j.MDC;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueEntity;
@@ -35,9 +36,13 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_EXTERNAL_ID;
+import static uk.gov.service.payments.logging.LoggingKeys.GATEWAY_ACCOUNT_ID;
+import static uk.gov.service.payments.logging.LoggingKeys.SERVICE_EXTERNAL_ID;
 
 @ExtendWith(DropwizardExtensionsSupport.class)
 @ExtendWith(MockitoExtension.class)
@@ -137,12 +142,30 @@ class WebhookMessagePollingServiceTest {
         });
     }
 
+    @Test
+    void should_populate_and_clear_gateway_account_and_service_logging_context_for_send_attempts() throws IOException, InvalidKeyException, InterruptedException {
+        when(webhookMessageSenderMock.sendWebhookMessage(any(WebhookMessageEntity.class))).thenAnswer(_ -> {
+            assertEquals("a-service-id", MDC.get(SERVICE_EXTERNAL_ID));
+            assertEquals("a-gateway-account-id", MDC.get(GATEWAY_ACCOUNT_ID));
+            return response;
+        });
+
+        setupOrderedDeliveryQueueWith(List.of("first-external-id"));
+
+        database.inTransaction(() -> webhookMessagePollingService.pollWebhookMessageQueue());
+
+        assertNull(MDC.get(SERVICE_EXTERNAL_ID));
+        assertNull(MDC.get(GATEWAY_ACCOUNT_ID));
+        assertNull(MDC.get(WEBHOOK_MESSAGE_EXTERNAL_ID));
+    }
+
     private void setupOrderedDeliveryQueueWith(List<String> messageIds) {
         WebhookEntity webhookEntity = new WebhookEntity();
 
         database.inTransaction(() -> {
             webhookEntity.setCallbackUrl("https://a-callback-url.test");
             webhookEntity.setServiceId("a-service-id");
+            webhookEntity.setGatewayAccountId("a-gateway-account-id");
             webhookEntity.setLive(false);
 
             webhookDao.create(webhookEntity);
