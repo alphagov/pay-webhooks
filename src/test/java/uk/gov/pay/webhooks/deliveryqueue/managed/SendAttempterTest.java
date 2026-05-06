@@ -95,8 +95,7 @@ class SendAttempterTest {
         webhookMessageEntity.setCreatedDate(instantSource.instant());
         given(mockEnvironment.metrics()).willReturn(mockMetricRegistry);
     }
-
-
+    
     @Test
     void should_set_delivery_status_based_on_status_code() throws IOException, InterruptedException, InvalidKeyException {
         given(mockHttpResponse.getStatusLine()).willReturn(mockStatusLine);
