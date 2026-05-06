@@ -78,7 +78,6 @@ public class SendAttempter {
             callbackUrl = URI.create(webhook.getCallbackUrl().strip()).toURL();
         } catch (IllegalArgumentException | MalformedURLException e) {
             handleGenericException(queueItem, retryCount, start, e);
-            // stops code from proceeding if it fails to parse URL
             return;
         }
 

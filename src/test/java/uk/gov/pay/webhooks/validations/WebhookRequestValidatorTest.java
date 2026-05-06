@@ -18,9 +18,11 @@ import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.RESOURCE_IS_LIVE;
@@ -141,11 +143,14 @@ class WebhookRequestValidatorTest {
     }
 
     @Test
-    void should_clear_populated_mdc_context_after_validating_create_webhook_request() {
+    void should_populate_validator_specific_mdc_keys_during_create_webhook_validation_and_clear_them_afterwards() {
+        var callbackUrlService = mock(CallbackUrlService.class);
+        var validatorWithMockedCallbackUrlService = new WebhookRequestValidator(callbackUrlService);
+
         MDC.put(MDC_REQUEST_ID_KEY, "request-id");
         MDC.put(GATEWAY_ACCOUNT_ID, "existing-gateway-account-id");
         MDC.put(SERVICE_EXTERNAL_ID, "existing-service-id");
-        MDC.put(RESOURCE_IS_LIVE, "false");
+        MDC.put(RESOURCE_IS_LIVE, "true");
 
         var createWebhookRequest = new CreateWebhookRequest(
                 "new-service-id",
@@ -156,7 +161,15 @@ class WebhookRequestValidatorTest {
                 List.of()
         );
 
-        assertDoesNotThrow(() -> webhookRequestValidator.validate(createWebhookRequest));
+        doAnswer(_ -> {
+            assertEquals("request-id", MDC.get(MDC_REQUEST_ID_KEY));
+            assertEquals("new-gateway-account-id", MDC.get(GATEWAY_ACCOUNT_ID));
+            assertEquals("new-service-id", MDC.get(SERVICE_EXTERNAL_ID));
+            assertEquals("false", MDC.get(RESOURCE_IS_LIVE));
+            return null;
+        }).when(callbackUrlService).validateCallbackUrl("https://pay.gov.uk", false);
+
+        assertDoesNotThrow(() -> validatorWithMockedCallbackUrlService.validate(createWebhookRequest));
 
         assertThat(MDC.get(MDC_REQUEST_ID_KEY), is("request-id"));
         assertNull(MDC.get(GATEWAY_ACCOUNT_ID));
