@@ -166,8 +166,7 @@ class SendAttempterTest {
         assertThat(loggingEvent.getLevel(), is(ERROR));
         assertThat(loggingEvent.getThrowable().getMessage(), is(errorMessage));
     }
-
-
+    
     @Test
     void should_enqueue_retries_if_failure() throws IOException, InvalidKeyException, InterruptedException {
         given(mockHttpResponse.getStatusLine()).willReturn(mockStatusLine);
