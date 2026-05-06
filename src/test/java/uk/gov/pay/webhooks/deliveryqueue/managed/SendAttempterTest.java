@@ -7,7 +7,6 @@ import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.github.netmikey.logunit.api.LogCapturer;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,7 +15,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.FieldSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.MDC;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.deliveryqueue.WebhookNotActiveException;
 import uk.gov.pay.webhooks.deliveryqueue.dao.WebhookDeliveryQueueDao;
@@ -98,10 +96,6 @@ class SendAttempterTest {
         given(mockEnvironment.metrics()).willReturn(mockMetricRegistry);
     }
 
-    @AfterEach
-    void tearDown() {
-        MDC.clear();
-    }
 
     @Test
     void should_set_delivery_status_based_on_status_code() throws IOException, InterruptedException, InvalidKeyException {
