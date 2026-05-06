@@ -148,9 +148,6 @@ class WebhookRequestValidatorTest {
         var validatorWithMockedCallbackUrlService = new WebhookRequestValidator(callbackUrlService);
 
         MDC.put(MDC_REQUEST_ID_KEY, "request-id");
-        MDC.put(GATEWAY_ACCOUNT_ID, "existing-gateway-account-id");
-        MDC.put(SERVICE_EXTERNAL_ID, "existing-service-id");
-        MDC.put(RESOURCE_IS_LIVE, "true");
 
         var createWebhookRequest = new CreateWebhookRequest(
                 "new-service-id",
