@@ -5,8 +5,7 @@ import io.dropwizard.core.setup.Environment;
 import io.dropwizard.testing.junit5.DAOTestExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.github.netmikey.logunit.api.LogCapturer;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -67,8 +66,6 @@ class SendAttempterTest {
 
     @Mock
     private CloseableHttpResponse mockHttpResponse;
-    @Mock
-    private StatusLine mockStatusLine;
 
     @Mock
     private Environment mockEnvironment;
@@ -98,13 +95,12 @@ class SendAttempterTest {
 
     @Test
     void should_set_delivery_status_based_on_status_code() throws IOException, InterruptedException, InvalidKeyException {
-        given(mockHttpResponse.getStatusLine()).willReturn(mockStatusLine);
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willReturn(mockHttpResponse);
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
-        given(mockStatusLine.getStatusCode()).willReturn(404, 200);
-
+        given(mockHttpResponse.getCode()).willReturn(404, 200);
+        
         sendAttempter.attemptSend(enqueuedItem);
 
         assertThat(enqueuedItem.getDeliveryStatus(), is(DeliveryStatus.FAILED));
@@ -118,12 +114,11 @@ class SendAttempterTest {
 
     @Test
     void should_emit_delivery_status_metric() throws IOException, InvalidKeyException, InterruptedException {
-        given(mockHttpResponse.getStatusLine()).willReturn(mockStatusLine);
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willReturn(mockHttpResponse);
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
-        given(mockStatusLine.getStatusCode()).willReturn(200);
+        given(mockHttpResponse.getCode()).willReturn(200);
 
         sendAttempter.attemptSend(enqueuedItem);
 
@@ -169,12 +164,11 @@ class SendAttempterTest {
 
     @Test
     void should_enqueue_retries_if_failure() throws IOException, InvalidKeyException, InterruptedException {
-        given(mockHttpResponse.getStatusLine()).willReturn(mockStatusLine);
         given(mockWebhookMessageSender.sendWebhookMessage(any(WebhookMessageEntity.class))).willReturn(mockHttpResponse);
         var webhookMessage = webhookMessageDao.create(webhookMessageEntity);
         var sendAttempter = new SendAttempter(webhookDeliveryQueueDao, instantSource, mockWebhookMessageSender, mockEnvironment);
         var enqueuedItem = webhookDeliveryQueueDao.enqueueFrom(webhookMessage, DeliveryStatus.PENDING, instantSource.instant());
-        given(mockStatusLine.getStatusCode()).willReturn(404);
+        given(mockHttpResponse.getCode()).willReturn(404);
 
         sendAttempter.attemptSend(enqueuedItem);
 
