@@ -1,12 +1,11 @@
 package uk.gov.pay.webhooks.deliveryqueue.managed;
 
 import com.codahale.metrics.MetricRegistry;
-import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.core.setup.Environment;
+import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.testing.junit5.DAOTestExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +38,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import static uk.gov.pay.webhooks.app.WebhooksKeys.WEBHOOK_MESSAGE_EXTERNAL_ID;
 import static uk.gov.service.payments.logging.LoggingKeys.GATEWAY_ACCOUNT_ID;
 import static uk.gov.service.payments.logging.LoggingKeys.SERVICE_EXTERNAL_ID;
@@ -67,16 +72,12 @@ class WebhookMessagePollingServiceTest {
     private SendAttempter sendAttempter;
     @Mock
     private CloseableHttpResponse response;
-    @Mock
-    private StatusLine statusLine;
 
     @BeforeEach
     void setUp() throws IOException, InvalidKeyException, InterruptedException {
         var environment = mock(Environment.class);
 
         when(environment.metrics()).thenReturn(mock(MetricRegistry.class));
-        when(response.getStatusLine()).thenReturn(statusLine);
-        when(statusLine.getStatusCode()).thenReturn(200);
         webhookMessageSenderMock = mock(WebhookMessageSender.class);
         when(webhookMessageSenderMock.sendWebhookMessage(any(WebhookMessageEntity.class))).thenReturn(response);
         instantSource = InstantSource.fixed(Instant.now());
@@ -129,7 +130,6 @@ class WebhookMessagePollingServiceTest {
 
     @Test
     public void shouldAppropriatelyHandleFailedEmitAndNotTryAgainImmediately() {
-        when(statusLine.getStatusCode()).thenReturn(500);
         setupOrderedDeliveryQueueWith(List.of("first-external-id"));
 
         database.inTransaction(() -> {

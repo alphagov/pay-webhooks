@@ -2,7 +2,8 @@ package uk.gov.pay.webhooks.app;
 
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.core.setup.Environment;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.core5.util.TimeValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,8 +47,8 @@ public class IdleConnectionMonitor implements Managed {
 
     private void process() {
         try {
-            poolingHttpClientConnectionManager.closeExpiredConnections();
-            poolingHttpClientConnectionManager.closeIdleConnections(config.getConnectionPoolIdleConnectionTimeToLive().toSeconds(), TimeUnit.SECONDS);
+            poolingHttpClientConnectionManager.closeExpired();
+            poolingHttpClientConnectionManager.closeIdle(TimeValue.of(config.getConnectionPoolIdleConnectionTimeToLive().toSeconds(), TimeUnit.SECONDS));
         } catch (Exception ex) {
             LOGGER.error("Close Idle Connections thread exception", ex);
         }
