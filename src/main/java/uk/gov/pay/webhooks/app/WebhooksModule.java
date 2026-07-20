@@ -7,16 +7,20 @@ import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.client.Client;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.ssl.SSLContexts;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.StandardCookieSpec;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.http.io.SocketConfig;
+import org.apache.hc.core5.util.Timeout;
 import org.hibernate.SessionFactory;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.http.apache5.Apache5HttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.SqsClientBuilder;
@@ -24,7 +28,9 @@ import uk.gov.pay.webhooks.message.HttpPostFactory;
 import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
 import uk.gov.pay.webhooks.util.IdGenerator;
 
+import javax.net.ssl.SSLContext;
 import java.net.URI;
+import java.security.NoSuchAlgorithmException;
 import java.time.InstantSource;
 import java.util.concurrent.TimeUnit;
 
@@ -74,10 +80,27 @@ public class WebhooksModule extends AbstractModule {
     @Provides
     public PoolingHttpClientConnectionManager getConnectionPoolManager() {
         int connectionPoolSize = configuration.getWebhookMessageSendingQueueProcessorConfig().getHttpClientConnectionPoolSize();
-        PoolingHttpClientConnectionManager poolingConnManager
-                = new PoolingHttpClientConnectionManager();
-        poolingConnManager.setMaxTotal(connectionPoolSize);
-        poolingConnManager.setDefaultMaxPerRoute(connectionPoolSize);
+        SSLConnectionSocketFactory sslConnectionSocketFactory;
+        try {
+            sslConnectionSocketFactory = new SSLConnectionSocketFactory(
+                    SSLContext.getDefault(),
+                    new String[]{"TLSv1.2", "TLSv1.3"},
+                    null,
+                    new DefaultHostnameVerifier()
+            );
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Unable to create SSL connection socket factory", e);
+        }
+        
+        PoolingHttpClientConnectionManager poolingConnManager = PoolingHttpClientConnectionManagerBuilder
+                .create()
+                .setSSLSocketFactory(sslConnectionSocketFactory)
+                .setMaxConnTotal(connectionPoolSize)
+                .setMaxConnPerRoute(connectionPoolSize)
+                .setDefaultSocketConfig(SocketConfig.custom()
+                        .setSoTimeout(Timeout.ofMinutes(1))
+                        .build())
+                .build();
 
         return poolingConnManager;
     }
@@ -87,25 +110,17 @@ public class WebhooksModule extends AbstractModule {
     public CloseableHttpClient httpClient(PoolingHttpClientConnectionManager poolingConnManager) {
         var timeoutInMillis = Math.toIntExact(configuration.getWebhookMessageSendingQueueProcessorConfig().getRequestTimeout().toMilliseconds());
         var config = RequestConfig.custom()
-                .setConnectTimeout(timeoutInMillis)
-                .setConnectionRequestTimeout(timeoutInMillis)
-                .setSocketTimeout(timeoutInMillis)
-                .setCookieSpec(CookieSpecs.STANDARD)
+                .setConnectTimeout(Timeout.of(timeoutInMillis, TimeUnit.MILLISECONDS))
+                .setConnectionRequestTimeout(Timeout.of(timeoutInMillis, TimeUnit.MILLISECONDS))
+                .setResponseTimeout(Timeout.of(timeoutInMillis, TimeUnit.MILLISECONDS))
+                .setConnectionKeepAlive(Timeout.of(configuration.getWebhookMessageSendingQueueProcessorConfig().getConnectionPoolTimeToLive().toSeconds(), TimeUnit.SECONDS))
+                .setCookieSpec(StandardCookieSpec.STRICT)
                 .build();
 
-        var sslsf = new SSLConnectionSocketFactory(
-                SSLContexts.createDefault(),
-                new String[]{"TLSv1.2", "TLSv1.3"},
-                null,
-                SSLConnectionSocketFactory.getDefaultHostnameVerifier()
-        );
-
         return HttpClientBuilder.create()
-                .useSystemProperties()
-                .setConnectionTimeToLive(configuration.getWebhookMessageSendingQueueProcessorConfig().getConnectionPoolTimeToLive().toSeconds(), TimeUnit.SECONDS)
-                .setSSLSocketFactory(sslsf)
-                .setDefaultRequestConfig(config)
                 .setConnectionManager(poolingConnManager)
+                .useSystemProperties()
+                .setDefaultRequestConfig(config)
                 .build();
     }
 
@@ -129,7 +144,9 @@ public class WebhooksModule extends AbstractModule {
 
     @Provides
     public SqsClient sqsClient(WebhooksConfig webhooksConfig) {
-        SqsClientBuilder clientBuilder = SqsClient.builder();
+        SqsClientBuilder clientBuilder = SqsClient
+                .builder()
+                .httpClient(Apache5HttpClient.create());
         if (webhooksConfig.getSqsConfig().isNonStandardServiceEndpoint()) {
             // build static credentials in a local environment
             AwsBasicCredentials basicAWSCredentials = AwsBasicCredentials

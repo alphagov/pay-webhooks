@@ -6,8 +6,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import net.logstash.logback.marker.LogstashMarker;
 import net.logstash.logback.marker.Markers;
-import org.apache.http.NoHttpResponseException;
-import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.hc.core5.http.NoHttpResponseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
@@ -92,14 +91,14 @@ public class SendAttempter {
             );
             try (var response = webhookMessageSender.sendWebhookMessage(queueItem.getWebhookMessageEntity())) {
 
-                var statusCode = response.getStatusLine().getStatusCode();
+                var statusCode = response.getCode();
                 if (statusCode >= 200 && statusCode <= 299) {
                     handleResponse(queueItem, DeliveryStatus.SUCCESSFUL, statusCode, getReasonFromStatusCode(statusCode), retryCount, start, Optional.of(callbackUrl));
                 } else {
                     handleResponse(queueItem, DeliveryStatus.FAILED, statusCode, getReasonFromStatusCode(statusCode), retryCount, start, Optional.of(callbackUrl));
                 }
             }
-        } catch (SocketTimeoutException | HttpTimeoutException | NoHttpResponseException | ConnectTimeoutException _) {
+        } catch (SocketTimeoutException | HttpTimeoutException | NoHttpResponseException _) {
             LOGGER.info("Request timed out");
             handleResponse(queueItem, DeliveryStatus.FAILED, null, "HTTP Timeout", retryCount, start, Optional.of(callbackUrl));
         } catch (IOException | InvalidKeyException | InterruptedException e) {

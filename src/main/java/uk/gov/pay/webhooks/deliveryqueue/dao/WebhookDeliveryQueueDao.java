@@ -3,13 +3,13 @@ package uk.gov.pay.webhooks.deliveryqueue.dao;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Preconditions;
 import io.dropwizard.hibernate.AbstractDAO;
+import jakarta.inject.Inject;
+import jakarta.persistence.LockModeType;
 import org.hibernate.LockOptions;
 import org.hibernate.SessionFactory;
 import uk.gov.pay.webhooks.deliveryqueue.DeliveryStatus;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 
-import jakarta.inject.Inject;
-import jakarta.persistence.LockModeType;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.InstantSource;
@@ -17,8 +17,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class WebhookDeliveryQueueDao extends AbstractDAO<WebhookDeliveryQueueEntity> {
     public final InstantSource instantSource;
