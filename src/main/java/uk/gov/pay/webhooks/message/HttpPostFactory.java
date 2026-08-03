@@ -1,6 +1,6 @@
 package uk.gov.pay.webhooks.message;
 
-import org.apache.http.client.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
 
 import java.net.URI;
 

@@ -6,7 +6,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import io.dropwizard.core.setup.Environment;
 import io.github.netmikey.logunit.api.LogCapturer;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -40,6 +40,7 @@ import static com.github.tomakehurst.wiremock.http.Fault.CONNECTION_RESET_BY_PEE
 import static com.github.tomakehurst.wiremock.http.Fault.EMPTY_RESPONSE;
 import static com.github.tomakehurst.wiremock.http.Fault.RANDOM_DATA_THEN_CLOSE;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -131,10 +132,11 @@ class SendAttempterIT {
 
         sendAttempter.attemptSend(enqueuedItem);
 
-        var loggingEvent = logs.assertContains("Exception caught by request");
+        logs.assertContains("Request timed out");
+        var loggingEvent = logs.assertContains("Sending webhook message finished");
         var markers = loggingEvent.getMarkers();
         assertThat(markers.size(), is(1));
-        assertThat(markers.getFirst(), hasToString("error_message=null"));
+        assertThat(markers.getFirst().toString(), containsString("reason=HTTP Timeout"));
     }
 
     @Test
