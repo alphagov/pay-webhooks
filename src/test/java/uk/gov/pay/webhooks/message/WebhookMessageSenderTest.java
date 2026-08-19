@@ -3,18 +3,17 @@ package uk.gov.pay.webhooks.message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import uk.gov.pay.webhooks.deliveryqueue.WebhookNotActiveException;
 import uk.gov.pay.webhooks.eventtype.EventTypeName;
 import uk.gov.pay.webhooks.eventtype.dao.EventTypeEntity;
@@ -26,6 +25,7 @@ import uk.gov.pay.webhooks.webhook.dao.entity.WebhookStatus;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.time.Instant;
 
@@ -34,13 +34,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.pay.webhooks.message.WebhookMessageSender.SIGNATURE_HEADER_NAME;
 
 @ExtendWith(MockitoExtension.class)
@@ -102,7 +101,7 @@ class WebhookMessageSenderTest {
     }
 
     @Test
-    void constructsHttpRequestAndReturnsHttpResponse() throws IOException, InvalidKeyException, InterruptedException {
+    void constructsHttpRequestAndReturnsHttpResponse() throws IOException, InvalidKeyException, InterruptedException, URISyntaxException {
         String httpRequestBody = objectMapper.writeValueAsString(WebhookMessageBody.from(webhookMessageEntity));
 
         given(mockWebhookMessageSignatureGenerator.generate(httpRequestBody, SIGNING_KEY)).willReturn(SIGNATURE);
@@ -114,7 +113,7 @@ class WebhookMessageSenderTest {
         HttpResponse result = webhookMessageSender.sendWebhookMessage(webhookMessageEntity);
 
         HttpUriRequest httpRequest = httpRequestArgumentCaptor.getValue();
-        assertThat(httpRequest.getURI(), is(CALLBACK_URL));
+        assertThat(httpRequest.getUri(), is(CALLBACK_URL));
         assertThat(httpRequest.getFirstHeader("Content-Type").getValue(), is("application/json"));
         assertThat(httpRequest.getFirstHeader(SIGNATURE_HEADER_NAME).getValue(), is(SIGNATURE));
         assertThat(result, is(mockHttpResponse));
