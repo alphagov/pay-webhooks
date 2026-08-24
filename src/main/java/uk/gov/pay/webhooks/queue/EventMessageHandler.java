@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import uk.gov.pay.webhooks.message.WebhookMessageService;
-import uk.gov.pay.webhooks.queue.sqs.QueueException;
+import uk.gov.service.payments.commons.queue.exception.QueueException;
 
 import java.util.UUID;
 
@@ -38,7 +38,7 @@ public class EventMessageHandler {
         for (EventMessage message : eventQueue.retrieveEvents()) {
             try {
                 MDC.put(MDC_REQUEST_ID_KEY, UUID.randomUUID().toString());
-                MDC.put(SQS_MESSAGE_ID, message.queueMessage().messageId());
+                MDC.put(SQS_MESSAGE_ID, message.queueMessage().getMessageId());
                 MDC.put(SERVICE_EXTERNAL_ID, message.eventMessageDto().serviceId());
                 MDC.put(GATEWAY_ACCOUNT_ID, message.eventMessageDto().gatewayAccountId());
                 MDC.put(RESOURCE_IS_LIVE, String.valueOf(message.eventMessageDto().live()));

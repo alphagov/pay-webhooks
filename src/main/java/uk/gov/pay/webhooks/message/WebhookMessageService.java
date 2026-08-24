@@ -11,7 +11,6 @@ import uk.gov.pay.webhooks.eventtype.dao.EventTypeDao;
 import uk.gov.pay.webhooks.ledger.LedgerService;
 import uk.gov.pay.webhooks.ledger.model.LedgerTransaction;
 import uk.gov.pay.webhooks.message.apirepresentation.PaymentApiRepresentation;
-import uk.gov.pay.webhooks.message.apirepresentation.RefundApiRepresentation;
 import uk.gov.pay.webhooks.message.dao.WebhookMessageDao;
 import uk.gov.pay.webhooks.message.dao.entity.WebhookMessageEntity;
 import uk.gov.pay.webhooks.queue.InternalEvent;

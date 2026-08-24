@@ -11,9 +11,9 @@ import uk.gov.pay.rule.SqsTestDocker;
 import uk.gov.pay.webhooks.app.QueueMessageReceiverConfig;
 import uk.gov.pay.webhooks.app.SqsConfig;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
-import uk.gov.pay.webhooks.queue.sqs.QueueException;
-import uk.gov.pay.webhooks.queue.sqs.QueueMessage;
-import uk.gov.pay.webhooks.queue.sqs.SqsQueueService;
+import uk.gov.service.payments.commons.queue.exception.QueueException;
+import uk.gov.service.payments.commons.queue.model.QueueMessage;
+import uk.gov.service.payments.commons.queue.sqs.SqsQueueService;
 
 import java.io.IOException;
 import java.util.List;
@@ -51,7 +51,7 @@ class EventQueueIT {
         WebhooksConfig mockConfig = mock(WebhooksConfig.class);
         when(mockConfig.getSqsConfig()).thenReturn(sqsConfig);
 
-        SqsQueueService sqsQueueService = new SqsQueueService(client, mockConfig);
+        SqsQueueService sqsQueueService = new SqsQueueService(client, sqsConfig.getMessageMaximumWaitTimeInSeconds(), sqsConfig.getMessageMaximumBatchSize());
 
         List<QueueMessage> result = sqsQueueService.receiveMessages(SqsTestDocker.getQueueUrl("event-queue"), "All");
         assertFalse(result.isEmpty());
@@ -91,12 +91,12 @@ class EventQueueIT {
         when(mockConfig.getSqsConfig()).thenReturn(sqsConfig);
         when(mockConfig.getQueueMessageReceiverConfig()).thenReturn(queueReceiverConfig);
 
-        SqsQueueService sqsQueueService = new SqsQueueService(client, mockConfig);
+        SqsQueueService sqsQueueService = new SqsQueueService(client, sqsConfig.getMessageMaximumWaitTimeInSeconds(), sqsConfig.getMessageMaximumBatchSize());
         EventQueue eventQueue = new EventQueue(sqsQueueService, mockConfig, new ObjectMapper());
 
         List<EventMessage> result = eventQueue.retrieveEvents();
         assertFalse(result.isEmpty());
-        assertThat(result.get(0).eventMessageDto().resourceType(), is("payment"));
-        assertThat(result.get(0).eventMessageDto().gatewayAccountId(), is("100"));
+        assertThat(result.getFirst().eventMessageDto().resourceType(), is("payment"));
+        assertThat(result.getFirst().eventMessageDto().gatewayAccountId(), is("100"));
     }
 }

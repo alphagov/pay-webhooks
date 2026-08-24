@@ -27,6 +27,7 @@ import software.amazon.awssdk.services.sqs.SqsClientBuilder;
 import uk.gov.pay.webhooks.message.HttpPostFactory;
 import uk.gov.pay.webhooks.message.WebhookMessageSignatureGenerator;
 import uk.gov.pay.webhooks.util.IdGenerator;
+import uk.gov.service.payments.commons.queue.sqs.SqsQueueService;
 
 import javax.net.ssl.SSLContext;
 import java.net.URI;
@@ -165,5 +166,10 @@ public class WebhooksModule extends AbstractModule {
         }
 
         return clientBuilder.build();
+    }
+
+    @Provides
+    public SqsQueueService sqsQueueService(SqsClient sqsClient, WebhooksConfig webhooksConfig) {
+        return new SqsQueueService(sqsClient, webhooksConfig.getSqsConfig().getMessageMaximumWaitTimeInSeconds(), webhooksConfig.getSqsConfig().getMessageMaximumBatchSize());
     }
 }
