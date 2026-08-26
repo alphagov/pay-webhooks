@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project
-        xmlns="http://maven.apache.org/POM/4.0.0"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>uk.gov.pay</groupId>
@@ -17,7 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <mainClass>uk.gov.pay.webhooks.app.WebhooksApp</mainClass>
-        <pay-java-commons.version>1.0.20260817082240</pay-java-commons.version>
+        <pay-java-commons.version>1.0.20260825154634</pay-java-commons.version>
         <swagger-version>2.2.54</swagger-version>
         <pact.version>4.7.5</pact.version>
         <prometheus.version>0.16.0</prometheus.version>
@@ -30,6 +27,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>uk.gov.service.payments</groupId>
+                <artifactId>platform-bom</artifactId>
+                <version>${pay-java-commons.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>io.dropwizard</groupId>
                 <artifactId>dropwizard-dependencies</artifactId>
@@ -48,8 +52,8 @@
                 <groupId>com.google.inject</groupId>
                 <artifactId>guice-bom</artifactId>
                 <version>7.0.0</version>
-                <scope>import</scope>
                 <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
@@ -67,7 +71,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
     <dependencies>
         <!-- Main dependencies that are imported from one of the BOMs specified
              in <dependencyManagement> so no explicit versions needed -->
