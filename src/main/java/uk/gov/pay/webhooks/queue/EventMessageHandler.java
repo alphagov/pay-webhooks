@@ -35,6 +35,7 @@ public class EventMessageHandler {
     }
 
     public void handle() throws QueueException {
+        LOGGER.info("Starting event handler for webhook event queue");
         for (EventMessage message : eventQueue.retrieveEvents()) {
             try {
                 MDC.put(MDC_REQUEST_ID_KEY, UUID.randomUUID().toString());
@@ -51,6 +52,7 @@ public class EventMessageHandler {
                         Markers.append(ERROR_MESSAGE, e.getMessage()),
                         "Error during handling event message"
                 );
+                LOGGER.error(">>>>>>>>>>>>>>>>>>> handle() " + e.getMessage());
             } finally {
                 MDC.remove(MDC_REQUEST_ID_KEY);
                 MDC.remove(SQS_MESSAGE_ID);
