@@ -2,7 +2,7 @@ package uk.gov.pay.webhooks.message.apirepresentation;
 
 import static java.util.Arrays.stream;
 
-// Based on Connector enum: https://github.com/alphagov/pay-connector/blob/master/src/main/java/uk/gov/pay/connector/common/model/api/ExternalChargeState.java 
+// Based on Connector enum: https://github.com/govuk-pay/pay-connector/blob/master/src/main/java/uk/gov/pay/connector/common/model/api/ExternalChargeState.java 
 public enum ExternalChargeState {
     EXTERNAL_CREATED("created", false),
     EXTERNAL_STARTED("started", false),
