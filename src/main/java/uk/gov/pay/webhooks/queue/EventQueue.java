@@ -1,14 +1,14 @@
 package uk.gov.pay.webhooks.queue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.pay.webhooks.app.WebhooksConfig;
-import uk.gov.pay.webhooks.queue.sqs.QueueException;
-import uk.gov.pay.webhooks.queue.sqs.QueueMessage;
-import uk.gov.pay.webhooks.queue.sqs.SqsQueueService;
+import uk.gov.service.payments.commons.queue.exception.QueueException;
+import uk.gov.service.payments.commons.queue.model.QueueMessage;
+import uk.gov.service.payments.commons.queue.sqs.SqsQueueService;
 
-import jakarta.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
@@ -43,22 +43,22 @@ public class EventQueue {
     }
 
     public void markMessageAsProcessed(EventMessage message) throws QueueException {
-        sqsQueueService.deleteMessage(this.eventQueueUrl, message.queueMessage().receiptHandle());
+        sqsQueueService.deleteMessage(this.eventQueueUrl, message.queueMessage().getReceiptHandle());
     }
 
     public void scheduleMessageForRetry(EventMessage message) throws QueueException {
-        sqsQueueService.deferMessage(this.eventQueueUrl, message.queueMessage().receiptHandle(), retryDelayInSeconds);
+        sqsQueueService.deferMessage(this.eventQueueUrl, message.queueMessage().getReceiptHandle(), retryDelayInSeconds);
     }
 
     private EventMessage getMessage(QueueMessage queueMessage) {
         try {
-            SNSMessageDto snsMessageDto = objectMapper.readValue(queueMessage.messageBody(), SNSMessageDto.class);
+            SNSMessageDto snsMessageDto = objectMapper.readValue(queueMessage.getMessageBody(), SNSMessageDto.class);
             EventMessageDto eventMessageDto = objectMapper.readValue(snsMessageDto.Message(), EventMessageDto.class);
             return EventMessage.of(eventMessageDto, queueMessage);
         } catch (IOException e) {
             LOGGER.warn(
                     "There was an exception parsing message [messageId={}] into an [{}] {}",
-                    queueMessage.messageId(),
+                    queueMessage.getMessageId(),
                     EventMessage.class, e.getMessage());
 
             return null;

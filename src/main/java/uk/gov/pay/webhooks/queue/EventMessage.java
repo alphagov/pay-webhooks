@@ -1,6 +1,6 @@
 package uk.gov.pay.webhooks.queue;
 
-import uk.gov.pay.webhooks.queue.sqs.QueueMessage;
+import uk.gov.service.payments.commons.queue.model.QueueMessage;
 
 public record EventMessage(EventMessageDto eventMessageDto, QueueMessage queueMessage) {
 
@@ -20,5 +20,4 @@ public record EventMessage(EventMessageDto eventMessageDto, QueueMessage queueMe
                 eventMessageDto.resourceType()
                 );
     }
-
 }
