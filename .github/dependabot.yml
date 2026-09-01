@@ -11,6 +11,9 @@ updates:
       - dependencies
       - govuk-pay
       - java
+    cooldown:
+      exclude:
+        - "uk.gov.service.payments:*"
   - package-ecosystem: docker
     directory: "/"
     schedule:
